@@ -6,6 +6,7 @@
 @theme inline {
   --color-background: var(--background);
   --color-secbackground: var(--secbackground);
+  --font-poppins: var(--font-poppins);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-alt: var(--font-inter);
