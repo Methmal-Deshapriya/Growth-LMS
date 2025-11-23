@@ -2,19 +2,21 @@ import React from "react";
 import Image from "next/image";
 const Hero = () => {
   return (
-    <section className="md:w-[80vw] lg:[70vw]  py-20 px-6 md:px-6 grid grid-cols-1 bg-red-500 sm:bg-cyan-500 md:bg-pink-500 lg:bg-orange-500 xl:bg-green-500 2xl:bg-yellow-500 lg:grid-cols-2 items-center  gap-12">
-      <div className="flex flex-col gap-6 bg-blue-500 md:bg-gray-500 lg:bg-yellow-500 xl:bg-red-500 2xl:bg-pink-500 lg:pl-13">
-        <div className="flex bg-green-500 md:bg-cyan-500 lg:bg-green-500 xl:bg-yellow-500 2xl:bg-blue-800 gap-3 items-center">
-          <div className="hidden lg:flex bbg-black w-2 2xl:w-3 "></div>
-          <h1 className="text-5xl sm:text-7xl md:text-[68px] lg:text-[43px] xl:text-[59px] 2xl:text-[73px] font-alt font-bold leading-tight max-lg:text-center text-black">
-            To Ignite Your Potential
-          </h1>
+    <section className="md:w-[80vw] lg:w-[70vw]  py-10 px-6 md:px-6 grid grid-cols-1  lg:grid-cols-2 items-center  gap-12">
+      <div className="flex flex-col gap-6  lg:pl-13  2xl:pl-22">
+        <div className="flex  gap-3 items-center">
+          <div className="hidden lg:flex bg-black xl:w-4 lg:w-3 xl:h-30 2xl:h-38 lg:h-22"></div>
+          <div className="flex items-center justify-center">
+            <h1 className="text-4xl sm:text-7xl md:text-[68px] lg:text-[43px] xl:text-[59px] 2xl:text-[73px] font-alt font-bold leading-tight max-lg:text-center text-black">
+              To Ignite Your Potential
+            </h1>
+          </div>
         </div>
-        <p className="text-3xl max-lg:text-center sm:text-5xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-black-600">
+        <p className="text-3xl max-lg:text-center sm:text-5xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-[#B581E5]">
           Foundry Academy
         </p>
-        <div className="flex max-lg:justify-center ">
-          <p className="text-lg font-poppins sm:text-xl bg-yellow-500 text-gray-700 max-w-lg">
+        <div className="flex max-lg:items-center max-lg:justify-center  ">
+          <p className="text-lg max-lg:text-center font-poppins sm:text-xl  text-gray-700 max-w-lg">
             Next level learning with recorded lessons, assignments & peer
             feedback,
             <span className="bg-red-500 text-white px-2 py-0.5 rounded ml-1">
@@ -30,7 +32,7 @@ const Hero = () => {
       </div>
 
       {/* RIGHT SIDE – Single Hero Image */}
-      <div className="w-full flex bg-pink-500 md:bg-red-500 lg:bg-blue-500 xl:bg-pink-500 2xl:bg-purple-500 justify-center lg:justify-end">
+      <div className="w-full flex  justify-center lg:justify-end">
         <Image
           src="/assets/hero4.png" // ← your single combined hero image
           alt="Foundry Academy Students"
