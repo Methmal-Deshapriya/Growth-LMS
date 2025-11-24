@@ -40,7 +40,7 @@ const Parro = () => {
               </p>
 
               <p className="text-3xl lg:text-2xl xl:text-3xl font-bold text-black mt-1">
-                Does this fit to me, <br /> am I good enough?
+                Don't Worry, <br /> We have got you covered!
               </p>
             </div>
           </div>

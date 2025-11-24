@@ -74,3 +74,32 @@ export const projects = [
     link: "https://microsoft.com",
   },
 ];
+
+export const bootcamps = [
+  {
+    id: 1,
+  },
+];
+
+export const content = [
+  {
+    title: "Unlimited 1-1 Persomal Mentorship",
+    description:
+      "Receive unlimited personalized guidance from expert mentors to help you overcome challenges and accelerate your learning journey.",
+  },
+  {
+    title: "Gamified Lerning with Kahoot",
+    description:
+      "Engage in interactive quizzes and games with Kahoot to make learning fun, competitive, and more effective.",
+  },
+  {
+    title: "Project Based Learning and Scenario Driven Programming",
+    description:
+      "Gain real-world experience by solving practical problems and building projects that simulate real-life programming scenarios.",
+  },
+  {
+    title: "Job Search and Career Placement Assistance",
+    description:
+      "Master web development by designing and developing stunning, responsive websites using the latest technologies and best practices.",
+  },
+];
