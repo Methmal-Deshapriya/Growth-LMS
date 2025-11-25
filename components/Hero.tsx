@@ -2,8 +2,8 @@ import React from "react";
 import Image from "next/image";
 const Hero = () => {
   return (
-    <section className="md:w-[80vw] lg:w-[70vw]  py-10 px-6 md:px-6 grid grid-cols-1  lg:grid-cols-2 items-center  gap-12">
-      <div className="flex flex-col gap-6  lg:pl-13  2xl:pl-22">
+    <section className="relative md:w-[80vw] lg:w-[70vw] py-10 px-6 sm:mb-10 md:px-6 grid grid-cols-1  lg:grid-cols-2 items-center  gap-12 ">
+      <div className="flex flex-col gap-6  lg:pl-13 z-10 2xl:pl-22">
         <div className="flex  gap-3 items-center">
           <div className="hidden lg:flex bg-black xl:w-4 lg:w-3 xl:h-30 2xl:h-38 lg:h-22"></div>
           <div className="flex items-center justify-center">
@@ -12,7 +12,7 @@ const Hero = () => {
             </h1>
           </div>
         </div>
-        <p className="text-3xl max-lg:text-center sm:text-5xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-[#B581E5]">
+        <p className="max-lg:flex max-lg:justify-center max-lg:items-center hidden text-3xl max-lg:text-center sm:text-5xl lg:text-2xl xl:text-3xl 2xl:text-4xl font-semibold text-[#B581E5]">
           Foundry Academy
         </p>
         <div className="flex max-lg:items-center max-lg:justify-center  ">
@@ -32,9 +32,9 @@ const Hero = () => {
       </div>
 
       {/* RIGHT SIDE – Single Hero Image */}
-      <div className="w-full flex  justify-center lg:justify-end">
+      <div className="w-full flex z-10  justify-center lg:justify-end">
         <Image
-          src="/assets/hero4.png" // ← your single combined hero image
+          src="/assets/hero1.png" // ← your single combined hero image
           alt="Foundry Academy Students"
           width={1000}
           height={1000}
