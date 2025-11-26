@@ -2,17 +2,22 @@ import React from "react";
 import Image from "next/image";
 const Footer = () => {
   return (
-    <footer className="w-full bg-[#0D0F16] text-gray-300 py-16 px-6 md:px-16">
+    <footer className="w-full bg-[#0D0F16] text-gray-300 mt-10 py-16 px-6 md:px-16">
       <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12">
         {/* -------- COMPANY BRAND SECTION -------- */}
-        <div className="space-y-4">
-          <Image
-            src="/assets/logo-meta.png" // <-- Replace with your logo
-            alt="MetaStats Logo"
-            width={160}
-            height={50}
-            className="object-contain"
-          />
+        <div className="space-y-4 ">
+          <div className="flex items-center gap-3">
+            <Image
+              src="/assets/llogo.png" // <-- Replace with your logo
+              alt="MetaStats Logo"
+              width={30}
+              height={30}
+              className="object-contain"
+            />
+            <p className="text-xl text-white font-bold font-alt leading-relaxed">
+              FOUNDRY
+            </p>
+          </div>
 
           <p className="text-sm leading-relaxed">
             Building Smarter Websites and Data-Driven Solutions
@@ -26,7 +31,7 @@ const Footer = () => {
           {/* Address */}
           <div className="flex items-start gap-3 pt-2">
             <Image
-              src="/assets/flag-sl.png" // <-- Replace with flag image
+              src="/assets/sl.png" // <-- Replace with flag image
               alt="Sri Lanka Flag"
               width={30}
               height={20}
@@ -82,7 +87,7 @@ const Footer = () => {
       {/* Divider */}
       <div className="max-w-7xl mx-auto mt-14 border-t border-gray-700/30 pt-6">
         <p className="text-center text-sm text-gray-400">
-          © 2025 MetaStats. LLC. All rights reserved
+          © 2025 Foundry. LLC. All rights reserved
         </p>
       </div>
     </footer>

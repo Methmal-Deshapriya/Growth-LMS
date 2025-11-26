@@ -10,7 +10,7 @@ const ThemeToggle = () => {
   };
 
   return (
-    <div className="flex items-center space-x-2">
+    <div className="flex items-center z-10 space-x-2">
       <Switch
         id="airplane-mode"
         onClick={handleClick}
