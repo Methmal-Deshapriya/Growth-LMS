@@ -38,40 +38,40 @@ export const advice = [
 
 export const projects = [
   {
-    title: "Stripe",
+    title: "Full Stack Developer",
+    salary: "LKR 250,000 – 550,000+ /month",
     description:
-      "A technology company that builds economic infrastructure for the internet.",
-    link: "https://stripe.com",
+      "Builds both the client-side (front-end) and server-side (back-end) of web applications, ensuring the entire system works seamlessly from user interface to database.",
   },
   {
-    title: "Netflix",
+    title: "AI & Machine Learning Engineer",
+    salary: "LKR 300,000 – 700,000+ /month",
     description:
-      "A streaming service that offers a wide variety of award-winning TV shows, movies, anime, documentaries, and more on thousands of internet-connected devices.",
-    link: "https://netflix.com",
+      "Designs and deploys intelligent algorithms and models that allow computers to learn from data, make predictions, and solve complex problems without explicit programming.",
   },
   {
-    title: "Google",
+    title: "Data Scientist",
+    salary: "LKR 250,000 – 600,000+ /month",
     description:
-      "A multinational technology company that specializes in Internet-related services and products.",
-    link: "https://google.com",
+      "Analyzes large, complex datasets to extract actionable insights and trends, using statistical methods and programming to help organizations make data-driven decisions.",
   },
   {
-    title: "Meta",
+    title: "DevOps Engineer",
+    salary: "LKR 350,000 – 800,000+ /month",
     description:
-      "A technology company that focuses on building products that advance Facebook's mission of bringing the world closer together.",
-    link: "https://meta.com",
+      "Bridges the gap between software development and IT operations, automating deployment pipelines and managing cloud infrastructure to ensure faster and more reliable software releases.",
   },
   {
-    title: "Amazon",
+    title: "Cybersecurity Analyst",
+    salary: "LKR 220,000 – 500,000+ /month",
     description:
-      "A multinational technology company focusing on e-commerce, cloud computing, digital streaming, and artificial intelligence.",
-    link: "https://amazon.com",
+      "Protects an organization’s computer systems and networks from cyber threats, monitoring for security breaches, identifying vulnerabilities, and implementing robust defenses.",
   },
   {
-    title: "Microsoft",
+    title: "UI/UX Designer",
+    salary: "LKR 180,000 – 400,000+ /month",
     description:
-      "A multinational technology company that develops, manufactures, licenses, supports, and sells computer software, consumer electronics, personal computers, and related services.",
-    link: "https://microsoft.com",
+      "Designs intuitive and visually appealing digital interfaces, focusing on user behavior and research to create products that are easy to use and enjoyable.",
   },
 ];
 

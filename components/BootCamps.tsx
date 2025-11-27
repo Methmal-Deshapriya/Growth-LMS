@@ -1,129 +1,100 @@
-import React from "react";
 import Image from "next/image";
-import mlImage from "../public/assets/machine learning.svg";
-import feImage from "../public/assets/full stack.svg";
-import uxImage from "../public/assets/uxui.svg";
-import dsImage from "../public/assets/data science.svg";
+import BootCampCard from "./BootCampCard";
+import HoverTooltip from "@/components/HoverTooltip";
+import { section } from "motion/react-client";
 
+const instructors = [
+  {
+    name: "Anushka Bandara",
+    src: "/assets/anushka1.png",
+  },
+  {
+    name: "Methmal Deshapriya",
+    src: "/assets/methmal1.png",
+  },
+];
 const BootCamps = () => {
   return (
-    <section className="w-full 2xl:w-[70vw] max-w-[1300px]   px-6 md:px-12 lg:px-20">
-      {/* HEADING */}
-      <div className="text-center mb-14">
-        <h2 className="text-xl md:text-2xl 2xl:text-3xl font-semibold text-gray-700">
-          Boost your skills through our
-        </h2>
+    <section className="relative flex items-center justify-center overflow-hidden w-full">
+      <div className="absolute top-100 rotate-10 left-0 w-150 h-72 bg-indigo-300 opacity-20 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-20 -rotate-30 right-0 w-150 h-96 bg-blue-300 opacity-20 rounded-full blur-3xl"></div>
+      <div className="w-full 2xl:w-[70vw] mt-20 max-w-[1300px]   px-6 md:px-12 lg:px-20">
+        {/* HEADING */}
+        <div className="text-center mb-14">
+          <h2 className="text-xl md:text-2xl 2xl:text-3xl font-semibold text-gray-700">
+            Boost your skills through our
+          </h2>
 
-        <h1 className="text-5xl sm:text-6xl md:text-7xl 2xl:text-8xl font-extrabold text-[#0216EA]">
-          Bootcamps
-        </h1>
+          <h1 className="text-5xl sm:text-6xl md:text-7xl 2xl:text-8xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-indigo-500 to-blue-600">
+            Bootcamps
+          </h1>
 
-        <p className="text-gray-600 md:text-lg xl:text-xl mt-4 max-w-3xl mx-auto">
-          Start as a beginner and graduate job ready, gaining hands-on skills,
-          real-world experience, and the credentials you need to kickstart your
-          tech career.
-        </p>
-      </div>
-      {/* GRID */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 ">
-        {/* CARD 1 — AI/ML */}
-        <div className="relative bg-[#008CFF] rounded-3xl p-8 flex flex-col h-[40vh] justify-between shadow-xl overflow-hidden">
-          <div className="z-10 ">
-            <h3 className="text-[#00026E] text-3xl md:text-4xl xl:text-5xl xl:mt-10 2xl:ml-7 font-bold [text-shadow:0_2px_8px_rgba(0,0,0,0.2)]">
-              AI/ML
-            </h3>
-            <p className="text-white font-medium xl:text-xl 2xl:ml-7 [text-shadow:0_2px_8px_rgba(0,0,0,0.2)]">
-              Ignition Program
-            </p>
-          </div>
-
-          <div className="absolute right-0 bottom-0 mt-6 flex  justify-end">
-            <Image
-              src={mlImage}
-              width={180}
-              height={180}
-              alt="AI Bootcamp"
-              className="w-[210px] sm:w-[170px] md:w-[180px] lg:w-[200px] 2xl:w-[210px] h-auto"
-            />
-          </div>
-
-          <p className="z-10 mt-3 text-white font-medium cursor-pointer">
-            View Course &gt;
+          <p className="text-gray-600 md:text-lg xl:text-xl mt-4 max-w-3xl mx-auto">
+            Start as a beginner and graduate job ready, gaining hands-on skills,
+            real-world experience, and the credentials you need to kickstart
+            your tech career.
           </p>
         </div>
 
-        {/* CARD 2 — Full Stack */}
-        <div className="relative bg-[#0C1863] h-[40vh] rounded-3xl p-8 flex flex-col justify-between shadow-xl overflow-hidden">
-          <div className="z-10">
-            <h3 className="text-[#1D21FF] text-3xl font-bold [text-shadow:0_2px_8px_rgba(0,0,0,0.2)]">
-              Full Stack
-            </h3>
-            <p className="text-white font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.2)]">
-              Engineering
-            </p>
-          </div>
-
-          <div className="absolute right-3 xl:right-6 2xl:right-10 top-12 mt-6 flex  justify-end">
-            <Image
-              src={feImage}
-              width={200}
-              height={200}
-              alt="Full Stack Bootcamp"
-              className="w-[350px] h-auto"
-            />
-          </div>
-
-          <p className="z-10 mt-3 text-white font-medium cursor-pointer">
-            View Course &gt;
-          </p>
+        {/* GRID */}
+        <div className="grid grid-cols-1 z-10 sm:grid-cols-2 gap-8 ">
+          <BootCampCard />
         </div>
+        <div className="flex items-center justify-center mt-30">
+          <div className="border border-[#C5B7FF] rounded-2xl p-8 md:p-12 relative overflow-hidden">
+            {/* Curvy background lines */}
+            <div className="absolute inset-0 pointer-events-none opacity-40">
+              <svg
+                viewBox="0 0 500 200"
+                className="w-full h-full text-indigo-400"
+                fill="none"
+              >
+                <path
+                  d="M0 150 C150 50, 350 250, 500 100"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+                <path
+                  d="M0 80 C200 180, 300 0, 500 160"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                />
+              </svg>
+            </div>
 
-        {/* CARD 3 — Data Science */}
-        <div className="relative bg-[#16F501] h-[40vh] rounded-3xl p-8 flex flex-col justify-between shadow-xl overflow-hidden">
-          <div className="z-10">
-            <h3 className="text-[#005721] text-3xl md:text-4xl xl:text-5xl font-bold [text-shadow:0_2px_8px_rgba(0,0,0,0.2)] ">
-              Data
-            </h3>
-            <p className="text-white xl:text-xl font-medium [text-shadow:0_2px_8px_rgba(0,0,0,0.2)]">
-              Science
-            </p>
+            <div className="relative z-10 flex flex-col xl:flex-row justify-between items-center gap-10">
+              {/* Left Side */}
+              <div className="max-w-md">
+                <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-3">
+                  Still not sure whether this program is right for you ?
+                </h2>
+                <p className="text-gray-600 mb-6">
+                  Book a call with our instructors to learn how we can
+                  accelerate your IT journey from months to just weeks.
+                </p>
+
+                <button className="bg-[#7B68EE] text-white px-6 py-3 rounded-lg font-medium hover:opacity-90">
+                  Message Us
+                </button>
+              </div>
+
+              {/* Right side avatars */}
+              <div className="flex flex-col md:flex-row gap-4  ">
+                {instructors.map((instructor, i) => (
+                  <HoverTooltip tooltip={instructor.name}>
+                    <Image
+                      key={i}
+                      src={instructor.src}
+                      alt="Advisor"
+                      width={200}
+                      height={200}
+                      className="rounded-full h-50 border-2 border-indigo-400 object-cover"
+                    />
+                  </HoverTooltip>
+                ))}
+              </div>
+            </div>
           </div>
-
-          <div className="absolute right-2 xl:right-6 2xl:right-10 top-12 mt-6 flex  justify-end">
-            <Image
-              src={dsImage}
-              width={200}
-              height={200}
-              alt="Data Science Bootcamp"
-              className="w-[350px] h-auto"
-            />
-          </div>
-
-          <p className="z-10 mt-3 text-white font-medium cursor-pointer">
-            View Course &gt;
-          </p>
-        </div>
-
-        {/* CARD 4 — UX/UI */}
-        <div className=" relative bg-[#F62346] h-[40vh] rounded-3xl p-8 flex flex-col justify-between shadow-xl overflow-hidden">
-          <div className="z-10">
-            <h3 className="text-[#FFBACC] text-3xl font-bold">UX/UI</h3>
-            <p className="text-white font-medium">Design</p>
-          </div>
-
-          <div className="absolute right-3 2xl:right-10  top-8 lg:top-1 2xl:top-2  mt-6 flex  justify-end">
-            <Image
-              src={uxImage}
-              width={200}
-              height={200}
-              alt="UX UI Bootcamp"
-              className="w-[270px] lg:w-[320px] xl:w-[350px] h-auto"
-            />
-          </div>
-
-          <p className="z-10 mt-3 text-white font-medium cursor-pointer">
-            View Course &gt;
-          </p>
         </div>
       </div>
     </section>

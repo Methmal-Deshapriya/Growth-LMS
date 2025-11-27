@@ -8,7 +8,7 @@ const Navbar = () => {
         <Image src="/assets/logo.png" alt="logo" width={100} height={100} />
       </div>
       <ul className="hidden md:flex items-center gap-8 text-black font-medium">
-        <Link href="" className="cursor-pointer hover:opacity-70">
+        <Link href="/" className="cursor-pointer hover:opacity-70">
           Home
         </Link>
         <Link href="" className="cursor-pointer hover:opacity-70">

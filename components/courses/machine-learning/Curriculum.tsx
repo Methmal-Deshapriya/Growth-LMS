@@ -180,13 +180,13 @@ const Curriculum = () => {
     },
   ];
   return (
-    <div className="w-screen flex flex-col items-center lg:w-[80vw] xl:w-[70vw] 2xl:w-[60vw] py-10 px-6 md:px-12 lg:px-20 ">
+    <div className="w-screen flex flex-col items-center lg:w-[80vw] xl:w-[70vw] 2xl:w-[60vw]  py-10 px-6 md:px-12 lg:px-20 ">
       <div className="max-w-7xl items-center mx-auto  px-4 md:px-8 lg:px-10 ">
         <h2 className="text-3xl sm:text-5xl font-semibold mb-20 text-center text-black dark:text-white max-w-4xl">
           Our <span className="text-blue-500">12 Weeks</span> AI/ML Journey
         </h2>
       </div>
-      <div className="bg-blue-50 rounded-3xl">
+      <div className="bg-blue-50 rounded-3xl overflow-hidden">
         <Timeline data={data} />
       </div>
     </div>
