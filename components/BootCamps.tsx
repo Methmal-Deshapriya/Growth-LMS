@@ -6,11 +6,11 @@ import { section } from "motion/react-client";
 const instructors = [
   {
     name: "Anushka Bandara",
-    src: "/assets/anushka1.png",
+    src: "/assets/anushka.webp",
   },
   {
     name: "Methmal Deshapriya",
-    src: "/assets/methmal1.png",
+    src: "/assets/methmal.webp",
   },
 ];
 const BootCamps = () => {
