@@ -23,11 +23,11 @@ const Hero = () => {
               </span>
             </p>
           </div>
-          <div className="w-full flex max-lg:justify-center">
+          {/* <div className="w-full flex max-lg:justify-center">
             <button className="mt-4 w-full bg-[#d9ebff] text-blue-600  max-w-[400px] font-medium  px-5 py-3 rounded-lg hover:bg-blue-100 transition text-center">
               Login
             </button>
-          </div>
+          </div> */}
         </div>
 
         {/* RIGHT SIDE – Single Hero Image */}

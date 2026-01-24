@@ -1,5 +1,6 @@
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 const Footer = () => {
   return (
     <footer className="w-full bg-[#0D0F16] text-gray-300 mt-10 py-16 px-6 md:px-16">
@@ -9,7 +10,7 @@ const Footer = () => {
           <div className="flex items-center gap-3">
             <Image
               src="/assets/llogo.png" // <-- Replace with your logo
-              alt="MetaStats Logo"
+              alt="Foundry Logo"
               width={30}
               height={30}
               className="object-contain"
@@ -24,8 +25,15 @@ const Footer = () => {
           </p>
 
           <div className="space-y-1 text-sm">
-            <p>methmaldeshapriya.com</p>
-            <p>+94 75 745 1258 | +94 428 7734</p>
+            <a
+              href="https://mail.google.com/mail/?view=cm&fs=1&to=cources.foundry@gmail.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-200 hover:text-blue-500"
+            >
+              cources.foundry@gmail.com
+            </a>
+            <p>072 362 2112</p>
           </div>
 
           {/* Address */}
@@ -60,12 +68,19 @@ const Footer = () => {
         <div>
           <h4 className="font-semibold text-white mb-4">SERVICES</h4>
           <nav className="space-y-3 text-sm">
-            <p className="hover:text-white cursor-pointer">
-              Websites & Web Apps
+            <p>
+              <Link
+                href="/bootcamps/machine-learning"
+                className="hover:text-white cursor-pointer"
+              >
+                Machine learning Ignition program
+              </Link>
             </p>
-            <p className="hover:text-white cursor-pointer">Mobile Apps</p>
             <p className="hover:text-white cursor-pointer">
-              Intelligent Systems
+              Full Stack Development
+            </p>
+            <p className="hover:text-white cursor-pointer">
+              Maching learning Advanced program
             </p>
           </nav>
         </div>

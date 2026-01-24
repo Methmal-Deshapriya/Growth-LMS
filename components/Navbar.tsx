@@ -20,13 +20,13 @@ const Navbar = () => {
         <Link href="" className="cursor-pointer hover:opacity-70">
           Consulting
         </Link>
-        <Link href="" className="cursor-pointer hover:opacity-70">
+        <Link href="" className="cursor-pointer hover:opacity-70 mr-10">
           Community
         </Link>
       </ul>
-      <button className="bg-[#d9ebff] text-blue-600 font-medium px-5 py-1.5 rounded-full hover:bg-blue-100 transition">
+      {/* <button className="bg-[#d9ebff] text-blue-600 font-medium px-5 py-1.5 rounded-full hover:bg-blue-100 transition">
         Login
-      </button>
+      </button> */}
     </nav>
   );
 };
