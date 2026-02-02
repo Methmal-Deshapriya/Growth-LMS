@@ -1,3 +1,4 @@
+"use client";
 import React from "react";
 import Image from "next/image";
 import { CheckCircle } from "lucide-react";
@@ -45,7 +46,15 @@ const PriceDetails = () => {
             LKR 6000
           </h3>
 
-          <button className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
+          <button
+            onClick={() => {
+              const phone = "94723622112"; // ✅ Sri Lanka number WITHOUT + and WITHOUT leading 0
+              const message = "Hello! I want to apply for the program.";
+              const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+              window.open(url, "_blank"); // opens in new tab / WhatsApp app if available
+            }}
+            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
+          >
             Apply for Program
           </button>
 
