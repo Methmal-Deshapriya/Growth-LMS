@@ -42,8 +42,9 @@ const PriceDetails = () => {
           <p className="text-gray-700 text-lg">For this launch</p>
 
           <h3 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            LKR 7,500
+            LKR 6000
           </h3>
+
           <button className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition">
             Apply for Program
           </button>
