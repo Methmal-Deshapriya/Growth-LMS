@@ -4,7 +4,7 @@ import Image from "next/image";
 import { IoVideocamOutline } from "react-icons/io5";
 const Hero = () => {
   return (
-    <section className=" relative flex flex-col items-center justify-center w-screen overflow-hidden">
+    <section className=" relative flex flex-col items-center  justify-center w-screen overflow-hidden">
       <div className="absolute -rotate-30 top-10 lg:top-60 -left-10 w-172 h-72 bg-blue-300 opacity-20 rounded-full blur-3xl"></div>
 
       <div className="absolute top-30 right-0 w-152 -rotate-35 h-40 lg:h-112 bg-indigo-300 opacity-20 blur-3xl rounded-full "></div>

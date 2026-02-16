@@ -5,6 +5,7 @@ import Curriculum from "@/components/courses/machine-learning/Curriculum";
 import ForWho from "@/components/courses/machine-learning/ForWho";
 import Certificate from "@/components/courses/machine-learning/Certificate";
 import PriceDetails from "@/components/courses/machine-learning/PriceDetails";
+import IntroVideo from "@/components/courses/machine-learning/IntroVideo";
 const CoursePage = async ({
   params,
 }: {
@@ -16,6 +17,7 @@ const CoursePage = async ({
     <div className="md:w-[80vw] lg:w-[70vw] flex flex-col items-center">
       <Hero />
       <CourseDescription />
+      <IntroVideo />
       <Curriculum />
       <ForWho />
       <Certificate />

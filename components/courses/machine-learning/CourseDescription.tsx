@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const CourseDescription = () => {
   return (
-    <section className="w-full flex flex-col justify-center items-center py-10 px-6 md:px-12 lg:px-20 ">
+    <section className="w-full flex flex-col  justify-center items-center pt-10 px-6 md:px-12 lg:px-20 ">
       {/* TOP TEXT */}
 
       {/* MAIN HEADLINE */}
