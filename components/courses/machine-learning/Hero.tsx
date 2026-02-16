@@ -2,6 +2,7 @@ import { IoIosTimer } from "react-icons/io";
 import React from "react";
 import Image from "next/image";
 import { IoVideocamOutline } from "react-icons/io5";
+import ApplyButton from "../../ApplyButton";
 const Hero = () => {
   return (
     <section className=" relative flex flex-col items-center  justify-center w-screen overflow-hidden">
@@ -46,13 +47,17 @@ const Hero = () => {
             </div>
 
             <div className="mt-8 flex flex-wrap max-lg:justify-center items-center gap-6">
-              <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-lg transition">
+              {/* <button className="px-8 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-full shadow-lg transition">
                 Apply for Program
-              </button>
+              </button> */}
+              <ApplyButton />
 
-              <button className="text-blue-700 underline text-lg">
+              <a
+                href="#pricing"
+                className="text-blue-700 cursor-pointer underline text-lg "
+              >
                 View Pricing Details
-              </button>
+              </a>
             </div>
           </div>
         </div>

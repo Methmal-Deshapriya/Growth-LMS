@@ -1,10 +1,13 @@
-"use client";
 import React from "react";
 import Image from "next/image";
 import { CheckCircle } from "lucide-react";
+import ApplyButton from "@/components/ApplyButton";
 const PriceDetails = () => {
   return (
-    <section className="w-full flex flex-col justify-center items-center py-10 px-6 md:px-12 lg:px-20">
+    <section
+      id="pricing"
+      className="w-full flex flex-col justify-center items-center py-10 px-6 md:px-12 lg:px-20"
+    >
       <div className="border border-[#D9D9FF] rounded-2xl p-10 md:p-12 flex flex-col md:flex-row justify-between gap-10">
         <div className="max-w-xl">
           <span className="px-4 py-1 text-sm bg-indigo-100 text-indigo-700 rounded-full">
@@ -43,25 +46,15 @@ const PriceDetails = () => {
           <p className="text-gray-700 text-lg">For this launch</p>
 
           <h3 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            LKR 6000
+            LKR 5000
           </h3>
 
-          <button
-            onClick={() => {
-              const phone = "94723622112"; // ✅ Sri Lanka number WITHOUT + and WITHOUT leading 0
-              const message = "Hello! I want to apply for the program.";
-              const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-              window.open(url, "_blank"); // opens in new tab / WhatsApp app if available
-            }}
-            className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition"
-          >
-            Apply for Program
-          </button>
+          <ApplyButton className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition" />
 
-          <button className="w-full mt-4 border border-gray-300 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50">
+          {/* <button className="w-full mt-4 border border-gray-300 py-3 rounded-lg flex items-center justify-center gap-2 hover:bg-gray-50">
             Download Course Catalog
             <span className="text-xl">📥</span>
-          </button>
+          </button> */}
         </div>
       </div>
     </section>
