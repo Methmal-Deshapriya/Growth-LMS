@@ -1,27 +1,32 @@
-import React from "react";
-import Hero from "@/components/courses/machine-learning/Hero";
-import CourseDescription from "@/components/courses/machine-learning/CourseDescription";
-import Curriculum from "@/components/courses/machine-learning/Curriculum";
-import ForWho from "@/components/courses/machine-learning/ForWho";
-import Certificate from "@/components/courses/machine-learning/Certificate";
-import PriceDetails from "@/components/courses/machine-learning/PriceDetails";
-import IntroVideo from "@/components/courses/machine-learning/IntroVideo";
+import { notFound } from "next/navigation";
+import Hero from "@/components/bootcamp-components/Hero";
+import CourseDescription from "@/components/bootcamp-components/CourseDescription";
+import Curriculum from "@/components/bootcamp-components/Curriculum";
+import ForWho from "@/components/bootcamp-components/ForWho";
+import Certificate from "@/components/bootcamp-components/Certificate";
+import PriceDetails from "@/components/bootcamp-components/PriceDetails";
+import IntroVideo from "@/components/bootcamp-components/IntroVideo";
+import { courses } from "@/data/courses";
 const CoursePage = async ({
   params,
 }: {
   params: Promise<{ bootcamp: string }>;
 }) => {
-  const courseName = (await params).bootcamp;
-  console.log(courseName);
+  const bootcamp = (await params).bootcamp;
+
+  const course = courses[bootcamp as keyof typeof courses];
+  if (!course) {
+    notFound();
+  }
   return (
     <div className="md:w-[80vw] lg:w-[70vw] flex flex-col items-center">
-      <Hero />
-      <CourseDescription />
-      <IntroVideo />
-      <Curriculum />
-      <ForWho />
-      <Certificate />
-      <PriceDetails />
+      <Hero {...course.hero_data} />
+      <CourseDescription {...course.courseDescription_data} />
+      <IntroVideo {...course.introVideo_data} />
+      <Curriculum {...course.curriculum_data} />
+      <ForWho {...course.forWho_data} />
+      <Certificate {...course.certificate_data} />
+      <PriceDetails {...course.priceDetails_data} />
     </div>
   );
 };

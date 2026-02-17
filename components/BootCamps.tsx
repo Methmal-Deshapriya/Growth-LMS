@@ -1,7 +1,20 @@
 import Image from "next/image";
 import BootCampCard from "./BootCampCard";
 import HoverTooltip from "@/components/HoverTooltip";
-import { section } from "motion/react-client";
+import { bootcamps } from "@/data/courses/bootcamps";
+
+type Bootcamp = {
+  id: number;
+  slug: string;
+  imageURL: string;
+  title: string;
+  description: string;
+  status: string;
+  cta: string;
+  theme?: {
+    statusColor: string;
+  };
+};
 
 const instructors = [
   {
@@ -38,7 +51,9 @@ const BootCamps = () => {
 
         {/* GRID */}
         <div className="grid grid-cols-1 z-10 sm:grid-cols-2 gap-8 ">
-          <BootCampCard />
+          {bootcamps.map((bootcamp: Bootcamp, i: number) => (
+            <BootCampCard key={i} {...bootcamp} />
+          ))}
         </div>
         <div className="flex items-center justify-center mt-30">
           <div className="border border-[#C5B7FF] rounded-2xl p-8 md:p-12 relative overflow-hidden">

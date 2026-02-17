@@ -75,12 +75,6 @@ export const projects = [
   },
 ];
 
-export const bootcamps = [
-  {
-    id: 1,
-  },
-];
-
 export const content = [
   {
     title: "Unlimited 1-1 Persomal Mentorship",

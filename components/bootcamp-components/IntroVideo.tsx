@@ -1,4 +1,8 @@
-const IntroVideo = () => {
+const IntroVideo = ({
+  introVideo_videoURL,
+}: {
+  introVideo_videoURL: string;
+}) => {
   return (
     <section className="relative  w-screen flex flex-col justify-center items-center  py-20  px-6 md:px-12 lg:px-20 overflow-hidden ">
       <div className=" hidden xl:flex absolute z-1 rotate-30 top-30  -left-50 w-172 h-72 bg-red-300 opacity-20 rounded-full blur-3xl"></div>
@@ -7,7 +11,7 @@ const IntroVideo = () => {
       <div className="w-full max-w-4xl aspect-video z-10">
         <iframe
           className="w-full h-full rounded-xl "
-          src="https://www.youtube.com/embed/m2ODnmNLDEs"
+          src={introVideo_videoURL}
           title="YouTube video player"
           frameBorder="0"
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"

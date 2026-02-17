@@ -1,7 +1,11 @@
 import { i } from "motion/react-client";
 import React from "react";
 import Image from "next/image";
-const Certificate = () => {
+
+type Props = {
+  certificate_certificateImageURL: string;
+};
+const Certificate = ({ certificate_certificateImageURL }: Props) => {
   return (
     <section className="relative w-screen overflow-hidden flex flex-col items-center justify-center">
       <div className="absolute top-30 rotate-20 left-0 w-132 h-72 bg-red-300 opacity-20 rounded-full blur-3xl"></div>
@@ -23,7 +27,7 @@ const Certificate = () => {
         <div className="flex justify-center">
           <div className="rounded-2xl shadow-xl border border-gray-200 bg-white overflow-hidden">
             <Image
-              src="/assets/machine-learning/certification.png" // Update path
+              src={certificate_certificateImageURL}
               alt="Full-stack Engineer Certificate"
               width={800}
               height={600}

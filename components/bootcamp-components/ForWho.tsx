@@ -1,6 +1,20 @@
 import React from "react";
 import Image from "next/image";
-const ForWho = () => {
+
+type Props = {
+  forWho_ImageURL: string;
+  forWho_description: string;
+  forWho_durationPerWeek: string;
+  forWho_weeks: string;
+  forWho_skills: string[];
+};
+const ForWho = ({
+  forWho_ImageURL,
+  forWho_description,
+  forWho_durationPerWeek,
+  forWho_weeks,
+  forWho_skills,
+}: Props) => {
   return (
     <section className="relative w-screen overflow-hidden flex flex-col items-center justify-center ">
       <div className="absolute top-20 -left-10 w-172 h-72 bg-indigo-300 opacity-20 rounded-full blur-3xl"></div>
@@ -17,7 +31,7 @@ const ForWho = () => {
           {/* LEFT IMAGE */}
           <div className="rounded-xl overflow-hidden shadow">
             <Image
-              src="/assets/machine-learning/al.webp"
+              src={forWho_ImageURL}
               alt="Student studying"
               width={600}
               height={600}
@@ -42,12 +56,7 @@ const ForWho = () => {
               </div>
 
               <p className="text-gray-700 leading-relaxed text-[15px]">
-                You'll get a clear idea of how university-style learning works.
-                Experience doing assignments and projects like in university.
-                Basic Python and data analysis skills. Hands-on experience with
-                AI and Machine Learning. Confidence to start university ICT or
-                AI-related studies. A completed mini AI project to show their
-                skills.
+                {forWho_description}
               </p>
             </div>
           </div>
@@ -63,16 +72,14 @@ const ForWho = () => {
               Attend every live session and interact with instructors
             </p>
             <p className="text-2xl font-bold text-black mb-4">
-              3h Sessions per Week
+              {forWho_durationPerWeek}
             </p>
 
             {/* Divider */}
             <div className="h-1 w-12 bg-blue-600 mb-4 rounded"></div>
 
             <p className="text-gray-600 mb-1">Dedicate 5-7 hours practising </p>
-            <p className="text-2xl font-bold text-black">
-              12 Weeks + Bunch of Practicles
-            </p>
+            <p className="text-2xl font-bold text-black">{forWho_weeks}</p>
           </div>
         </div>
 
@@ -88,24 +95,7 @@ const ForWho = () => {
           {/* Tech Skills Row */}
           <div className="flex flex-wrap justify-center gap-4">
             {/* Example tech chips */}
-            {[
-              "Machine learning",
-              "Data Cleaning",
-              "Data Engineering",
-              "Prompt Engineering",
-              "Python",
-              "Pandas",
-              "Numpy",
-              "Feature Engineering",
-              "FastAPI",
-              "Data Visualization",
-
-              "Supervised Learning",
-              "Git",
-              "Github",
-              "Netlify",
-              "Reactjs",
-            ].map((tech, i) => (
+            {forWho_skills.map((tech, i) => (
               <span
                 key={i}
                 className="px-4 py-2 bg-white border border-gray-200 rounded-full text-sm shadow-sm flex items-center gap-2"

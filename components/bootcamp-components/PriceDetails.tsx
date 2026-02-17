@@ -2,7 +2,19 @@ import React from "react";
 import Image from "next/image";
 import { CheckCircle } from "lucide-react";
 import ApplyButton from "@/components/ApplyButton";
-const PriceDetails = () => {
+
+type Props = {
+  priceDetails_title_1: string;
+  priceDetails_title_2: string;
+  priceDetails_benefits: string[];
+  priceDetails_price: string;
+};
+const PriceDetails = ({
+  priceDetails_title_1,
+  priceDetails_title_2,
+  priceDetails_benefits,
+  priceDetails_price,
+}: Props) => {
   return (
     <section
       id="pricing"
@@ -15,7 +27,7 @@ const PriceDetails = () => {
           </span>
 
           <h3 className="mt-4 text-3xl md:text-4xl font-semibold text-gray-900">
-            AI/Machine Learning <br /> Ignition Program
+            {priceDetails_title_1} <br /> {priceDetails_title_2}
           </h3>
 
           <p className="text-gray-600 mt-2">
@@ -23,22 +35,12 @@ const PriceDetails = () => {
           </p>
 
           <ul className="mt-6 space-y-4 text-gray-700">
-            <li className="flex items-center gap-2">
-              <CheckCircle size={20} className="text-indigo-500" />
-              Project based Learning
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle size={20} className="text-indigo-500" />
-              Interview Skills Enhanced with Every Module
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle size={20} className="text-indigo-500" />
-              Unlimited Personal Mentorship
-            </li>
-            <li className="flex items-center gap-2">
-              <CheckCircle size={20} className="text-indigo-500" />
-              Access Tons of Bonus Learning Guides, Materials
-            </li>
+            {priceDetails_benefits.map((item, index) => (
+              <li className="flex items-center gap-2">
+                <CheckCircle size={20} className="text-indigo-500" />
+                {item}
+              </li>
+            ))}
           </ul>
         </div>
 
@@ -46,7 +48,7 @@ const PriceDetails = () => {
           <p className="text-gray-700 text-lg">For this launch</p>
 
           <h3 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
-            LKR 5000
+            {priceDetails_price}
           </h3>
 
           <ApplyButton className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition" />
