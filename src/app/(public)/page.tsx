@@ -2,9 +2,6 @@ import Hero from "@/components/marketing/Hero";
 import Advice from "@/components/marketing/Advice";
 import Careers from "@/components/marketing/Careers";
 import BootCamps from "@/components/marketing/BootCamps";
-import Showcase from "@/components/marketing/Showcase";
-import { StickyScrollRevealDemo } from "@/components/marketing/Experiance";
-import Steps from "@/components/marketing/Steps";
 import Introduction from "@/components/marketing/Introduction";
 
 export default function Home() {
@@ -16,9 +13,6 @@ export default function Home() {
         <Advice />
         <BootCamps />
         <Careers />
-        <Showcase />
-        <Steps />
-        <StickyScrollRevealDemo />
       </div>
     </section>
   );
