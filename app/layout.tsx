@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "../components/ThemeProvider";
+import StoreProvider from "@/store/StoreProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -51,13 +51,13 @@ export const metadata: Metadata = {
 
   authors: [{ name: "Foundry Academy" }],
 
-  metadataBase: new URL("https://foundrylms.com"), // update if using another domain
+  metadataBase: new URL("https://foundrylms.com"),
 
   openGraph: {
     title:
       "Foundry Academy | Become Job-Ready in AI, Full-Stack & Cybersecurity",
     description:
-      "Join Sri Lanka’s most practical tech bootcamps in AI, Machine Learning, Full-Stack Development, Cybersecurity, Data Science, and UI/UX. Learn through recordings, assignments, projects, and expert mentorship — all in Sinhala.",
+      "Join Sri Lanka's most practical tech bootcamps in AI, Machine Learning, Full-Stack Development, Cybersecurity, Data Science, and UI/UX. Learn through recordings, assignments, projects, and expert mentorship — all in Sinhala.",
     url: "https://foundrylms.com",
     siteName: "Foundry Academy",
     images: [
@@ -114,7 +114,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        {children}
+        <StoreProvider>{children}</StoreProvider>
       </body>
     </html>
   );
