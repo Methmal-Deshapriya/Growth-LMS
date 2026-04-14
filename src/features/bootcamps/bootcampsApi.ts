@@ -1,4 +1,5 @@
 import { baseApi } from "@/store/baseApi";
+import type { ApiSuccess } from "@/lib/api";
 import type {
   Bootcamp,
   BootcampAdmin,
@@ -11,18 +12,21 @@ export const bootcampsApi = baseApi.injectEndpoints({
     // --- Public ---
     getBootcamps: builder.query<Bootcamp[], void>({
       query: () => "/bootcamps",
-      transformResponse: (response: { data: Bootcamp[] }) => response.data,
+      transformResponse: (response: ApiSuccess<Bootcamp[]>) =>
+        response.data as Bootcamp[],
       providesTags: ["Bootcamps"],
     }),
     getBootcampBySlug: builder.query<Bootcamp, string>({
       query: (slug) => `/bootcamps/${slug}`,
-      transformResponse: (response: { data: Bootcamp }) => response.data,
+      transformResponse: (response: ApiSuccess<Bootcamp>) =>
+        response.data as Bootcamp,
       providesTags: ["Bootcamps"],
     }),
     // --- Admin ---
     getAdminBootcamps: builder.query<BootcampAdmin[], void>({
       query: () => "/bootcamps/admin",
-      transformResponse: (response: { data: BootcampAdmin[] }) => response.data,
+      transformResponse: (response: ApiSuccess<BootcampAdmin[]>) =>
+        response.data as BootcampAdmin[],
       providesTags: ["Bootcamps"],
     }),
     createBootcamp: builder.mutation<BootcampAdmin, CreateBootcampRequest>({
@@ -31,7 +35,8 @@ export const bootcampsApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: (response: { data: BootcampAdmin }) => response.data,
+      transformResponse: (response: ApiSuccess<BootcampAdmin>) =>
+        response.data as BootcampAdmin,
       invalidatesTags: ["Bootcamps"],
     }),
     updateBootcamp: builder.mutation<
@@ -43,7 +48,8 @@ export const bootcampsApi = baseApi.injectEndpoints({
         method: "PATCH",
         body,
       }),
-      transformResponse: (response: { data: BootcampAdmin }) => response.data,
+      transformResponse: (response: ApiSuccess<BootcampAdmin>) =>
+        response.data as BootcampAdmin,
       invalidatesTags: ["Bootcamps"],
     }),
     deleteBootcamp: builder.mutation<void, string>({
@@ -58,7 +64,8 @@ export const bootcampsApi = baseApi.injectEndpoints({
         url: `/bootcamps/${id}/publish`,
         method: "PATCH",
       }),
-      transformResponse: (response: { data: BootcampAdmin }) => response.data,
+      transformResponse: (response: ApiSuccess<BootcampAdmin>) =>
+        response.data as BootcampAdmin,
       invalidatesTags: ["Bootcamps"],
     }),
     unpublishBootcamp: builder.mutation<BootcampAdmin, string>({
@@ -66,7 +73,8 @@ export const bootcampsApi = baseApi.injectEndpoints({
         url: `/bootcamps/${id}/unpublish`,
         method: "PATCH",
       }),
-      transformResponse: (response: { data: BootcampAdmin }) => response.data,
+      transformResponse: (response: ApiSuccess<BootcampAdmin>) =>
+        response.data as BootcampAdmin,
       invalidatesTags: ["Bootcamps"],
     }),
   }),

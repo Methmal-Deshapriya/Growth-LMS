@@ -1,4 +1,4 @@
-export type Role = "STUDENT" | "ADMIN" | "SUPER_ADMIN";
+import type { Role } from "@/lib/constants";
 
 export type User = {
   id: string;
@@ -18,19 +18,3 @@ export type RegisterRequest = {
   email: string;
   password: string;
 };
-
-export type ApiSuccess<T> = {
-  success: true;
-  data?: T;
-  message?: string;
-};
-
-export type ApiError = {
-  success: false;
-  error: string;
-  code?: string;
-  field?: string;
-  details?: unknown;
-};
-
-export type ApiResponse<T> = ApiSuccess<T> | ApiError;

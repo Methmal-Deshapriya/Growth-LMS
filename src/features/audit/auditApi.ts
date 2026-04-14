@@ -1,4 +1,5 @@
 import { baseApi } from "@/store/baseApi";
+import type { ApiSuccess } from "@/lib/api";
 import type { AuditLogsResponse, AuditLogsParams } from "./auditTypes";
 
 export const auditApi = baseApi.injectEndpoints({
@@ -8,8 +9,8 @@ export const auditApi = baseApi.injectEndpoints({
         url: "/audit/logs",
         params,
       }),
-      transformResponse: (response: { data: AuditLogsResponse }) =>
-        response.data,
+      transformResponse: (response: ApiSuccess<AuditLogsResponse>) =>
+        response.data as AuditLogsResponse,
       providesTags: ["Audit"],
     }),
   }),

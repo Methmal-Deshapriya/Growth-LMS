@@ -1,4 +1,4 @@
-import type { Role } from "@/features/auth/authTypes";
+import type { Role } from "@/lib/constants";
 
 export type UserRecord = {
   id: string;
