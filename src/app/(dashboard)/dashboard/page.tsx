@@ -89,9 +89,7 @@ export default function DashboardPage() {
               <p className="text-sm font-medium text-gray-500 uppercase tracking-wider">
                 System Health
               </p>
-              <h3 className="text-2xl font-bold text-gray-900 text-green-500">
-                OPTIMAL
-              </h3>
+              <h3 className="text-2xl font-bold text-green-500">OPTIMAL</h3>
             </div>
           </div>
         ) : (
@@ -145,7 +143,7 @@ export default function DashboardPage() {
         {/* Sidebar Column */}
         <div className="space-y-8">
           {/* Quick Links / Community */}
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
+          <div className="bg-linear-to-br from-blue-600 to-indigo-700 rounded-2xl p-6 text-white shadow-lg">
             <h3 className="text-lg font-bold mb-2">Need help?</h3>
             <p className="text-blue-100 text-sm mb-6 leading-relaxed">
               Our community and instructors are here to support you in your tech

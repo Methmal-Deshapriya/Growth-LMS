@@ -29,7 +29,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
     <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Visual Side */}
-        <div className="md:w-48 bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center p-6 text-white group-hover:from-indigo-600 group-hover:to-blue-700 transition-colors">
+        <div className="md:w-48 bg-linear-to-br from-indigo-500 to-blue-600 flex items-center justify-center p-6 text-white group-hover:from-indigo-600 group-hover:to-blue-700 transition-colors">
           <BookOpen className="h-12 w-12 opacity-30" />
         </div>
 
