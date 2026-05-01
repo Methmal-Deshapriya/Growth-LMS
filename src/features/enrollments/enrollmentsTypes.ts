@@ -17,3 +17,15 @@ export type CreateEnrollmentRequest = {
   userId: string;
   bootcampId: string;
 };
+
+export type EligibleStudent = {
+  id: string;
+  name: string;
+  email: string;
+};
+
+export type EligibleStudentsParams = {
+  bootcampId: string;
+  q?: string;
+  limit?: number;
+};

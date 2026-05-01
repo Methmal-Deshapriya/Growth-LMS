@@ -8,3 +8,21 @@ export type UserRecord = {
   createdAt: string;
   updatedAt: string;
 };
+
+export type UsersPagination = {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+};
+
+export type UsersResponse = {
+  users: UserRecord[];
+  pagination: UsersPagination;
+};
+
+export type GetUsersParams = {
+  role?: Role;
+  limit?: number;
+  offset?: number;
+};

@@ -2,7 +2,7 @@ export type Bootcamp = {
   id: string;
   title: string;
   slug: string;
-  description: string;
+  description?: string;
   price: number;
   createdAt: string;
 };

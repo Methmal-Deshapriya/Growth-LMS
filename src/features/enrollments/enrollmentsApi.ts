@@ -1,23 +1,27 @@
 import { baseApi } from "@/store/baseApi";
-import type { ApiSuccess } from "@/lib/api";
 import type {
   MyEnrollment,
   ClassRosterEntry,
   CreateEnrollmentRequest,
+  EligibleStudent,
+  EligibleStudentsParams,
 } from "./enrollmentsTypes";
 
 export const enrollmentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyEnrollments: builder.query<MyEnrollment[], void>({
       query: () => "/enrollments/my",
-      transformResponse: (response: ApiSuccess<MyEnrollment[]>) =>
-        response.data as MyEnrollment[],
       providesTags: ["Enrollments"],
     }),
     getBootcampRoster: builder.query<ClassRosterEntry[], string>({
       query: (bootcampId) => `/enrollments/bootcamp/${bootcampId}`,
-      transformResponse: (response: ApiSuccess<ClassRosterEntry[]>) =>
-        response.data as ClassRosterEntry[],
+      providesTags: ["Enrollments"],
+    }),
+    getEligibleStudents: builder.query<EligibleStudent[], EligibleStudentsParams>({
+      query: ({ bootcampId, q, limit = 5 }) => ({
+        url: `/enrollments/bootcamp/${bootcampId}/eligible-students`,
+        params: { q, limit },
+      }),
       providesTags: ["Enrollments"],
     }),
     createEnrollment: builder.mutation<void, CreateEnrollmentRequest>({
@@ -34,5 +38,6 @@ export const enrollmentsApi = baseApi.injectEndpoints({
 export const {
   useGetMyEnrollmentsQuery,
   useGetBootcampRosterQuery,
+  useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
 } = enrollmentsApi;

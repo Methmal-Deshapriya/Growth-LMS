@@ -9,8 +9,6 @@ export const auditApi = baseApi.injectEndpoints({
         url: "/audit/logs",
         params,
       }),
-      transformResponse: (response: ApiSuccess<AuditLogsResponse>) =>
-        response.data as AuditLogsResponse,
       providesTags: ["Audit"],
     }),
   }),

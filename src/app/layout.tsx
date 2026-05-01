@@ -2,6 +2,11 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/store/StoreProvider";
+import AuthInitializer from "@/features/auth/components/AuthInitializer";
+import { Toaster } from "sonner";
+
+// ... (skipping metadata for brevity in old_string if possible, but tool requires exact match)
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -114,7 +119,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        <StoreProvider>{children}</StoreProvider>
+        <StoreProvider>
+          <AuthInitializer>{children}</AuthInitializer>
+        </StoreProvider>
+        <Toaster richColors position="top-right" />
       </body>
     </html>
   );

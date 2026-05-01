@@ -1,12 +1,12 @@
 import { baseApi } from "@/store/baseApi";
 import type { ApiSuccess } from "@/lib/api";
 import type { User, LoginRequest, RegisterRequest } from "./authTypes";
+import { setUser, clearUser } from "./authSlice";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMe: builder.query<User, void>({
       query: () => "/auth/me",
-      transformResponse: (response: ApiSuccess<User>) => response.data as User,
       providesTags: ["Auth"],
     }),
     login: builder.mutation<User, LoginRequest>({
@@ -15,7 +15,14 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: (response: ApiSuccess<User>) => response.data as User,
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch (err) {
+          // Error is handled by normalized error middleware and components
+        }
+      },
       invalidatesTags: ["Auth"],
     }),
     register: builder.mutation<User, RegisterRequest>({
@@ -24,7 +31,14 @@ export const authApi = baseApi.injectEndpoints({
         method: "POST",
         body,
       }),
-      transformResponse: (response: ApiSuccess<User>) => response.data as User,
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch (err) {
+          // Error is handled by normalized error middleware and components
+        }
+      },
       invalidatesTags: ["Auth"],
     }),
     logout: builder.mutation<void, void>({
@@ -32,6 +46,15 @@ export const authApi = baseApi.injectEndpoints({
         url: "/auth/logout",
         method: "POST",
       }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          await queryFulfilled;
+          dispatch(clearUser());
+        } catch (err) {
+          // Logout failure is rare but we clear user anyway for safety
+          dispatch(clearUser());
+        }
+      },
       invalidatesTags: ["Auth"],
     }),
   }),

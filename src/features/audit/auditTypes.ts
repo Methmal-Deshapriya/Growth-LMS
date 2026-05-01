@@ -4,11 +4,11 @@ export type AuditLog = {
   id: string;
   action: string;
   entityType: string;
-  entityId: string;
-  description: string;
-  metadata: Record<string, unknown>;
+  entityId?: string;
+  description?: string;
+  metadata?: Record<string, unknown>;
   createdAt: string;
-  actor: UserRecord;
+  actor: UserRecord | { name: string; email?: never; id?: never; role?: never };
 };
 
 export type AuditPagination = {

@@ -1,20 +1,10 @@
+"use client";
+
 import Image from "next/image";
 import BootCampCard from "@/components/marketing/BootCampCard";
 import HoverTooltip from "@/components/marketing/HoverTooltip";
-import { bootcamps } from "@/data/courses/bootcamps";
-
-type Bootcamp = {
-  id: number;
-  slug: string;
-  imageURL: string;
-  title: string;
-  description: string;
-  status: string;
-  cta: string;
-  theme?: {
-    statusColor: string;
-  };
-};
+import { useGetBootcampsQuery } from "@/features/bootcamps/bootcampsApi";
+import { Loader2 } from "lucide-react";
 
 const instructors = [
   {
@@ -28,6 +18,8 @@ const instructors = [
 ];
 
 const BootCamps = () => {
+  const { data: bootcamps, isLoading } = useGetBootcampsQuery();
+
   return (
     <section className="relative flex items-center justify-center overflow-hidden w-full">
       <div className="absolute top-100 rotate-10 left-0 w-150 h-72 bg-indigo-300 opacity-20 rounded-full blur-3xl"></div>
@@ -51,11 +43,29 @@ const BootCamps = () => {
         </div>
 
         {/* GRID */}
-        <div className="grid grid-cols-1 z-10 sm:grid-cols-2 gap-8 ">
-          {bootcamps.map((bootcamp: Bootcamp, i: number) => (
-            <BootCampCard key={i} {...bootcamp} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
+            <p className="text-gray-500 font-medium italic">Preparing your future...</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 z-10 sm:grid-cols-2 gap-8 ">
+            {bootcamps?.map((bootcamp, i: number) => (
+              <BootCampCard 
+                key={bootcamp.id} 
+                id={i} // using index for the marketing ID as it was numeric
+                slug={bootcamp.slug}
+                imageURL="/assets/full-stack/hero3.png" // placeholder image
+                title={bootcamp.title}
+                description={bootcamp.description || "Master these industry-leading skills with our expert-led bootcamp."}
+                status="Enrolling"
+                cta="Explore Program"
+              />
+            ))}
+          </div>
+        )}
+        
+        {/* ... (rest of the component unchanged) */}
         <div className="flex items-center justify-center mt-30">
           <div className="border border-[#C5B7FF] rounded-2xl p-8 md:p-12 relative overflow-hidden">
             {/* Curvy background lines */}
