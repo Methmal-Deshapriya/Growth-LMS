@@ -3,6 +3,7 @@ import type {
   MyEnrollment,
   ClassRosterEntry,
   CreateEnrollmentRequest,
+  UpdateEnrollmentRequest,
   EligibleStudent,
   EligibleStudentsParams,
 } from "./enrollmentsTypes";
@@ -24,13 +25,24 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Enrollments"],
     }),
-    createEnrollment: builder.mutation<void, CreateEnrollmentRequest>({
+    createEnrollment: builder.mutation<MyEnrollment, CreateEnrollmentRequest>({
       query: (body) => ({
         url: "/enrollments",
         method: "POST",
         body,
       }),
       invalidatesTags: ["Enrollments"],
+    }),
+    updateEnrollment: builder.mutation<MyEnrollment, { id: string; data: UpdateEnrollmentRequest }>({
+      query: ({ id, data }) => ({
+        url: `/enrollments/${id}`,
+        method: "PATCH",
+        body: data,
+      }),
+      invalidatesTags: (result, error, { id }) => [
+        { type: "Enrollments", id },
+        "Enrollments",
+      ],
     }),
   }),
 });
@@ -40,4 +52,5 @@ export const {
   useGetBootcampRosterQuery,
   useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
+  useUpdateEnrollmentMutation,
 } = enrollmentsApi;

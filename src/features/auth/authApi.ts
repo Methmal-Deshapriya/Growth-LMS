@@ -1,6 +1,6 @@
 import { baseApi } from "@/store/baseApi";
 import type { ApiSuccess } from "@/lib/api";
-import type { User, LoginRequest, RegisterRequest } from "./authTypes";
+import type { User, LoginRequest, RegisterRequest, UpdateProfileRequest } from "./authTypes";
 import { setUser, clearUser } from "./authSlice";
 
 export const authApi = baseApi.injectEndpoints({
@@ -8,6 +8,14 @@ export const authApi = baseApi.injectEndpoints({
     getMe: builder.query<User, void>({
       query: () => "/auth/me",
       providesTags: ["Auth"],
+    }),
+    updateProfile: builder.mutation<User, UpdateProfileRequest>({
+      query: (body) => ({
+        url: "/users/profile",
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: ["Auth"],
     }),
     login: builder.mutation<User, LoginRequest>({
       query: (body) => ({
@@ -62,6 +70,7 @@ export const authApi = baseApi.injectEndpoints({
 
 export const {
   useGetMeQuery,
+  useUpdateProfileMutation,
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,

@@ -56,7 +56,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
               asChild
               className="bg-gray-900 hover:bg-black text-white rounded-xl px-6"
             >
-              <Link href={`/bootcamps/${bootcamp.slug}`}>
+              <Link href={`/my-courses/${enrollment.bootcampId}`}>
                 Go to Course
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

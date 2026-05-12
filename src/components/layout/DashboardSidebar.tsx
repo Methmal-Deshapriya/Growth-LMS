@@ -15,7 +15,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  PlusCircle
+  PlusCircle,
+  Award,
+  FolderCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -60,8 +62,22 @@ export default function DashboardSidebar() {
       label: "My Courses",
       href: "/my-courses",
       icon: BookOpen,
-      active: pathname === "/my-courses",
+      active: pathname.startsWith("/my-courses"),
       show: true, // All roles can see their own enrollments
+    },
+    {
+      label: "Certificates",
+      href: "/certificates",
+      icon: Award,
+      active: pathname.startsWith("/certificates"),
+      show: true,
+    },
+    {
+      label: "My Projects",
+      href: "/projects",
+      icon: FolderCode,
+      active: pathname.startsWith("/projects"),
+      show: true,
     },
     // --- Admin Section ---
     {

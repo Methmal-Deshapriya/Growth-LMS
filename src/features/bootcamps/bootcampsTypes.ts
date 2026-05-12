@@ -4,6 +4,8 @@ export type Bootcamp = {
   slug: string;
   description?: string;
   price: number;
+  certificateEnabled: boolean;
+  skills: string[];
   createdAt: string;
 };
 
@@ -17,6 +19,8 @@ export type CreateBootcampRequest = {
   slug: string;
   description?: string;
   price: number;
+  certificateEnabled?: boolean;
+  skills?: string[];
 };
 
 export type UpdateBootcampRequest = Partial<CreateBootcampRequest> & {
