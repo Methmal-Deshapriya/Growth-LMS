@@ -94,6 +94,20 @@ export default function DashboardSidebar() {
       active: pathname.startsWith("/admin/enrollments"),
       show: canAccessAdminArea(role),
     },
+    {
+      label: "Manage Certificates",
+      href: "/admin/certificates",
+      icon: Award,
+      active: pathname.startsWith("/admin/certificates"),
+      show: canAccessAdminArea(role),
+    },
+    {
+      label: "Review Projects",
+      href: "/admin/projects",
+      icon: FolderCode,
+      active: pathname.startsWith("/admin/projects"),
+      show: canAccessAdminArea(role),
+    },
     // --- Super Admin Section ---
     {
       label: "Users",
