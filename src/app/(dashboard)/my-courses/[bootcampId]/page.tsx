@@ -2,9 +2,12 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import { useGetBootcampSessionsQuery, useGetEnrollmentProgressQuery } from "@/features/sessions/sessionsApi";
+import {
+  useGetBootcampSessionsQuery,
+  useGetEnrollmentProgressQuery,
+} from "@/features/sessions/sessionsApi";
 import { useGetMyEnrollmentsQuery } from "@/features/enrollments/enrollmentsApi";
-import { Loader2, PlayCircle, CheckCircle2, Circle, Clock, LayoutCircle, ArrowLeft } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress"; // Assuming a progress bar exists or I'll build a simple one
@@ -13,8 +16,8 @@ import SessionList from "@/features/sessions/components/SessionList";
 
 /**
  * Bootcamp Learning Page
- * 
- * The main learning interface for students to watch recordings, 
+ *
+ * The main learning interface for students to watch recordings,
  * access materials, and track progress.
  */
 export default function LearningPage() {
@@ -22,25 +25,26 @@ export default function LearningPage() {
   const bootcampId = params.bootcampId as string;
 
   // 1. Fetch all my enrollments to find the enrollment ID for this bootcamp
-  const { data: enrollments, isLoading: isEnrollmentsLoading } = useGetMyEnrollmentsQuery();
-  
-  const currentEnrollment = enrollments?.find(e => e.bootcampId === bootcampId);
+  const { data: enrollments, isLoading: isEnrollmentsLoading } =
+    useGetMyEnrollmentsQuery();
+
+  const currentEnrollment = enrollments?.find(
+    (e) => e.bootcamp?.id === bootcampId,
+  );
   const enrollmentId = currentEnrollment?.id;
 
   // 2. Fetch Sessions
-  const { 
-    data: sessions, 
-    isLoading: isSessionsLoading, 
-    isError: isSessionsError 
+  const {
+    data: sessions,
+    isLoading: isSessionsLoading,
+    isError: isSessionsError,
   } = useGetBootcampSessionsQuery(bootcampId);
 
   // 3. Fetch Progress (Skip until we have enrollmentId)
-  const { 
-    data: progress, 
-    isLoading: isProgressLoading 
-  } = useGetEnrollmentProgressQuery(enrollmentId || "", {
-    skip: !enrollmentId
-  });
+  const { data: progress, isLoading: isProgressLoading } =
+    useGetEnrollmentProgressQuery(enrollmentId || "", {
+      skip: !enrollmentId,
+    });
 
   const isLoading = isEnrollmentsLoading || isSessionsLoading;
 
@@ -58,7 +62,8 @@ export default function LearningPage() {
       <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
         <h2 className="text-2xl font-bold text-red-900 mb-2">Access Denied</h2>
         <p className="text-red-700 mb-6">
-          We couldn&apos;t load this course. Please ensure you are enrolled and try again.
+          We couldn&apos;t load this course. Please ensure you are enrolled and
+          try again.
         </p>
         <Button asChild variant="outline">
           <Link href="/my-courses">
@@ -74,10 +79,15 @@ export default function LearningPage() {
     <div className="space-y-8 pb-20">
       {/* Breadcrumbs / Back */}
       <div className="flex items-center gap-4">
-        <Link href="/my-courses" className="text-gray-500 hover:text-blue-600 transition-colors">
+        <Link
+          href="/my-courses"
+          className="text-gray-500 hover:text-blue-600 transition-colors"
+        >
           <ArrowLeft className="h-5 w-5" />
         </Link>
-        <h1 className="text-2xl font-bold text-gray-900">{currentEnrollment.bootcamp.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-900">
+          {currentEnrollment.bootcamp.title}
+        </h1>
       </div>
 
       {/* Progress Overview Card */}
@@ -85,17 +95,25 @@ export default function LearningPage() {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="space-y-1 flex-1">
             <div className="flex items-center justify-between mb-2">
-              <p className="text-sm font-semibold text-gray-700">Course Completion</p>
-              <p className="text-sm font-bold text-blue-600">{progress?.progressPercent || 0}%</p>
+              <p className="text-sm font-semibold text-gray-700">
+                Course Completion
+              </p>
+              <p className="text-sm font-bold text-blue-600">
+                {progress?.progressPercent || 0}%
+              </p>
             </div>
-            <Progress value={progress?.progressPercent || 0} className="h-2.5" />
+            <Progress
+              value={progress?.progressPercent || 0}
+              className="h-2.5"
+            />
             <p className="text-xs text-gray-500 mt-2">
-              {progress?.completedCount || 0} of {progress?.totalPublishedSessions || 0} sessions completed
+              {progress?.completedCount || 0} of{" "}
+              {progress?.totalPublishedSessions || 0} sessions completed
             </p>
           </div>
-          
+
           <div className="flex items-center gap-3">
-             {/* Future: "Continue Learning" button that jumps to next incomplete session */}
+            {/* Future: "Continue Learning" button that jumps to next incomplete session */}
           </div>
         </div>
       </div>
@@ -106,9 +124,9 @@ export default function LearningPage() {
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-gray-900">Curriculum</h2>
           </div>
-          
-          <SessionList 
-            sessions={sessions || []} 
+
+          <SessionList
+            sessions={sessions || []}
             enrollmentId={enrollmentId || ""}
           />
         </div>

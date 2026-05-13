@@ -11,7 +11,7 @@ export const sessionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Student & Admin: Get all sessions for a bootcamp
     getBootcampSessions: builder.query<Session[], string>({
-      query: (bootcampId) => `bootcamp/${bootcampId}/sessions`,
+      query: (bootcampId) => `bootcamps/${bootcampId}/sessions`,
       providesTags: (result, error, bootcampId) => [
         { type: "Sessions", id: `LIST-${bootcampId}` },
         ...(result ? result.map((s) => ({ type: "Sessions" as const, id: s.id })) : []),
@@ -27,7 +27,7 @@ export const sessionsApi = baseApi.injectEndpoints({
     // Admin: Create a new session
     createSession: builder.mutation<Session, { bootcampId: string; data: CreateSessionRequest }>({
       query: ({ bootcampId, data }) => ({
-        url: `bootcamp/${bootcampId}/sessions`,
+        url: `bootcamps/${bootcampId}/sessions`,
         method: "POST",
         body: data,
       }),
@@ -64,7 +64,7 @@ export const sessionsApi = baseApi.injectEndpoints({
     // Admin: Reorder sessions
     reorderSessions: builder.mutation<void, { bootcampId: string; data: ReorderSessionsRequest }>({
       query: ({ bootcampId, data }) => ({
-        url: `bootcamp/${bootcampId}/sessions/reorder`,
+        url: `bootcamps/${bootcampId}/sessions/reorder`,
         method: "PATCH",
         body: data,
       }),

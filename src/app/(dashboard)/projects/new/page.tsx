@@ -47,7 +47,7 @@ export default function NewProjectPage() {
     try {
       await submitProject({
         ...formData,
-        bootcampId: enrollment?.bootcampId || "",
+        bootcampId: enrollment?.bootcamp?.id || "",
         technologies: formData.technologies.split(",").map(t => t.trim()).filter(Boolean),
       }).unwrap();
       

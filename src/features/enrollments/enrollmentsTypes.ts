@@ -5,6 +5,7 @@ export type EnrollmentStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
 export type PaymentStatus = "PENDING" | "PARTIAL" | "COMPLETED";
 
 export type MyEnrollment = {
+  enrolledAt: string | number | Date;
   id: string;
   userId: string;
   bootcampId: string;
