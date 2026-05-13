@@ -11,7 +11,6 @@ import { Loader2, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress"; // Assuming a progress bar exists or I'll build a simple one
-import { cn } from "@/lib/utils";
 import SessionList from "@/features/sessions/components/SessionList";
 
 /**
@@ -41,7 +40,7 @@ export default function LearningPage() {
   } = useGetBootcampSessionsQuery(bootcampId);
 
   // 3. Fetch Progress (Skip until we have enrollmentId)
-  const { data: progress, isLoading: isProgressLoading } =
+  const { data: progress } =
     useGetEnrollmentProgressQuery(enrollmentId || "", {
       skip: !enrollmentId,
     });
@@ -127,7 +126,6 @@ export default function LearningPage() {
 
           <SessionList
             sessions={sessions || []}
-            enrollmentId={enrollmentId || ""}
           />
         </div>
       </div>

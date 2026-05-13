@@ -6,7 +6,6 @@ import SessionItem from "./SessionItem";
 
 interface SessionListProps {
   sessions: Session[];
-  enrollmentId: string;
 }
 
 /**
@@ -14,7 +13,7 @@ interface SessionListProps {
  * 
  * Displays a list of sessions for a bootcamp.
  */
-export default function SessionList({ sessions, enrollmentId }: SessionListProps) {
+export default function SessionList({ sessions }: SessionListProps) {
   if (sessions.length === 0) {
     return (
       <div className="bg-white rounded-2xl border border-dashed border-gray-200 p-12 text-center">
@@ -28,8 +27,7 @@ export default function SessionList({ sessions, enrollmentId }: SessionListProps
       {sessions.map((session) => (
         <SessionItem 
           key={session.id} 
-          session={session} 
-          enrollmentId={enrollmentId}
+          session={session}
         />
       ))}
     </div>

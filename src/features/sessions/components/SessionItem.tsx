@@ -4,11 +4,9 @@ import React, { useState } from "react";
 import { Session } from "../sessionsTypes";
 import { 
   useMarkSessionCompleteMutation, 
-  useUnmarkSessionCompleteMutation,
-  useGetEnrollmentProgressQuery 
+  useUnmarkSessionCompleteMutation
 } from "../sessionsApi";
 import { 
-  PlayCircle, 
   FileText, 
   HelpCircle, 
   MessageSquare, 
@@ -20,13 +18,11 @@ import {
   ChevronUp,
   Clock
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 interface SessionItemProps {
   session: Session;
-  enrollmentId: string;
 }
 
 /**
@@ -34,31 +30,16 @@ interface SessionItemProps {
  * 
  * Displays a single session with links and completion toggle.
  */
-export default function SessionItem({ session, enrollmentId }: SessionItemProps) {
+export default function SessionItem({ session }: SessionItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
-  
-  // Progress query to check if THIS session is complete
-  // Optimization: We could pass completion status from parent if we included it in getSessions
-  // For now, let's assume getSessions doesn't include it (as per our current API)
-  // Actually, let's update getSessions backend to include completion status later? 
-  // For MVP, we'll use the progress query and check completedCount or similar.
-  // Wait, our backend mark/unmark is idempotent.
   
   const [markComplete, { isLoading: isMarking }] = useMarkSessionCompleteMutation();
   const [unmarkComplete, { isLoading: isUnmarking }] = useUnmarkSessionCompleteMutation();
-  
-  // We need to know if this specific session is complete.
-  // A better way is to have the getBootcampSessions for students return isCompleted.
-  // Let's check my repository again... it doesn't.
-  // I will check the progress list.
-  const { data: progress } = useGetEnrollmentProgressQuery(enrollmentId);
-  
-  // TODO: The backend needs to return the list of completed session IDs 
-  // for this check to be efficient. 
-  // For now, I'll simulate it or assume the student can toggle.
-  // Actually, I'll add a 'isCompleted' check if the API supports it.
-  
-  const [completed, setCompleted] = useState(false); // Local state for immediate UI feedback
+  const [completed, setCompleted] = useState(Boolean(session.isCompleted));
+
+  React.useEffect(() => {
+    setCompleted(Boolean(session.isCompleted));
+  }, [session.isCompleted]);
 
   const handleToggleComplete = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -72,7 +53,7 @@ export default function SessionItem({ session, enrollmentId }: SessionItemProps)
         setCompleted(true);
         toast.success("Session completed!");
       }
-    } catch (err) {
+    } catch {
       toast.error("Failed to update progress");
     }
   };

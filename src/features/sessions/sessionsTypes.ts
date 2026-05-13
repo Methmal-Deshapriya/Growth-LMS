@@ -10,6 +10,7 @@ export type Session = {
   feedbackUrl?: string | null;
   durationMinutes?: number | null;
   isPublished: boolean;
+  isCompleted?: boolean;
   createdAt: string;
   updatedAt: string;
 };

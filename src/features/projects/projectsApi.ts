@@ -41,6 +41,12 @@ export const projectsApi = baseApi.injectEndpoints({
       providesTags: (result, error, id) => [{ type: "Projects", id }],
     }),
 
+    // Public: Get showcase project details
+    getPublicProjectDetails: builder.query<StudentProject, string>({
+      query: (id) => `projects/showcase/${id}`,
+      providesTags: (result, error, id) => [{ type: "Projects", id }],
+    }),
+
     // Student: Submit project
     submitProject: builder.mutation<StudentProject, SubmitProjectRequest>({
       query: (data) => ({
@@ -87,6 +93,7 @@ export const {
   useGetMyProjectsQuery,
   useGetAllProjectsAdminQuery,
   useGetProjectDetailsQuery,
+  useGetPublicProjectDetailsQuery,
   useSubmitProjectMutation,
   useUpdateProjectMutation,
   useReviewProjectMutation,

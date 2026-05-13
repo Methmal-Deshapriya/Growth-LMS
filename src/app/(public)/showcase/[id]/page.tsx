@@ -2,12 +2,11 @@
 
 import React from "react";
 import { useParams } from "next/navigation";
-import { useGetProjectDetailsQuery } from "@/features/projects/projectsApi";
-import { Loader2, ArrowLeft, Github, Globe, Calendar, User, BookOpen, Layout, ShieldCheck, Heart } from "lucide-react";
+import { useGetPublicProjectDetailsQuery } from "@/features/projects/projectsApi";
+import { Loader2, ArrowLeft, Github, Globe, Calendar, Layout, ShieldCheck, Heart, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
-import { cn } from "@/lib/utils";
 
 /**
  * Public Project Detail Page
@@ -16,7 +15,7 @@ export default function PublicProjectDetailPage() {
   const params = useParams();
   const projectId = params.id as string;
 
-  const { data: project, isLoading, isError } = useGetProjectDetailsQuery(projectId);
+  const { data: project, isLoading, isError } = useGetPublicProjectDetailsQuery(projectId);
 
   if (isLoading) {
     return (
