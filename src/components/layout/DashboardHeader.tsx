@@ -43,8 +43,8 @@ export default function DashboardHeader() {
               View Profile
             </p>
           </div>
-          <div className="h-10 w-10 rounded-full bg-blue-50 border border-blue-100 flex items-center justify-center text-blue-600">
-            <UserIcon className="h-5 w-5" />
+          <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
+            {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
         </div>
       </div>

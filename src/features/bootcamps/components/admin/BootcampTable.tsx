@@ -16,7 +16,8 @@ import {
   EyeOff, 
   Users,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ListVideo
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -125,6 +126,12 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
                 {/* 5. Actions */}
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
+                    <Button variant="ghost" size="icon" asChild title="Sessions">
+                      <Link href={`/admin/bootcamps/${bootcamp.id}/sessions`}>
+                        <ListVideo className="h-4 w-4 text-purple-600" />
+                      </Link>
+                    </Button>
+
                     <Button variant="ghost" size="icon" asChild title="Students">
                       <Link href={`/admin/bootcamps/${bootcamp.id}/students`}>
                         <Users className="h-4 w-4 text-gray-400" />

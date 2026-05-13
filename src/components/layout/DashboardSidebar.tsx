@@ -15,7 +15,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  PlusCircle
+  PlusCircle,
+  Award,
+  FolderCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
@@ -60,8 +62,22 @@ export default function DashboardSidebar() {
       label: "My Courses",
       href: "/my-courses",
       icon: BookOpen,
-      active: pathname === "/my-courses",
+      active: pathname.startsWith("/my-courses"),
       show: true, // All roles can see their own enrollments
+    },
+    {
+      label: "Certificates",
+      href: "/certificates",
+      icon: Award,
+      active: pathname.startsWith("/certificates"),
+      show: true,
+    },
+    {
+      label: "My Projects",
+      href: "/projects",
+      icon: FolderCode,
+      active: pathname.startsWith("/projects"),
+      show: true,
     },
     // --- Admin Section ---
     {
@@ -76,6 +92,20 @@ export default function DashboardSidebar() {
       href: "/admin/enrollments",
       icon: PlusCircle,
       active: pathname.startsWith("/admin/enrollments"),
+      show: canAccessAdminArea(role),
+    },
+    {
+      label: "Manage Certificates",
+      href: "/admin/certificates",
+      icon: Award,
+      active: pathname.startsWith("/admin/certificates"),
+      show: canAccessAdminArea(role),
+    },
+    {
+      label: "Review Projects",
+      href: "/admin/projects",
+      icon: FolderCode,
+      active: pathname.startsWith("/admin/projects"),
       show: canAccessAdminArea(role),
     },
     // --- Super Admin Section ---
