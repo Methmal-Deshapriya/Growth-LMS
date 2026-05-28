@@ -4,11 +4,17 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useAppSelector } from "@/store/hooks";
-import { selectIsAuthenticated, selectAuthUser } from "@/features/auth/authSelectors";
+import {
+  selectIsAuthenticated,
+  selectAuthRole,
+  selectAuthUser,
+} from "@/features/auth/authSelectors";
 import { Button } from "@/components/ui/button";
+import { isStudent } from "@/lib/access";
 
 const Navbar = () => {
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const role = useAppSelector(selectAuthRole);
   const user = useAppSelector(selectAuthUser);
 
   return (
@@ -35,9 +41,11 @@ const Navbar = () => {
               <Link href="/dashboard" className="cursor-pointer hover:opacity-70">
                 Dashboard
               </Link>
-              <Link href="/my-courses" className="cursor-pointer hover:opacity-70">
-                My Courses
-              </Link>
+              {isStudent(role) && (
+                <Link href="/my-courses" className="cursor-pointer hover:opacity-70">
+                  My Courses
+                </Link>
+              )}
             </>
           )}
         </ul>

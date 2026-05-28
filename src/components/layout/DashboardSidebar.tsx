@@ -9,18 +9,16 @@ import {
   LayoutDashboard, 
   BookOpen, 
   Users, 
-  Settings, 
   ShieldCheck, 
   FileText,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   PlusCircle,
   Award,
   FolderCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
+  isStudent,
   canAccessAdminArea, 
   canManageUsers, 
   canViewAuditLogs 
@@ -44,7 +42,7 @@ export default function DashboardSidebar() {
     try {
       await logout().unwrap();
       toast.success("Signed out successfully");
-    } catch (err) {
+    } catch {
       toast.error("Logout failed");
     }
   };
@@ -63,21 +61,21 @@ export default function DashboardSidebar() {
       href: "/my-courses",
       icon: BookOpen,
       active: pathname.startsWith("/my-courses"),
-      show: true, // All roles can see their own enrollments
+      show: isStudent(role),
     },
     {
       label: "Certificates",
       href: "/certificates",
       icon: Award,
       active: pathname.startsWith("/certificates"),
-      show: true,
+      show: isStudent(role),
     },
     {
       label: "My Projects",
       href: "/projects",
       icon: FolderCode,
       active: pathname.startsWith("/projects"),
-      show: true,
+      show: isStudent(role),
     },
     // --- Admin Section ---
     {
