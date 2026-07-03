@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole, selectAuthUser } from "@/features/auth/authSelectors";
 import { 
@@ -34,6 +34,7 @@ import { toast } from "sonner";
  */
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const role = useAppSelector(selectAuthRole);
   const user = useAppSelector(selectAuthUser);
   const [logout] = useLogoutMutation();
@@ -42,8 +43,10 @@ export default function DashboardSidebar() {
     try {
       await logout().unwrap();
       toast.success("Signed out successfully");
+      router.push("/");
     } catch {
       toast.error("Logout failed");
+      router.push("/");
     }
   };
 

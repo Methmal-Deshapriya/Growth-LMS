@@ -2,6 +2,7 @@ import { baseApi } from "@/store/baseApi";
 import type { ApiSuccess } from "@/lib/api";
 import type { User, LoginRequest, RegisterRequest, UpdateProfileRequest } from "./authTypes";
 import { setUser, clearUser } from "./authSlice";
+import type { AppDispatch } from "@/store/store";
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -58,9 +59,11 @@ export const authApi = baseApi.injectEndpoints({
         try {
           await queryFulfilled;
           dispatch(clearUser());
+          dispatch(baseApi.util.resetApiState());
         } catch (err) {
           // Logout failure is rare but we clear user anyway for safety
           dispatch(clearUser());
+          dispatch(baseApi.util.resetApiState());
         }
       },
       invalidatesTags: ["Auth"],
