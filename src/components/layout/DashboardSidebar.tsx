@@ -2,25 +2,23 @@
 
 import React from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole, selectAuthUser } from "@/features/auth/authSelectors";
 import { 
   LayoutDashboard, 
   BookOpen, 
   Users, 
-  Settings, 
   ShieldCheck, 
   FileText,
   LogOut,
-  ChevronLeft,
-  ChevronRight,
   PlusCircle,
   Award,
   FolderCode
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { 
+  isStudent,
   canAccessAdminArea, 
   canManageUsers, 
   canViewAuditLogs 
@@ -36,6 +34,7 @@ import { toast } from "sonner";
  */
 export default function DashboardSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const role = useAppSelector(selectAuthRole);
   const user = useAppSelector(selectAuthUser);
   const [logout] = useLogoutMutation();
@@ -44,8 +43,10 @@ export default function DashboardSidebar() {
     try {
       await logout().unwrap();
       toast.success("Signed out successfully");
-    } catch (err) {
+      router.push("/");
+    } catch {
       toast.error("Logout failed");
+      router.push("/");
     }
   };
 
@@ -63,21 +64,21 @@ export default function DashboardSidebar() {
       href: "/my-courses",
       icon: BookOpen,
       active: pathname.startsWith("/my-courses"),
-      show: true, // All roles can see their own enrollments
+      show: isStudent(role),
     },
     {
       label: "Certificates",
       href: "/certificates",
       icon: Award,
       active: pathname.startsWith("/certificates"),
-      show: true,
+      show: isStudent(role),
     },
     {
       label: "My Projects",
       href: "/projects",
       icon: FolderCode,
       active: pathname.startsWith("/projects"),
-      show: true,
+      show: isStudent(role),
     },
     // --- Admin Section ---
     {
