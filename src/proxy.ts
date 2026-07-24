@@ -7,7 +7,7 @@ const PROTECTED_PATHS = [
   "/projects",
   "/certificates",
 ];
-const AUTH_ONLY_PATHS = ["/sign-in", "/sign-up"];
+const AUTH_ONLY_PATHS = ["/sign-in", "/sign-up", "/forgot-password", "/reset-password"];
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -36,5 +36,7 @@ export const config = {
     "/certificates/:path*",
     "/sign-in",
     "/sign-up",
+    "/forgot-password",
+    "/reset-password",
   ],
 };

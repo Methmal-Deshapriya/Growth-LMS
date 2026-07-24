@@ -1,6 +1,13 @@
 import { baseApi } from "@/store/baseApi";
 import type { ApiSuccess } from "@/lib/api";
-import type { User, LoginRequest, RegisterRequest, UpdateProfileRequest } from "./authTypes";
+import type {
+  User,
+  LoginRequest,
+  RegisterRequest,
+  UpdateProfileRequest,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from "./authTypes";
 import { setUser, clearUser } from "./authSlice";
 import type { AppDispatch } from "@/store/store";
 
@@ -68,6 +75,20 @@ export const authApi = baseApi.injectEndpoints({
       },
       invalidatesTags: ["Auth"],
     }),
+    forgotPassword: builder.mutation<{ message: string }, ForgotPasswordRequest>({
+      query: (body) => ({
+        url: "/auth/forgot-password",
+        method: "POST",
+        body,
+      }),
+    }),
+    resetPassword: builder.mutation<{ message: string }, ResetPasswordRequest>({
+      query: (body) => ({
+        url: "/auth/reset-password",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -77,4 +98,6 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useLogoutMutation,
+  useForgotPasswordMutation,
+  useResetPasswordMutation,
 } = authApi;

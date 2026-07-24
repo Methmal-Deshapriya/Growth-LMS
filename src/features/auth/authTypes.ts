@@ -33,3 +33,12 @@ export type UpdateProfileRequest = {
   dateOfBirth?: string;
   alStream?: string;
 };
+
+export type ForgotPasswordRequest = {
+  email: string;
+};
+
+export type ResetPasswordRequest = {
+  token: string;
+  newPassword: string;
+};
