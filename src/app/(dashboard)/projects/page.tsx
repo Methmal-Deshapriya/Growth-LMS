@@ -19,11 +19,11 @@ export default function MyProjectsPage() {
   const getStatusStyles = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return "bg-green-50 text-green-700 border-green-100";
+        return "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40";
       case "REJECTED":
-        return "bg-red-50 text-red-700 border-red-100";
+        return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/40";
       default:
-        return "bg-amber-50 text-amber-700 border-amber-100";
+        return "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40";
     }
   };
 
@@ -43,12 +43,12 @@ export default function MyProjectsPage() {
       <div className="space-y-8 pb-20">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">My Projects</h1>
-            <p className="text-gray-500 mt-1">
+            <h1 className="text-3xl font-bold text-foreground">My Projects</h1>
+            <p className="text-muted-foreground mt-1">
               Showcase your hard work and get feedback from our instructors.
             </p>
           </div>
-          <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl px-6 h-12">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl px-6 h-12">
             <Link href="/projects/new">
               <Plus className="h-5 w-5 mr-2" />
               Submit Project
@@ -58,24 +58,24 @@ export default function MyProjectsPage() {
 
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-            <p className="text-gray-500 font-medium">Loading your portfolio...</p>
+            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+            <p className="text-muted-foreground font-medium">Loading your portfolio...</p>
           </div>
         ) : isError ? (
-          <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-            <h2 className="text-2xl font-bold text-red-900 mb-2">Something went wrong</h2>
-            <p className="text-red-700">Failed to load projects. Please try again.</p>
+          <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+            <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Something went wrong</h2>
+            <p className="text-red-700 dark:text-red-400">Failed to load projects. Please try again.</p>
           </div>
         ) : projects && projects.length > 0 ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {projects.map((project) => (
-              <div key={project.id} className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col group">
+              <div key={project.id} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col group">
                 {/* Image Preview Placeholder / Thumbnail */}
-                <div className="aspect-video bg-gray-100 relative overflow-hidden">
+                <div className="aspect-video bg-muted relative overflow-hidden">
                   {project.thumbnailUrl ? (
                     <img src={project.thumbnailUrl} alt={project.title} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-300">
+                    <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <FolderCode className="h-20 w-20 opacity-20" />
                     </div>
                   )}
@@ -92,47 +92,47 @@ export default function MyProjectsPage() {
 
                 <div className="p-6 flex-1 space-y-4">
                   <div className="space-y-1">
-                    <p className="text-xs font-bold text-blue-600 uppercase tracking-widest">
+                    <p className="text-xs font-bold text-primary uppercase tracking-widest">
                       {project.bootcamp?.title}
                     </p>
-                    <h3 className="text-xl font-bold text-gray-900 line-clamp-1">{project.title}</h3>
+                    <h3 className="text-xl font-bold text-foreground line-clamp-1">{project.title}</h3>
                   </div>
 
-                  <p className="text-sm text-gray-600 line-clamp-2 leading-relaxed">
+                  <p className="text-sm text-foreground line-clamp-2 leading-relaxed">
                     {project.description || "No description provided for this project."}
                   </p>
 
                   {/* Tech Stack */}
                   <div className="flex flex-wrap gap-2">
                     {project.technologies.slice(0, 4).map((tech, index) => (
-                      <span key={index} className="px-2 py-0.5 bg-gray-50 text-gray-500 text-[10px] font-bold uppercase rounded border border-gray-100">
+                      <span key={index} className="px-2 py-0.5 bg-background text-muted-foreground text-[10px] font-bold uppercase rounded border border-border">
                         {tech}
                       </span>
                     ))}
                     {project.technologies.length > 4 && (
-                      <span className="text-[10px] font-bold text-gray-400">+{project.technologies.length - 4} more</span>
+                      <span className="text-[10px] font-bold text-muted-foreground">+{project.technologies.length - 4} more</span>
                     )}
                   </div>
 
                   {/* Admin Feedback Section */}
                   {project.adminFeedback && (
-                    <div className="mt-4 p-4 rounded-xl bg-gray-50 border border-gray-100 relative">
-                      <MessageSquare className="absolute -top-2.5 -left-2.5 h-6 w-6 text-gray-200 fill-white" />
-                      <p className="text-xs font-bold text-gray-400 uppercase tracking-tight mb-1">Instructor Feedback</p>
-                      <p className="text-sm text-gray-700 italic">&quot;{project.adminFeedback}&quot;</p>
+                    <div className="mt-4 p-4 rounded-xl bg-background border border-border relative">
+                      <MessageSquare className="absolute -top-2.5 -left-2.5 h-6 w-6 text-muted-foreground fill-white" />
+                      <p className="text-xs font-bold text-muted-foreground uppercase tracking-tight mb-1">Instructor Feedback</p>
+                      <p className="text-sm text-foreground italic">&quot;{project.adminFeedback}&quot;</p>
                     </div>
                   )}
                 </div>
 
-                <div className="px-6 py-4 border-t border-gray-100 flex items-center justify-between bg-gray-50/50">
+                <div className="px-6 py-4 border-t border-border flex items-center justify-between bg-muted/50">
                   <div className="flex gap-4">
                     {project.githubUrl && (
-                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-900 transition-colors">
+                      <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                         <Github className="h-5 w-5" />
                       </a>
                     )}
                     {project.demoUrl && (
-                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-gray-900 transition-colors">
+                      <a href={project.demoUrl} target="_blank" rel="noopener noreferrer" className="text-muted-foreground hover:text-foreground transition-colors">
                         <Globe className="h-5 w-5" />
                       </a>
                     )}
@@ -153,15 +153,15 @@ export default function MyProjectsPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-            <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-              <FolderCode className="h-10 w-10 text-gray-300" />
+          <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+            <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
+              <FolderCode className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h2 className="text-2xl font-bold text-gray-900 mb-2">Portfolio is empty</h2>
-            <p className="text-gray-500 max-w-md mx-auto mb-8">
+            <h2 className="text-2xl font-bold text-foreground mb-2">Portfolio is empty</h2>
+            <p className="text-muted-foreground max-w-md mx-auto mb-8">
               You haven&apos;t submitted any projects yet. Show off your skills and build a portfolio that employers will love!
             </p>
-            <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-lg rounded-xl">
+            <Button asChild className="bg-primary hover:bg-primary/90 text-white px-8 h-12 text-lg rounded-xl">
               <Link href="/projects/new">
                 Submit Your First Project
               </Link>

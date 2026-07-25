@@ -21,8 +21,8 @@ export default function MyCoursesPage() {
       <div className="space-y-8 pb-20">
       {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">My Courses</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
+          <p className="text-muted-foreground mt-1">
             Access all your enrolled bootcamps and learning materials.
           </p>
         </div>
@@ -30,15 +30,15 @@ export default function MyCoursesPage() {
         {/* State Handling */}
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="mb-4 h-10 w-10 animate-spin text-blue-600" />
-            <p className="font-medium text-gray-500">Loading your classroom...</p>
+            <Loader2 className="mb-4 h-10 w-10 animate-spin text-primary" />
+            <p className="font-medium text-muted-foreground">Loading your classroom...</p>
           </div>
         ) : isError ? (
-          <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-            <h2 className="text-2xl font-bold text-red-900 mb-2">
+          <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+            <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">
               Something went wrong
             </h2>
-            <p className="text-red-700">
+            <p className="text-red-700 dark:text-red-400">
               We couldn&apos;t load your courses. Please try refreshing the page.
             </p>
           </div>
@@ -49,20 +49,20 @@ export default function MyCoursesPage() {
             ))}
           </div>
         ) : (
-          <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-gray-50">
-              <BookOpen className="h-10 w-10 text-gray-300" />
+          <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+            <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-background">
+              <BookOpen className="h-10 w-10 text-muted-foreground" />
             </div>
-            <h2 className="mb-2 text-2xl font-bold text-gray-900">
+            <h2 className="mb-2 text-2xl font-bold text-foreground">
               No enrollments yet
             </h2>
-            <p className="mx-auto mb-8 max-w-md text-gray-500">
+            <p className="mx-auto mb-8 max-w-md text-muted-foreground">
               You are not enrolled in any bootcamps yet. Explore our programs and
               start your tech career today!
             </p>
             <Button
               asChild
-              className="h-12 rounded-xl bg-blue-600 px-8 text-lg text-white hover:bg-blue-700"
+              className="h-12 rounded-xl bg-primary px-8 text-lg text-white hover:bg-primary/90"
             >
               <Link href="/bootcamps">Browse Bootcamps</Link>
             </Button>

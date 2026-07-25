@@ -20,13 +20,13 @@ export default function AdminBootcampsPage() {
       {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Manage Bootcamps</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">Manage Bootcamps</h1>
+          <p className="text-muted-foreground mt-1">
             Create, update, and publish your course offerings.
           </p>
         </div>
 
-        <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl h-11 px-6 shadow-lg shadow-blue-100">
+        <Button asChild className="bg-primary hover:bg-primary/90 text-white rounded-xl h-11 px-6 shadow-lg shadow-blue-100">
           <Link href="/admin/bootcamps/new">
             <Plus className="mr-2 h-5 w-5" />
             New Bootcamp
@@ -37,13 +37,13 @@ export default function AdminBootcampsPage() {
       {/* Main Content */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-500 font-medium">Fetching programs...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground font-medium">Fetching programs...</p>
         </div>
       ) : isError ? (
-        <div className="bg-red-50 border border-red-100 rounded-3xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 mb-2">Failed to load bootcamps</h2>
-          <p className="text-red-700 mb-6">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-3xl p-12 text-center">
+          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Failed to load bootcamps</h2>
+          <p className="text-red-700 dark:text-red-400 mb-6">
             There was an error connecting to the management service.
           </p>
           <Button variant="outline" onClick={() => window.location.reload()}>
@@ -53,15 +53,15 @@ export default function AdminBootcampsPage() {
       ) : bootcamps && bootcamps.length > 0 ? (
         <BootcampTable bootcamps={bootcamps} />
       ) : (
-        <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <LayoutGrid className="h-10 w-10 text-gray-300" />
+        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
+            <LayoutGrid className="h-10 w-10 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No bootcamps yet</h2>
-          <p className="text-gray-500 max-w-md mx-auto mb-8">
+          <h2 className="text-2xl font-bold text-foreground mb-2">No bootcamps yet</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-8">
             Your platform is empty. Create your first bootcamp program to get started.
           </p>
-          <Button asChild className="bg-blue-600 hover:bg-blue-700 text-white px-8 h-12 text-lg rounded-xl">
+          <Button asChild className="bg-primary hover:bg-primary/90 text-white px-8 h-12 text-lg rounded-xl">
             <Link href="/admin/bootcamps/new">
               Create First Bootcamp
             </Link>

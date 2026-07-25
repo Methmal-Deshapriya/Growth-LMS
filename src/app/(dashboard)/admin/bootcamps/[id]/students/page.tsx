@@ -36,7 +36,7 @@ export default function BootcampRosterPage() {
       {/* Navigation */}
       <Link 
         href="/admin/bootcamps" 
-        className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-2"
+        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-2"
       >
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to Bootcamps
@@ -44,12 +44,12 @@ export default function BootcampRosterPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Class Roster</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold text-foreground">Class Roster</h1>
+        <p className="text-muted-foreground mt-1">
           {isLoadingBootcamps ? (
             "Loading program details..."
           ) : (
-            <>Students enrolled in &quot;<span className="font-semibold text-gray-700">{targetBootcamp?.title}</span>&quot;</>
+            <>Students enrolled in &quot;<span className="font-semibold text-foreground">{targetBootcamp?.title}</span>&quot;</>
           )}
         </p>
       </div>
@@ -57,25 +57,25 @@ export default function BootcampRosterPage() {
       {/* State Handling */}
       {isLoadingRoster ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-500 font-medium">Fetching student list...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground font-medium">Fetching student list...</p>
         </div>
       ) : isErrorRoster ? (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 mb-2">Error loading roster</h2>
-          <p className="text-red-700">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Error loading roster</h2>
+          <p className="text-red-700 dark:text-red-400">
             There was a problem retrieving the student list for this bootcamp.
           </p>
         </div>
       ) : roster && roster.length > 0 ? (
         <ClassRosterTable entries={roster} />
       ) : (
-        <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <UserX className="h-10 w-10 text-gray-300" />
+        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
+            <UserX className="h-10 w-10 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No students yet</h2>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-foreground mb-2">No students yet</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
             This bootcamp currently has zero enrollments. Once an admin grants access to a student, they will appear here.
           </p>
         </div>

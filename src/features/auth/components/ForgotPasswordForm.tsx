@@ -61,12 +61,12 @@ export default function ForgotPasswordForm() {
 
   if (submitted) {
     return (
-      <div className="w-full max-w-md space-y-6 p-8 bg-white rounded-2xl shadow-xl border border-gray-100 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Check your email</h2>
-        <p className="text-gray-500">
+      <div className="w-full max-w-md space-y-6 p-8 bg-card rounded-2xl shadow-xl border border-border text-center">
+        <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
+        <p className="text-muted-foreground">
           We&apos;ve sent a link to reset your password. The link expires in 1 hour.
         </p>
-        <Link href="/sign-in" className="font-semibold text-blue-600 hover:text-blue-500">
+        <Link href="/sign-in" className="font-semibold text-primary hover:text-primary">
           Back to sign in
         </Link>
       </div>
@@ -74,10 +74,10 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">Forgot Password</h2>
-        <p className="text-gray-500">
+        <h2 className="text-3xl font-bold text-foreground">Forgot Password</h2>
+        <p className="text-muted-foreground">
           Enter your email and we&apos;ll send you a link to reset your password
         </p>
       </div>
@@ -87,7 +87,7 @@ export default function ForgotPasswordForm() {
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
@@ -99,11 +99,11 @@ export default function ForgotPasswordForm() {
             />
           </div>
           {errors.email && (
-            <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
           )}
           {notRegistered && (
-            <p className="text-xs text-gray-500">
-              <Link href="/sign-up" className="font-semibold text-blue-600 hover:text-blue-500">
+            <p className="text-xs text-muted-foreground">
+              <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
                 Create an account
               </Link>{" "}
               instead?
@@ -114,7 +114,7 @@ export default function ForgotPasswordForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white"
           disabled={isLoading}
         >
           {isLoading ? (
@@ -127,9 +127,9 @@ export default function ForgotPasswordForm() {
           )}
         </Button>
 
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-muted-foreground">
           Remembered your password?{" "}
-          <Link href="/sign-in" className="font-semibold text-blue-600 hover:text-blue-500">
+          <Link href="/sign-in" className="font-semibold text-primary hover:text-primary">
             Sign in
           </Link>
         </div>

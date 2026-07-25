@@ -32,8 +32,8 @@ export default function AuthenticatedGuard({
   if (!isAuthResolved || !isAuthenticated) {
     return (
       <div className="flex h-[80vh] w-full flex-col items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-        <p className="mt-4 text-gray-500">Checking authorization...</p>
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="mt-4 text-muted-foreground">Checking authorization...</p>
       </div>
     );
   }

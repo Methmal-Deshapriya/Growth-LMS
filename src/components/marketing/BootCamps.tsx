@@ -27,7 +27,7 @@ const BootCamps = () => {
       <div className="w-full 2xl:w-[70vw] mt-20 max-w-[1300px]   px-6 md:px-12 lg:px-20">
         {/* HEADING */}
         <div className="text-center mb-14">
-          <h2 className="text-xl md:text-2xl 2xl:text-3xl font-semibold text-gray-700">
+          <h2 className="text-xl md:text-2xl 2xl:text-3xl font-semibold text-foreground">
             Boost your skills through our
           </h2>
 
@@ -35,7 +35,7 @@ const BootCamps = () => {
             Bootcamps
           </h1>
 
-          <p className="text-gray-600 md:text-lg xl:text-xl mt-4 max-w-3xl mx-auto">
+          <p className="text-foreground md:text-lg xl:text-xl mt-4 max-w-3xl mx-auto">
             Start as a beginner and graduate job ready, gaining hands-on skills,
             real-world experience, and the credentials you need to kickstart
             your tech career.
@@ -46,7 +46,7 @@ const BootCamps = () => {
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20">
             <Loader2 className="h-10 w-10 animate-spin text-indigo-600 mb-4" />
-            <p className="text-gray-500 font-medium italic">Preparing your future...</p>
+            <p className="text-muted-foreground font-medium italic">Preparing your future...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 z-10 sm:grid-cols-2 gap-8 ">
@@ -91,10 +91,10 @@ const BootCamps = () => {
             <div className="relative z-10 flex flex-col xl:flex-row justify-between items-center gap-10">
               {/* Left Side */}
               <div className="max-w-md">
-                <h2 className="text-2xl md:text-3xl font-semibold text-gray-900 mb-3">
+                <h2 className="text-2xl md:text-3xl font-semibold text-foreground mb-3">
                   Still not sure whether this program is right for you ?
                 </h2>
-                <p className="text-gray-600 mb-6">
+                <p className="text-foreground mb-6">
                   Book a call with our instructors to learn how we can
                   accelerate your IT journey from months to just weeks.
                 </p>

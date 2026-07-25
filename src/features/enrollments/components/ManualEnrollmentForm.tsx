@@ -117,15 +117,15 @@ export default function ManualEnrollmentForm() {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 rounded-2xl border border-gray-100 bg-white p-8 shadow-sm"
+      className="space-y-6 rounded-2xl border border-border bg-card p-8 shadow-sm"
     >
       <div className="mb-2 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-50 text-blue-600">
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary">
           <UserPlus className="h-5 w-5" />
         </div>
         <div>
-          <h3 className="text-lg font-bold text-gray-900">Manual Enrollment</h3>
-          <p className="text-sm text-gray-500">
+          <h3 className="text-lg font-bold text-foreground">Manual Enrollment</h3>
+          <p className="text-sm text-muted-foreground">
             Pick a bootcamp first, then search for an eligible student by email.
           </p>
         </div>
@@ -134,10 +134,10 @@ export default function ManualEnrollmentForm() {
       <div className="space-y-2">
         <Label htmlFor="bootcampId">Select Bootcamp</Label>
         <div className="relative">
-          <Book className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+          <Book className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           <select
             id="bootcampId"
-            className="flex h-11 w-full appearance-none rounded-md border border-gray-300 bg-white py-2 pl-10 pr-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-600"
+            className="flex h-11 w-full appearance-none rounded-md border border-border bg-card py-2 pl-10 pr-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={isLoadingData || isSubmitting}
             {...register("bootcampId", {
               onChange: () => {
@@ -156,7 +156,7 @@ export default function ManualEnrollmentForm() {
           </select>
         </div>
         {errors.bootcampId && (
-          <p className="text-xs font-medium text-red-500">
+          <p className="text-xs font-medium text-red-500 dark:text-red-400">
             {errors.bootcampId.message}
           </p>
         )}
@@ -165,11 +165,11 @@ export default function ManualEnrollmentForm() {
       <div className="space-y-2">
         <Label htmlFor="student-search">Choose Student</Label>
         <div className="relative">
-          <UserIcon className="absolute left-3 top-3 h-4 w-4 text-gray-400 z-10" />
+          <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           {!selectedBootcampId ? (
-            <Lock className="absolute right-3 top-3 h-4 w-4 text-gray-300 z-10" />
+            <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           ) : (
-            <Search className="absolute right-3 top-3 h-4 w-4 text-gray-300 z-10" />
+            <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           )}
           <input
             id="student-search"
@@ -193,17 +193,17 @@ export default function ManualEnrollmentForm() {
             disabled={isStudentSelectionLocked}
             autoComplete="off"
             className={cn(
-              "flex h-11 w-full rounded-md border bg-white py-2 pl-10 pr-10 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-blue-600",
+              "flex h-11 w-full rounded-md border bg-card py-2 pl-10 pr-10 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary",
               isStudentSelectionLocked
-                ? "cursor-not-allowed border-gray-200 bg-gray-50 text-gray-400"
-                : "border-gray-300",
+                ? "cursor-not-allowed border-border bg-background text-muted-foreground"
+                : "border-border",
             )}
           />
 
           {selectedBootcampId && isStudentMenuOpen && (
-            <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-gray-200 bg-white p-2 shadow-xl">
+            <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-xl">
               {isLoadingEligibleStudents || isFetchingEligibleStudents ? (
-                <div className="flex items-center gap-2 px-3 py-3 text-sm text-gray-500">
+                <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
                   <Loader2 className="h-4 w-4 animate-spin" />
                   Searching eligible students...
                 </div>
@@ -220,18 +220,18 @@ export default function ManualEnrollmentForm() {
                     className={cn(
                       "w-full rounded-lg px-3 py-2 text-left transition-colors",
                       selectedUserId === student.id
-                        ? "bg-blue-50 text-blue-700"
-                        : "hover:bg-gray-50",
+                        ? "bg-primary/10 text-primary"
+                        : "hover:bg-background",
                     )}
                   >
-                    <p className="text-sm font-semibold text-gray-900">
+                    <p className="text-sm font-semibold text-foreground">
                       {student.firstName} {student.lastName}
                     </p>
-                    <p className="text-xs text-gray-500">{student.email}</p>
+                    <p className="text-xs text-muted-foreground">{student.email}</p>
                   </button>
                 ))
               ) : (
-                <div className="px-3 py-3 text-sm text-gray-500">
+                <div className="px-3 py-3 text-sm text-muted-foreground">
                   No eligible students matched that email for this bootcamp.
                 </div>
               )}
@@ -242,21 +242,21 @@ export default function ManualEnrollmentForm() {
         <input type="hidden" {...register("userId")} />
 
         {selectedStudent && (
-          <div className="rounded-xl border border-blue-100 bg-blue-50 px-3 py-2">
-            <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">
+          <div className="rounded-xl border border-primary/20 bg-primary/10 px-3 py-2">
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               Selected Student
             </p>
-            <p className="text-sm font-semibold text-blue-900">
+            <p className="text-sm font-semibold text-primary">
               {selectedStudent.firstName} {selectedStudent.lastName}
             </p>
-            <p className="text-xs text-blue-700">{selectedStudent.email}</p>
+            <p className="text-xs text-primary">{selectedStudent.email}</p>
           </div>
         )}
 
-        <p className="text-xs text-gray-500">{studentFieldMessage}</p>
+        <p className="text-xs text-muted-foreground">{studentFieldMessage}</p>
 
         {errors.userId && (
-          <p className="text-xs font-medium text-red-500">
+          <p className="text-xs font-medium text-red-500 dark:text-red-400">
             {errors.userId.message}
           </p>
         )}
@@ -270,7 +270,7 @@ export default function ManualEnrollmentForm() {
           !selectedBootcampId ||
           !selectedUserId
         }
-        className="mt-4 h-11 w-full rounded-xl bg-blue-600 font-bold text-white shadow-lg shadow-blue-100 hover:bg-blue-700"
+        className="mt-4 h-11 w-full rounded-xl bg-primary font-bold text-white shadow-lg shadow-blue-100 hover:bg-primary/90"
       >
         {isSubmitting ? (
           <>
@@ -282,13 +282,13 @@ export default function ManualEnrollmentForm() {
       </Button>
 
       {isLoadingData && (
-        <p className="text-center text-xs italic text-gray-400">
+        <p className="text-center text-xs italic text-muted-foreground">
           Loading platform data...
         </p>
       )}
 
       {!isLoadingData && bootcamps?.length === 0 && (
-        <p className="text-center text-xs italic text-amber-600">
+        <p className="text-center text-xs italic text-amber-600 dark:text-amber-400">
           Create a bootcamp first before manually enrolling students.
         </p>
       )}

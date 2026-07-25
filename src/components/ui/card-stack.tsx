@@ -45,7 +45,7 @@ export const CardStack = ({
         return (
           <motion.div
             key={card.id}
-            className="absolute bg-white h-60 w-[80vw] md:h-[20rem] 2xl:w-[30vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] rounded-3xl p-8 shadow-xl border border-neutral-200 dark:border-white/[0.1]  shadow-black/[0.1] dark:shadow-white/[0.05] flex flex-col justify-between"
+            className="absolute bg-card h-60 w-[80vw] md:h-[20rem] 2xl:w-[30vw] md:w-[70vw] lg:w-[60vw] xl:w-[40vw] rounded-3xl p-8 shadow-xl border border-neutral-200 dark:border-white/[0.1]  shadow-black/[0.1] dark:shadow-white/[0.05] flex flex-col justify-between"
             style={{
               transformOrigin: "top center",
             }}
@@ -55,7 +55,7 @@ export const CardStack = ({
               zIndex: cards.length - index, //  decrease z-index for the cards that are behind
             }}
           >
-            <div className="font-funnel text-sm md:text-xl text-black">
+            <div className="font-funnel text-sm md:text-xl text-foreground">
               {card.content}
             </div>
             <div className="mt-1">

@@ -87,12 +87,12 @@ export default function VerifyEmailForm() {
 
   if (!email) {
     return (
-      <div className="w-full max-w-md space-y-6 p-8 bg-white rounded-2xl shadow-xl border border-gray-100 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Missing email</h2>
-        <p className="text-gray-500">
+      <div className="w-full max-w-md space-y-6 p-8 bg-card rounded-2xl shadow-xl border border-border text-center">
+        <h2 className="text-2xl font-bold text-foreground">Missing email</h2>
+        <p className="text-muted-foreground">
           We couldn&apos;t tell which account to verify. Please sign up again.
         </p>
-        <Link href="/sign-up" className="font-semibold text-blue-600 hover:text-blue-500">
+        <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
           Back to sign up
         </Link>
       </div>
@@ -100,10 +100,10 @@ export default function VerifyEmailForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">Verify Your Email</h2>
-        <p className="text-gray-500">
+        <h2 className="text-3xl font-bold text-foreground">Verify Your Email</h2>
+        <p className="text-muted-foreground">
           Enter the 6-digit code sent to <span className="font-medium">{email}</span>
         </p>
       </div>
@@ -113,7 +113,7 @@ export default function VerifyEmailForm() {
         <div className="space-y-2">
           <Label htmlFor="code">Verification Code</Label>
           <div className="relative">
-            <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="code"
               type="text"
@@ -127,14 +127,14 @@ export default function VerifyEmailForm() {
             />
           </div>
           {errors.code && (
-            <p className="text-xs font-medium text-red-500">{errors.code.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.code.message}</p>
           )}
         </div>
 
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white"
           disabled={isVerifying}
         >
           {isVerifying ? (
@@ -147,13 +147,13 @@ export default function VerifyEmailForm() {
           )}
         </Button>
 
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-muted-foreground">
           Didn&apos;t get a code?{" "}
           <button
             type="button"
             onClick={handleResend}
             disabled={isResending || cooldown > 0}
-            className="font-semibold text-blue-600 hover:text-blue-500 disabled:text-gray-400 disabled:cursor-not-allowed"
+            className="font-semibold text-primary hover:text-primary disabled:text-muted-foreground disabled:cursor-not-allowed"
           >
             {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
           </button>

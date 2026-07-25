@@ -26,15 +26,15 @@ const PriceDetails = ({
             Unlock the Access to
           </span>
 
-          <h3 className="mt-4 text-3xl md:text-4xl font-semibold text-gray-900">
+          <h3 className="mt-4 text-3xl md:text-4xl font-semibold text-foreground">
             {priceDetails_title_1} <br /> {priceDetails_title_2}
           </h3>
 
-          <p className="text-gray-600 mt-2">
+          <p className="text-foreground mt-2">
             and tour best in class learning benefits.
           </p>
 
-          <ul className="mt-6 space-y-4 text-gray-700">
+          <ul className="mt-6 space-y-4 text-foreground">
             {priceDetails_benefits.map((item, index) => (
               <li key={index} className="flex items-center gap-2">
                 <CheckCircle size={20} className="text-indigo-500" />
@@ -45,13 +45,13 @@ const PriceDetails = ({
         </div>
 
         <div className="w-full md:w-[40%]">
-          <p className="text-gray-700 text-lg">For this launch</p>
+          <p className="text-foreground text-lg">For this launch</p>
 
-          <h3 className="text-4xl md:text-5xl font-bold mt-2 text-gray-900">
+          <h3 className="text-4xl md:text-5xl font-bold mt-2 text-foreground">
             {priceDetails_price}
           </h3>
 
-          <ApplyButton className="w-full mt-6 bg-blue-600 text-white py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition" />
+          <ApplyButton className="w-full mt-6 bg-primary text-white py-3 rounded-lg text-lg font-semibold hover:bg-primary/90 transition" />
         </div>
       </div>
     </section>

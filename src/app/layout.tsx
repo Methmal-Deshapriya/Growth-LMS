@@ -3,7 +3,8 @@ import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
 import "./globals.css";
 import StoreProvider from "@/store/StoreProvider";
 import AuthInitializer from "@/features/auth/components/AuthInitializer";
-import { Toaster } from "sonner";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemedToaster } from "@/components/ThemedToaster";
 
 // ... (skipping metadata for brevity in old_string if possible, but tool requires exact match)
 
@@ -115,14 +116,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable} antialiased`}
       >
-        <StoreProvider>
-          <AuthInitializer>{children}</AuthInitializer>
-        </StoreProvider>
-        <Toaster richColors position="top-right" />
+        <ThemeProvider>
+          <StoreProvider>
+            <AuthInitializer>{children}</AuthInitializer>
+          </StoreProvider>
+          <ThemedToaster />
+        </ThemeProvider>
       </body>
     </html>
   );

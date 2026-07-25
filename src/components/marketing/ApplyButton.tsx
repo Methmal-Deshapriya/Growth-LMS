@@ -14,7 +14,7 @@ const ApplyButton = ({ className }: { className?: string }) => {
       <button
         onClick={handleClick}
         className={cn(
-          "px-8 py-4 bg-blue-600 hover:bg-blue-700 cursor-pointer text-white font-semibold rounded-full shadow-lg transition",
+          "px-8 py-4 bg-primary hover:bg-primary/90 cursor-pointer text-white font-semibold rounded-full shadow-lg transition",
           className,
         )}
       >

@@ -10,7 +10,7 @@ const Advice = () => {
       <div className="absolute bottom-20 right-0 w-96 h-96 bg-green-300 opacity-20 rounded-full blur-3xl"></div>
       <div className=" py-10 -mt-10 px-6 flex w-full  items-center flex-col lg:flex-row gap-8 justify-center  lg:w-[80vw]   2xl:w-[70vw] ">
         <div
-          className="bg-white max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-gray-100 w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
+          className="bg-card max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-border w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
                   lg:translate-y-12 transition-all duration-300 "
         >
           <div className="w-14 h-14  bg-red-300 text-white flex items-center justify-center rounded-full mb-5">
@@ -27,7 +27,7 @@ const Advice = () => {
         </div>
 
         <div
-          className="bg-white max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-gray-100 w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
+          className="bg-card max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-border w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
                    lg-translate-y-6  transition-all duration-300"
         >
           <div className="w-14 h-14 bg-orange-300 text-white flex items-center justify-center rounded-full mb-5">
@@ -45,7 +45,7 @@ const Advice = () => {
         </div>
 
         <div
-          className="bg-white max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-gray-100 w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
+          className="bg-card max-w-[600px] shadow-lg hover:shadow-xl flex flex-col items-center justify-center rounded-2xl p-8 border border-border w-full h-[40vh] 2xl:h-[35vh] 2xl:w-[360px]
                    lg:translate-y-12  transition-all duration-300"
         >
           <div className="w-14 h-14 bg-green-300 text-white flex items-center justify-center rounded-full mb-5">

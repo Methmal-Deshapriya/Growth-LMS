@@ -131,14 +131,14 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
     }
   };
 
-  if (isLoading) return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-blue-600" /></div>;
+  if (isLoading) return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-primary" /></div>;
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-bold text-gray-900">Curriculum Structure</h2>
+        <h2 className="text-xl font-bold text-foreground">Curriculum Structure</h2>
         {!isAdding && !editingId && (
-          <Button onClick={() => { setIsAdding(true); setFormData({ ...formData, orderIndex: sessions?.length || 0 }); }} className="bg-blue-600 text-white rounded-xl">
+          <Button onClick={() => { setIsAdding(true); setFormData({ ...formData, orderIndex: sessions?.length || 0 }); }} className="bg-primary text-white rounded-xl">
             <Plus className="h-4 w-4 mr-2" /> Add Session
           </Button>
         )}
@@ -146,10 +146,10 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
 
       {/* Add/Edit Form */}
       {(isAdding || editingId) && (
-        <div className="bg-gray-50 rounded-2xl border border-blue-100 p-6 animate-in fade-in slide-in-from-top-4">
+        <div className="bg-background rounded-2xl border border-primary/20 p-6 animate-in fade-in slide-in-from-top-4">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-blue-900">{editingId ? "Edit Session" : "New Session"}</h3>
+              <h3 className="font-bold text-primary">{editingId ? "Edit Session" : "New Session"}</h3>
               <Button type="button" variant="ghost" size="sm" onClick={resetForm}><X className="h-4 w-4" /></Button>
             </div>
 
@@ -167,7 +167,7 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
             <div className="space-y-1">
               <Label>Description</Label>
               <textarea 
-                className="w-full rounded-xl border border-gray-200 p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-hidden"
+                className="w-full rounded-xl border border-border p-3 text-sm focus:ring-2 focus:ring-primary outline-hidden"
                 value={formData.description || ""} 
                 onChange={e => setFormData({ ...formData, description: e.target.value })} 
                 rows={2}
@@ -199,13 +199,13 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
                 id="isPublished" 
                 checked={formData.isPublished} 
                 onChange={e => setFormData({ ...formData, isPublished: e.target.checked })} 
-                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                className="rounded border-border text-primary focus:ring-primary"
               />
               <Label htmlFor="isPublished" className="cursor-pointer">Publish immediately</Label>
             </div>
 
             <div className="pt-2 flex gap-3">
-              <Button type="submit" disabled={isCreating || isUpdating} className="bg-blue-600 text-white rounded-xl flex-1">
+              <Button type="submit" disabled={isCreating || isUpdating} className="bg-primary text-white rounded-xl flex-1">
                 {(isCreating || isUpdating) ? <Loader2 className="animate-spin h-4 w-4" /> : <><Check className="h-4 w-4 mr-2" /> {editingId ? "Update Session" : "Create Session"}</>}
               </Button>
               <Button type="button" variant="outline" onClick={resetForm} className="rounded-xl px-8">Cancel</Button>
@@ -217,39 +217,39 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
       {/* Sessions List */}
       <div className="space-y-3">
         {sessions?.length === 0 ? (
-          <div className="bg-white border border-dashed border-gray-200 rounded-2xl p-12 text-center text-gray-500">
+          <div className="bg-card border border-dashed border-border rounded-2xl p-12 text-center text-muted-foreground">
             No sessions added yet.
           </div>
         ) : (
           sessions?.map((session) => (
-            <div key={session.id} className="group bg-white rounded-xl border border-gray-100 p-4 hover:border-blue-200 transition-all flex items-center gap-4">
-              <div className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500">
+            <div key={session.id} className="group bg-card rounded-xl border border-border p-4 hover:border-primary/30 transition-all flex items-center gap-4">
+              <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-muted-foreground">
                 <GripVertical className="h-5 w-5" />
               </div>
 
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                  <span className="text-[10px] font-bold text-muted-foreground uppercase bg-background px-1.5 py-0.5 rounded border border-border">
                     Session {session.orderIndex + 1}
                   </span>
                   {!session.isPublished && (
-                    <span className="text-[10px] font-bold text-orange-600 uppercase bg-orange-50 px-1.5 py-0.5 rounded border border-orange-100">
+                    <span className="text-[10px] font-bold text-orange-600 dark:text-orange-400 uppercase bg-orange-50 dark:bg-orange-950/40 px-1.5 py-0.5 rounded border border-orange-100 dark:border-orange-900/40">
                       Draft
                     </span>
                   )}
                 </div>
-                <h4 className="font-bold text-gray-900 mt-1">{session.title}</h4>
+                <h4 className="font-bold text-foreground mt-1">{session.title}</h4>
               </div>
 
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="icon" onClick={() => handleTogglePublish(session)} title={session.isPublished ? "Unpublish" : "Publish"}>
-                  {session.isPublished ? <EyeOff className="h-4 w-4 text-orange-500" /> : <Eye className="h-4 w-4 text-green-600" />}
+                  {session.isPublished ? <EyeOff className="h-4 w-4 text-orange-500" /> : <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />}
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleEdit(session)}>
-                  <Edit2 className="h-4 w-4 text-blue-600" />
+                  <Edit2 className="h-4 w-4 text-primary" />
                 </Button>
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(session.id, session.title)}>
-                  <Trash2 className="h-4 w-4 text-red-500" />
+                  <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                 </Button>
               </div>
             </div>
