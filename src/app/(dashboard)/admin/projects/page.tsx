@@ -56,7 +56,7 @@ export default function AdminProjectsPage() {
 
   const filteredProjects = projects?.filter(p => 
     p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.user?.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    `${p.user?.firstName ?? ""} ${p.user?.lastName ?? ""}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
     p.bootcamp?.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
@@ -122,7 +122,9 @@ export default function AdminProjectsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900">{project.user?.name}</div>
+                      <div className="font-semibold text-gray-900">
+                        {project.user?.firstName} {project.user?.lastName}
+                      </div>
                       <div className="text-sm text-gray-600 line-clamp-1 max-w-[200px]" title={project.bootcamp?.title}>
                         {project.bootcamp?.title}
                       </div>

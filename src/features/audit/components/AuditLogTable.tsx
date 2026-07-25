@@ -72,7 +72,7 @@ export default function AuditLogTable({ logs }: AuditLogTableProps) {
                     </div>
                     <div className="flex flex-col">
                       <span className="text-sm font-semibold text-gray-700">
-                        {log.actor.name}
+                        {log.actor.firstName} {log.actor.lastName}
                       </span>
                       {"email" in log.actor && (
                         <span className="text-[10px] text-gray-400 truncate max-w-[120px]">

@@ -37,14 +37,14 @@ export default function DashboardHeader() {
         <div className="flex items-center gap-3 border-l border-gray-200 pl-6">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-semibold text-gray-900 leading-tight">
-              {user?.name}
+              {user?.firstName} {user?.lastName}
             </p>
             <p className="text-xs text-gray-500 font-medium">
               View Profile
             </p>
           </div>
           <div className="h-10 w-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm">
-            {user?.name?.charAt(0).toUpperCase() || "U"}
+            {user?.firstName?.charAt(0).toUpperCase() || "U"}
           </div>
         </div>
       </div>

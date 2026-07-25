@@ -100,7 +100,9 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                       <User className="h-5 w-5" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-bold text-gray-900">{entry.user?.name}</span>
+                      <span className="font-bold text-gray-900">
+                        {entry.user?.firstName} {entry.user?.lastName}
+                      </span>
                       <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <Mail className="h-3 w-3" />
                         {entry.user?.email}

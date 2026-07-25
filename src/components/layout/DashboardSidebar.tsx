@@ -138,7 +138,9 @@ export default function DashboardSidebar() {
 
         {/* User Brief */}
         <div className="mb-6 rounded-xl bg-gray-50 p-4">
-          <p className="text-sm font-semibold text-gray-900 truncate">{user?.name}</p>
+          <p className="text-sm font-semibold text-gray-900 truncate">
+            {user?.firstName} {user?.lastName}
+          </p>
           <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mt-0.5">
             {role}
           </p>
