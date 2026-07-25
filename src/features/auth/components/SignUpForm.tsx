@@ -331,15 +331,17 @@ export default function SignUpForm() {
       </div>
 
       {/* Right Panel — Branding */}
-      <div className="hidden lg:flex w-1/2 bg-blue-600 items-center justify-center p-12">
-        <div className="max-w-md text-white space-y-4">
-          <h1 className="text-4xl font-bold leading-tight">
-            Become job-ready in AI, Full-Stack &amp; Cybersecurity
-          </h1>
-          <p className="text-blue-100 text-lg">
-            Join Foundry Academy&apos;s practical bootcamps — real projects, expert mentorship,
-            and a clear path into tech careers.
-          </p>
+      <div className="hidden lg:flex w-1/2 items-center justify-center bg-gray-50 p-6">
+        <div className="w-full h-full rounded-4xl bg-blue-600 shadow-xl flex items-center justify-center p-12">
+          <div className="max-w-md text-white space-y-4">
+            <h1 className="text-4xl font-bold leading-tight">
+              Become job-ready in AI, Full-Stack &amp; Cybersecurity
+            </h1>
+            <p className="text-blue-100 text-lg">
+              Join Foundry Academy&apos;s practical bootcamps — real projects, expert mentorship,
+              and a clear path into tech careers.
+            </p>
+          </div>
         </div>
       </div>
     </div>
