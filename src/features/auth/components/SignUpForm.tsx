@@ -38,12 +38,15 @@ const registerSchema = z
 
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
-// Shared styling for native <select> fields — no Select component exists
-// in this project yet, so this mirrors the Input component's classes
-// (see src/components/ui/input.tsx) plus the error-state pattern used
+// Shared styling to give inputs/selects the taller, more rounded, softer
+// look (overrides the Input component's defaults via class-merging).
+const inputClassName = "h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4";
+
+// Native <select> — no Select component exists in this project yet, so
+// this mirrors the Input styling above plus the error-state pattern used
 // elsewhere (e.g. src/app/(dashboard)/admin/users/page.tsx).
 const selectClassName =
-  "flex h-10 w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "flex h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
 const selectErrorClassName = "border-red-500 focus-visible:ring-red-500";
 
 /**
@@ -127,6 +130,7 @@ export default function SignUpForm() {
                   id="firstName"
                   type="text"
                   placeholder="Jane"
+                  className={inputClassName}
                   error={!!errors.firstName}
                   disabled={isLoading}
                   {...register("firstName")}
@@ -143,6 +147,7 @@ export default function SignUpForm() {
                   id="lastName"
                   type="text"
                   placeholder="Doe"
+                  className={inputClassName}
                   error={!!errors.lastName}
                   disabled={isLoading}
                   {...register("lastName")}
@@ -159,6 +164,7 @@ export default function SignUpForm() {
                   id="phone"
                   type="tel"
                   placeholder="0771234567"
+                  className={inputClassName}
                   error={!!errors.phone}
                   disabled={isLoading}
                   {...register("phone")}
@@ -174,6 +180,7 @@ export default function SignUpForm() {
                 <Input
                   id="dateOfBirth"
                   type="date"
+                  className={inputClassName}
                   error={!!errors.dateOfBirth}
                   disabled={isLoading}
                   {...register("dateOfBirth")}
@@ -244,6 +251,7 @@ export default function SignUpForm() {
                   id="address"
                   type="text"
                   placeholder="123 Main Street, Colombo"
+                  className={inputClassName}
                   error={!!errors.address}
                   disabled={isLoading}
                   {...register("address")}
@@ -260,6 +268,7 @@ export default function SignUpForm() {
                   id="email"
                   type="email"
                   placeholder="name@example.com"
+                  className={inputClassName}
                   error={!!errors.email}
                   disabled={isLoading}
                   {...register("email")}
@@ -276,6 +285,7 @@ export default function SignUpForm() {
                   id="password"
                   type="password"
                   placeholder="••••••••"
+                  className={inputClassName}
                   error={!!errors.password}
                   disabled={isLoading}
                   {...register("password")}
@@ -292,6 +302,7 @@ export default function SignUpForm() {
                   id="confirmPassword"
                   type="password"
                   placeholder="••••••••"
+                  className={inputClassName}
                   error={!!errors.confirmPassword}
                   disabled={isLoading}
                   {...register("confirmPassword")}
@@ -307,7 +318,7 @@ export default function SignUpForm() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white mt-2"
+              className="w-full h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white mt-2"
               disabled={isLoading}
             >
               {isLoading ? (
