@@ -7,6 +7,8 @@ import type {
   UpdateProfileRequest,
   ForgotPasswordRequest,
   ResetPasswordRequest,
+  VerifyOtpRequest,
+  ResendOtpRequest,
 } from "./authTypes";
 import { setUser, clearUser } from "./authSlice";
 import type { AppDispatch } from "@/store/store";
@@ -42,20 +44,14 @@ export const authApi = baseApi.injectEndpoints({
       invalidatesTags: ["Auth"],
     }),
     register: builder.mutation<User, RegisterRequest>({
+      // Registering does NOT log the user in — no cookie is set until
+      // they verify their email via OTP (see verifyOtp below), so this
+      // deliberately does not dispatch setUser.
       query: (body) => ({
         url: "/auth/register",
         method: "POST",
         body,
       }),
-      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(setUser(data));
-        } catch (err) {
-          // Error is handled by normalized error middleware and components
-        }
-      },
-      invalidatesTags: ["Auth"],
     }),
     logout: builder.mutation<void, void>({
       query: () => ({
@@ -89,6 +85,32 @@ export const authApi = baseApi.injectEndpoints({
         body,
       }),
     }),
+    verifyOtp: builder.mutation<User, VerifyOtpRequest>({
+      // This is the real login moment for a newly registered user —
+      // the server sets the auth cookie on success, so we mirror
+      // login/register's original behavior and dispatch setUser here.
+      query: (body) => ({
+        url: "/auth/verify-otp",
+        method: "POST",
+        body,
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch (err) {
+          // Error is handled by normalized error middleware and components
+        }
+      },
+      invalidatesTags: ["Auth"],
+    }),
+    resendOtp: builder.mutation<{ message: string }, ResendOtpRequest>({
+      query: (body) => ({
+        url: "/auth/resend-otp",
+        method: "POST",
+        body,
+      }),
+    }),
   }),
 });
 
@@ -100,4 +122,6 @@ export const {
   useLogoutMutation,
   useForgotPasswordMutation,
   useResetPasswordMutation,
+  useVerifyOtpMutation,
+  useResendOtpMutation,
 } = authApi;

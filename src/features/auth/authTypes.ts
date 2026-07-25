@@ -5,6 +5,7 @@ export type User = {
   name: string;
   email: string;
   role: Role;
+  emailVerified: boolean;
   phone?: string | null;
   address?: string | null;
   district?: string | null;
@@ -41,4 +42,13 @@ export type ForgotPasswordRequest = {
 export type ResetPasswordRequest = {
   token: string;
   newPassword: string;
+};
+
+export type VerifyOtpRequest = {
+  email: string;
+  code: string;
+};
+
+export type ResendOtpRequest = {
+  email: string;
 };

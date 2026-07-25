@@ -4,6 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "../authApi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,6 +32,7 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
  * Handles user registration with validation and error feedback.
  */
 export default function SignUpForm() {
+  const router = useRouter();
   const [registerUser, { isLoading }] = useRegisterMutation();
 
   // 2. Initialize Form
@@ -60,8 +62,11 @@ export default function SignUpForm() {
       };
 
       await registerUser(payload).unwrap();
-      toast.success("Account created successfully! Welcome to Foundry Academy.");
-      // Redirection is handled by GuestGuard automatically
+      toast.success("Account created! Check your email for a verification code.");
+      // Registering does not log the user in — they must verify their
+      // email via OTP first, so we redirect explicitly rather than
+      // relying on GuestGuard's isAuthenticated-driven redirect.
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
     } catch (err: any) {
       // Check if it's a normalized field error from our baseApi
       if (err.field) {
