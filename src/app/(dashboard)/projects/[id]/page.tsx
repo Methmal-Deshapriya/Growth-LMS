@@ -173,7 +173,9 @@ export default function ProjectDetailsPage() {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold text-gray-400 uppercase">Student</p>
-                    <p className="text-sm font-bold text-gray-700">{project.user?.name}</p>
+                    <p className="text-sm font-bold text-gray-700">
+                      {project.user?.firstName} {project.user?.lastName}
+                    </p>
                   </div>
                 </div>
               </div>

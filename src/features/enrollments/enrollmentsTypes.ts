@@ -40,7 +40,8 @@ export type UpdateEnrollmentRequest = {
 
 export type EligibleStudent = {
   id: string;
-  name: string;
+  firstName: string;
+  lastName: string;
   email: string;
 };
 

@@ -91,9 +91,11 @@ export default function ShowcasePage() {
                   <div className="mt-8 pt-6 border-t border-gray-50 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="h-8 w-8 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-bold text-xs">
-                        {project.user?.name.charAt(0)}
+                        {project.user?.firstName.charAt(0)}
                       </div>
-                      <span className="text-sm font-bold text-gray-700">{project.user?.name}</span>
+                      <span className="text-sm font-bold text-gray-700">
+                        {project.user?.firstName} {project.user?.lastName}
+                      </span>
                     </div>
                     
                     <div className="flex items-center gap-3">

@@ -116,11 +116,13 @@ export default function PublicProjectDetailPage() {
           <div className="bg-white rounded-[2rem] border border-gray-100 shadow-sm p-8 space-y-6">
             <div className="flex items-center gap-4">
                <div className="h-16 w-16 rounded-3xl bg-blue-600 flex items-center justify-center text-white text-2xl font-extrabold shadow-lg shadow-blue-100">
-                 {project.user?.name.charAt(0)}
+                 {project.user?.firstName.charAt(0)}
                </div>
                <div>
                  <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Developer</p>
-                 <h4 className="text-xl font-bold text-gray-900">{project.user?.name}</h4>
+                 <h4 className="text-xl font-bold text-gray-900">
+                   {project.user?.firstName} {project.user?.lastName}
+                 </h4>
                </div>
             </div>
 

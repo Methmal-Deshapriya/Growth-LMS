@@ -103,7 +103,7 @@ export default function UserTable({ users }: UserTableProps) {
                     </div>
                     <div className="flex flex-col">
                       <span className="font-bold text-gray-900">
-                        {user.name}
+                        {user.firstName} {user.lastName}
                       </span>
                       <div className="flex items-center gap-1.5 text-xs text-gray-400">
                         <Mail className="h-3 w-3" />
@@ -149,7 +149,7 @@ export default function UserTable({ users }: UserTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handlePromote(user.id, user.name)}
+                        onClick={() => handlePromote(user.id, `${user.firstName} ${user.lastName}`)}
                         className="h-8 text-xs font-bold text-blue-600 border-blue-100 hover:bg-blue-50 hover:text-blue-700"
                         disabled={isPromoting}
                       >
@@ -163,7 +163,7 @@ export default function UserTable({ users }: UserTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDemote(user.id, user.name)}
+                        onClick={() => handleDemote(user.id, `${user.firstName} ${user.lastName}`)}
                         className="h-8 text-xs font-bold text-orange-600 border-orange-100 hover:bg-orange-50 hover:text-orange-700"
                         disabled={isDemoting}
                       >

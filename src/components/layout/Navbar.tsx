@@ -54,7 +54,7 @@ const Navbar = () => {
           {isAuthenticated ? (
             <Link href="/dashboard" className="flex items-center gap-2 group">
               <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-sm transition-transform group-hover:scale-110">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+                {user?.firstName?.charAt(0).toUpperCase() || "U"}
               </div>
             </Link>
           ) : (

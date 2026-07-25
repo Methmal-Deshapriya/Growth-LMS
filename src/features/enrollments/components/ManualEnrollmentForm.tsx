@@ -225,7 +225,7 @@ export default function ManualEnrollmentForm() {
                     )}
                   >
                     <p className="text-sm font-semibold text-gray-900">
-                      {student.name}
+                      {student.firstName} {student.lastName}
                     </p>
                     <p className="text-xs text-gray-500">{student.email}</p>
                   </button>
@@ -247,7 +247,7 @@ export default function ManualEnrollmentForm() {
               Selected Student
             </p>
             <p className="text-sm font-semibold text-blue-900">
-              {selectedStudent.name}
+              {selectedStudent.firstName} {selectedStudent.lastName}
             </p>
             <p className="text-xs text-blue-700">{selectedStudent.email}</p>
           </div>

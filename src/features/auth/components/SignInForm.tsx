@@ -4,6 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 import { useLoginMutation } from "../authApi";
 import { LoginRequest } from "../authTypes";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
  * Handles user login with validation and error feedback.
  */
 export default function SignInForm() {
+  const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
 
   // 2. Initialize Form
@@ -50,6 +52,11 @@ export default function SignInForm() {
       toast.success("Welcome back to Foundry Academy!");
       // Redirection is handled by GuestGuard automatically because isAuthenticated changes
     } catch (err: any) {
+      if (err.code === "EMAIL_NOT_VERIFIED") {
+        toast.error("Please verify your email before logging in.");
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
       // Check if it's a normalized field error from our baseApi
       if (err.field) {
         setError(err.field as keyof LoginFormValues, {

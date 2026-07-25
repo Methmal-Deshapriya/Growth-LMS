@@ -23,7 +23,8 @@ export type StudentProject = {
   updatedAt: string;
   // Included fields
   user?: {
-    name: string;
+    firstName: string;
+    lastName: string;
   };
   bootcamp?: {
     title: string;

@@ -8,7 +8,9 @@ export type AuditLog = {
   description?: string;
   metadata?: Record<string, unknown>;
   createdAt: string;
-  actor: UserRecord | { name: string; email?: never; id?: never; role?: never };
+  actor:
+    | UserRecord
+    | { firstName: string; lastName: string; email?: never; id?: never; role?: never };
 };
 
 export type AuditPagination = {
