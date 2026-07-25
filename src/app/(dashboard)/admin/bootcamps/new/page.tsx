@@ -32,15 +32,15 @@ export default function CreateBootcampPage() {
       {/* Navigation */}
       <Link 
         href="/admin/bootcamps" 
-        className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-6"
+        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-6"
       >
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to List
       </Link>
 
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900">New Bootcamp</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold text-foreground">New Bootcamp</h1>
+        <p className="text-muted-foreground mt-1">
           Fill in the details to launch a new professional program.
         </p>
       </div>

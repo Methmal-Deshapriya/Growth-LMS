@@ -61,21 +61,21 @@ export default function UserTable({ users }: UserTableProps) {
   };
 
   return (
-    <div className="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <div className="overflow-hidden bg-card rounded-2xl border border-border shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+            <tr className="bg-muted/50 border-b border-border">
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                 User Identity
               </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                 Role
               </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">
                 Member Since
               </th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">
                 Access Control
               </th>
             </tr>
@@ -84,7 +84,7 @@ export default function UserTable({ users }: UserTableProps) {
             {users.map((user) => (
               <tr
                 key={user.id}
-                className="hover:bg-gray-50/50 transition-colors group"
+                className="hover:bg-muted/50 transition-colors group"
               >
                 {/* 1. Identity */}
                 <td className="px-6 py-4">
@@ -93,19 +93,19 @@ export default function UserTable({ users }: UserTableProps) {
                       className={cn(
                         "h-10 w-10 rounded-full flex items-center justify-center transition-colors",
                         user.role === "SUPER_ADMIN"
-                          ? "bg-purple-50 text-purple-600"
+                          ? "bg-purple-50 dark:bg-purple-950/40 text-purple-600 dark:text-purple-400"
                           : user.role === "ADMIN"
-                            ? "bg-blue-50 text-blue-600"
-                            : "bg-gray-100 text-gray-500",
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground",
                       )}
                     >
                       <UserIcon className="h-5 w-5" />
                     </div>
                     <div className="flex flex-col">
-                      <span className="font-bold text-gray-900">
-                        {user.name}
+                      <span className="font-bold text-foreground">
+                        {user.firstName} {user.lastName}
                       </span>
-                      <div className="flex items-center gap-1.5 text-xs text-gray-400">
+                      <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
                         <Mail className="h-3 w-3" />
                         {user.email}
                       </div>
@@ -119,10 +119,10 @@ export default function UserTable({ users }: UserTableProps) {
                     className={cn(
                       "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border",
                       user.role === "SUPER_ADMIN"
-                        ? "bg-purple-50 text-purple-700 border-purple-100"
+                        ? "bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-400 border-purple-100 dark:border-purple-900/40"
                         : user.role === "ADMIN"
-                          ? "bg-blue-50 text-blue-700 border-blue-100"
-                          : "bg-gray-50 text-gray-600 border-gray-100",
+                          ? "bg-primary/10 text-primary border-primary/20"
+                          : "bg-background text-foreground border-border",
                     )}
                   >
                     {user.role === "SUPER_ADMIN" ? (
@@ -136,7 +136,7 @@ export default function UserTable({ users }: UserTableProps) {
 
                 {/* 3. Joined Date */}
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {format(new Date(user.createdAt), "MMM dd, yyyy")}
                   </span>
                 </td>
@@ -149,8 +149,8 @@ export default function UserTable({ users }: UserTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handlePromote(user.id, user.name)}
-                        className="h-8 text-xs font-bold text-blue-600 border-blue-100 hover:bg-blue-50 hover:text-blue-700"
+                        onClick={() => handlePromote(user.id, `${user.firstName} ${user.lastName}`)}
+                        className="h-8 text-xs font-bold text-primary border-primary/20 hover:bg-primary/10 hover:text-primary"
                         disabled={isPromoting}
                       >
                         <ArrowUpCircle className="mr-1.5 h-3.5 w-3.5" />
@@ -163,8 +163,8 @@ export default function UserTable({ users }: UserTableProps) {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleDemote(user.id, user.name)}
-                        className="h-8 text-xs font-bold text-orange-600 border-orange-100 hover:bg-orange-50 hover:text-orange-700"
+                        onClick={() => handleDemote(user.id, `${user.firstName} ${user.lastName}`)}
+                        className="h-8 text-xs font-bold text-orange-600 dark:text-orange-400 border-orange-100 dark:border-orange-900/40 hover:bg-orange-50 dark:bg-orange-950/40 hover:text-orange-700 dark:text-orange-400"
                         disabled={isDemoting}
                       >
                         <ArrowDownCircle className="mr-1.5 h-3.5 w-3.5" />
@@ -174,7 +174,7 @@ export default function UserTable({ users }: UserTableProps) {
 
                     {/* Super Admin Protection */}
                     {user.role === "SUPER_ADMIN" && (
-                      <span className="text-[10px] font-bold text-gray-300 uppercase tracking-widest bg-gray-50 px-3 py-1 rounded-md border border-gray-100">
+                      <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-background px-3 py-1 rounded-md border border-border">
                         PROTECTED
                       </span>
                     )}

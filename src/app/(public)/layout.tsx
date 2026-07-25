@@ -9,7 +9,7 @@ export default function PublicLayout({
 }>) {
   return (
     <main>
-      <div className="relative flex flex-col items-center justify-center bg-white font-sans dark:bg-secbackground">
+      <div className="relative flex flex-col items-center justify-center bg-background font-sans">
         <Navbar />
         {children}
         <Footer />

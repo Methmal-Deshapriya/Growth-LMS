@@ -29,9 +29,9 @@ export default function AdminUsersPage() {
   // --- Security Check (Double protection) ---
   if (!canManageUsers(role)) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 mb-2">Access Restricted</h2>
-        <p className="text-red-700">
+      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
+        <p className="text-red-700 dark:text-red-400">
           Only Super Administrators can access the user management console.
         </p>
       </div>
@@ -43,16 +43,16 @@ export default function AdminUsersPage() {
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500 mt-1">
+          <h1 className="text-3xl font-bold text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-1">
             Oversee platform users, manage access levels, and promote administrators.
           </p>
         </div>
 
         <div className="relative">
-          <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <Filter className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <select
-            className="h-10 min-w-44 appearance-none rounded-lg border border-gray-200 bg-white pl-10 pr-8 text-sm outline-none focus:ring-2 focus:ring-blue-600/20"
+            className="h-10 min-w-44 appearance-none rounded-lg border border-border bg-card pl-10 pr-8 text-sm outline-none focus:ring-2 focus:ring-primary/20"
             value={selectedRole}
             onChange={(e) => {
               setSelectedRole(e.target.value as Role | "");
@@ -70,13 +70,13 @@ export default function AdminUsersPage() {
       {/* Main Content */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-500 font-medium">Loading user records...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground font-medium">Loading user records...</p>
         </div>
       ) : isError ? (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 mb-2">Service Error</h2>
-          <p className="text-red-700">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Service Error</h2>
+          <p className="text-red-700 dark:text-red-400">
             We couldn&apos;t retrieve the user list. Please try again later.
           </p>
         </div>
@@ -86,11 +86,11 @@ export default function AdminUsersPage() {
             <UserTable users={data.users} />
           </div>
 
-          <div className="flex items-center justify-between rounded-xl border border-gray-100 bg-white px-6 py-4 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Showing <span className="font-bold text-gray-900">{offset + 1}</span> to{" "}
-              <span className="font-bold text-gray-900">{offset + data.users.length}</span> of{" "}
-              <span className="font-bold text-gray-900">{data.pagination.total}</span> users
+          <div className="flex items-center justify-between rounded-xl border border-border bg-card px-6 py-4 shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="font-bold text-foreground">{offset + 1}</span> to{" "}
+              <span className="font-bold text-foreground">{offset + data.users.length}</span> of{" "}
+              <span className="font-bold text-foreground">{data.pagination.total}</span> users
             </p>
 
             <div className="flex items-center gap-2">
@@ -116,12 +116,12 @@ export default function AdminUsersPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Users className="h-10 w-10 text-gray-300" />
+        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
+            <Users className="h-10 w-10 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No users found</h2>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-foreground mb-2">No users found</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
             {selectedRole
               ? "No users match the selected role right now."
               : "It looks like there are no registered users on the platform yet."}

@@ -51,17 +51,17 @@ export default function LearningPage() {
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-500 font-medium">Preparing your classroom...</p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground font-medium">Preparing your classroom...</p>
       </div>
     );
   }
 
   if (isSessionsError || !currentEnrollment) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 mb-2">Access Denied</h2>
-        <p className="text-red-700 mb-6">
+      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Denied</h2>
+        <p className="text-red-700 dark:text-red-400 mb-6">
           We couldn&apos;t load this course. Please ensure you are enrolled and
           try again.
         </p>
@@ -82,24 +82,24 @@ export default function LearningPage() {
         <div className="flex items-center gap-4">
           <Link
             href="/my-courses"
-            className="text-gray-500 hover:text-blue-600 transition-colors"
+            className="text-muted-foreground hover:text-primary transition-colors"
           >
             <ArrowLeft className="h-5 w-5" />
           </Link>
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             {currentEnrollment.bootcamp.title}
           </h1>
         </div>
 
       {/* Progress Overview Card */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div className="bg-card rounded-2xl border border-border p-6 shadow-sm">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex-1 space-y-1">
               <div className="mb-2 flex items-center justify-between">
-                <p className="text-sm font-semibold text-gray-700">
+                <p className="text-sm font-semibold text-foreground">
                   Course Completion
                 </p>
-                <p className="text-sm font-bold text-blue-600">
+                <p className="text-sm font-bold text-primary">
                   {progress?.progressPercent || 0}%
                 </p>
               </div>
@@ -107,7 +107,7 @@ export default function LearningPage() {
                 value={progress?.progressPercent || 0}
                 className="h-2.5"
               />
-              <p className="mt-2 text-xs text-gray-500">
+              <p className="mt-2 text-xs text-muted-foreground">
                 {progress?.completedCount || 0} of{" "}
                 {progress?.totalPublishedSessions || 0} sessions completed
               </p>
@@ -123,7 +123,7 @@ export default function LearningPage() {
         <div className="grid grid-cols-1 gap-8">
           <div className="space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-900">Curriculum</h2>
+              <h2 className="text-xl font-bold text-foreground">Curriculum</h2>
             </div>
 
             <SessionList

@@ -14,10 +14,10 @@ const Certificate = ({ certificate_certificateImageURL }: Props) => {
       <div className="w-full md:w-[80vw] lg:w-[70vw] z-10 py-10 px-6 md:px-12 ">
         {/* Heading */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-3xl md:text-5xl font-bold leading-tight text-black mb-4">
+          <h2 className="text-3xl md:text-5xl font-bold leading-tight text-foreground mb-4">
             Will you be certified? <br />
             Of course! You'll get a sharable{" "}
-            <span className="text-blue-600 decoration-4 underline-offset-4">
+            <span className="text-primary decoration-4 underline-offset-4">
               Digital Certificate
             </span>
           </h2>
@@ -25,7 +25,7 @@ const Certificate = ({ certificate_certificateImageURL }: Props) => {
 
         {/* Certificate Card */}
         <div className="flex justify-center">
-          <div className="rounded-2xl shadow-xl border border-gray-200 bg-white overflow-hidden">
+          <div className="rounded-2xl shadow-xl border border-border bg-card overflow-hidden">
             <Image
               src={certificate_certificateImageURL}
               alt="Full-stack Engineer Certificate"

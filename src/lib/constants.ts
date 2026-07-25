@@ -7,3 +7,41 @@ export const ROLES = {
 } as const;
 
 export type Role = (typeof ROLES)[keyof typeof ROLES];
+
+// The 25 administrative districts of Sri Lanka
+export const DISTRICTS = [
+  "Colombo",
+  "Gampaha",
+  "Kalutara",
+  "Kandy",
+  "Matale",
+  "Nuwara Eliya",
+  "Galle",
+  "Matara",
+  "Hambantota",
+  "Jaffna",
+  "Kilinochchi",
+  "Mannar",
+  "Vavuniya",
+  "Mullaitivu",
+  "Batticaloa",
+  "Ampara",
+  "Trincomalee",
+  "Kurunegala",
+  "Puttalam",
+  "Anuradhapura",
+  "Polonnaruwa",
+  "Badulla",
+  "Monaragala",
+  "Ratnapura",
+  "Kegalle",
+] as const;
+
+// Standard G.C.E. Advanced Level subject streams
+export const AL_STREAMS = [
+  "Physical Science",
+  "Biological Science",
+  "Commerce",
+  "Arts",
+  "Technology",
+] as const;

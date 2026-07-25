@@ -65,12 +65,12 @@ const Hero = ({
           <div className="flex flex-col z-10">
             {/* TAGS */}
             <div className="flex flex-wrap max-lg:justify-center gap-3 mb-6">
-              <span className="px-4 py-2 text-sm font-medium bg-white border rounded-full shadow-sm flex items-center gap-2">
+              <span className="px-4 py-2 text-sm font-medium bg-card border rounded-full shadow-sm flex items-center gap-2">
                 <IoIosTimer />
                 {hero_duration}
               </span>
 
-              <span className="px-4 py-2 text-sm font-medium bg-white border rounded-full shadow-sm flex items-center gap-2">
+              <span className="px-4 py-2 text-sm font-medium bg-card border rounded-full shadow-sm flex items-center gap-2">
                 <IoVideocamOutline />
                 {hero_learningHours}
               </span>
@@ -85,7 +85,7 @@ const Hero = ({
                 {hero_title}
               </h1>
 
-              <p className="mt-5 text-xl text-gray-700 max-lg:text-center">
+              <p className="mt-5 text-xl text-foreground max-lg:text-center">
                 Certification Program
               </p>
             </div>
@@ -95,7 +95,7 @@ const Hero = ({
 
               <a
                 href="#pricing"
-                className="text-blue-700 cursor-pointer underline text-lg "
+                className="text-primary cursor-pointer underline text-lg "
               >
                 View Pricing Details
               </a>

@@ -21,7 +21,7 @@ export default function BootcampCard({ bootcamp }: BootcampCardProps) {
   const placeholderDuration = "12 Weeks";
 
   return (
-    <div className="group relative flex flex-col bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
+    <div className="group relative flex flex-col bg-card rounded-2xl border border-border shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden h-full">
       {/* Visual Header / Thumbnail Placeholder */}
       <div className="h-48 w-full bg-linear-to-br from-blue-500 to-indigo-600 flex items-center justify-center p-6 text-white group-hover:scale-105 transition-transform duration-500">
         <GraduationCap className="h-20 w-20 opacity-20 absolute" />
@@ -32,7 +32,7 @@ export default function BootcampCard({ bootcamp }: BootcampCardProps) {
 
       {/* Content */}
       <div className="flex flex-col grow p-6">
-        <div className="flex items-center gap-4 text-xs font-semibold text-blue-600 mb-4">
+        <div className="flex items-center gap-4 text-xs font-semibold text-primary mb-4">
           <span className="flex items-center gap-1.5 uppercase tracking-wider">
             <Clock className="h-3.5 w-3.5" />
             {placeholderDuration}
@@ -41,18 +41,18 @@ export default function BootcampCard({ bootcamp }: BootcampCardProps) {
           <span className="uppercase tracking-wider">Certified</span>
         </div>
 
-        <p className="text-gray-600 text-sm line-clamp-3 mb-6 grow">
+        <p className="text-foreground text-sm line-clamp-3 mb-6 grow">
           {bootcamp.description ||
             "Take your skills to the next level with our professional-grade bootcamp program."}
         </p>
 
         {/* Footer */}
-        <div className="flex items-center justify-between mt-auto pt-6 border-t border-gray-50">
+        <div className="flex items-center justify-between mt-auto pt-6 border-t border-border">
           <div className="flex flex-col">
-            <span className="text-xs text-gray-400 font-medium uppercase">
+            <span className="text-xs text-muted-foreground font-medium uppercase">
               Price
             </span>
-            <span className="text-xl font-bold text-gray-900">
+            <span className="text-xl font-bold text-foreground">
               LKR {bootcamp.price.toLocaleString()}
             </span>
           </div>
@@ -60,7 +60,7 @@ export default function BootcampCard({ bootcamp }: BootcampCardProps) {
           <Button
             asChild
             size="sm"
-            className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
+            className="bg-primary hover:bg-primary/90 text-white rounded-lg"
           >
             <Link href={`/bootcamps/${bootcamp.slug}`}>
               Details

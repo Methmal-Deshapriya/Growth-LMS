@@ -10,7 +10,7 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthenticatedGuard>
-      <div className="min-h-screen bg-gray-50">
+      <div className="min-h-screen bg-background">
         {/* Sidebar */}
         <DashboardSidebar />
 

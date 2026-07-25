@@ -52,10 +52,10 @@ export default function AuthInitializer({
   // Once status is 'authenticated' or 'unauthenticated', we render the children.
   if (!isAuthResolved && isLoading) {
     return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-white z-9999">
+      <div className="fixed inset-0 flex flex-col items-center justify-center bg-card z-9999">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
-          <p className="text-gray-500 font-medium animate-pulse">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-muted-foreground font-medium animate-pulse">
             Initialing Foundry Academy...
           </p>
         </div>

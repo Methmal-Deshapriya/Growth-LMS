@@ -4,6 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useRouter } from "next/navigation";
 import { useLoginMutation } from "../authApi";
 import { LoginRequest } from "../authTypes";
 import { Input } from "@/components/ui/input";
@@ -27,6 +28,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
  * Handles user login with validation and error feedback.
  */
 export default function SignInForm() {
+  const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
 
   // 2. Initialize Form
@@ -50,6 +52,11 @@ export default function SignInForm() {
       toast.success("Welcome back to Foundry Academy!");
       // Redirection is handled by GuestGuard automatically because isAuthenticated changes
     } catch (err: any) {
+      if (err.code === "EMAIL_NOT_VERIFIED") {
+        toast.error("Please verify your email before logging in.");
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        return;
+      }
       // Check if it's a normalized field error from our baseApi
       if (err.field) {
         setError(err.field as keyof LoginFormValues, {
@@ -63,10 +70,10 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">Sign In</h2>
-        <p className="text-gray-500">Access your learning dashboard</p>
+        <h2 className="text-3xl font-bold text-foreground">Sign In</h2>
+        <p className="text-muted-foreground">Access your learning dashboard</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -74,7 +81,7 @@ export default function SignInForm() {
         <div className="space-y-2">
           <Label htmlFor="email">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
@@ -86,7 +93,7 @@ export default function SignInForm() {
             />
           </div>
           {errors.email && (
-            <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
           )}
         </div>
 
@@ -96,13 +103,13 @@ export default function SignInForm() {
             <Label htmlFor="password">Password</Label>
             <Link 
               href="/forgot-password" 
-              className="text-xs font-medium text-blue-600 hover:text-blue-500"
+              className="text-xs font-medium text-primary hover:text-primary"
             >
               Forgot password?
             </Link>
           </div>
           <div className="relative">
-            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
               type="password"
@@ -114,14 +121,14 @@ export default function SignInForm() {
             />
           </div>
           {errors.password && (
-            <p className="text-xs font-medium text-red-500">{errors.password.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.password.message}</p>
           )}
         </div>
 
         {/* Submit Button */}
         <Button 
           type="submit" 
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white" 
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white" 
           disabled={isLoading}
         >
           {isLoading ? (
@@ -134,9 +141,9 @@ export default function SignInForm() {
           )}
         </Button>
 
-        <div className="text-center text-sm text-gray-500">
+        <div className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="font-semibold text-blue-600 hover:text-blue-500">
+          <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
             Sign up for free
           </Link>
         </div>
