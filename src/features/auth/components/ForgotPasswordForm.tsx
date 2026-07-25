@@ -22,30 +22,37 @@ type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
 /**
  * ForgotPasswordForm Component
  *
- * Requests a password reset email. Always shows the same generic success
- * message, whether or not the email is registered, to match the backend's
- * enumeration-safe response.
+ * Requests a password reset email. Deliberately reveals whether the email
+ * is registered (product choice favoring UX over enumeration-hardening) —
+ * an unregistered email surfaces as an inline field error with a sign-up
+ * link, instead of the generic "check your email" screen.
  */
 export default function ForgotPasswordForm() {
   const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
   const [submitted, setSubmitted] = useState(false);
+  const [notRegistered, setNotRegistered] = useState(false);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
+    setError,
   } = useForm<ForgotPasswordFormValues>({
     resolver: zodResolver(forgotPasswordSchema),
     defaultValues: { email: "" },
   });
 
   const onSubmit = async (data: ForgotPasswordFormValues) => {
+    setNotRegistered(false);
+
     try {
       await forgotPassword(data).unwrap();
     } catch (err: any) {
-      // Even on an unexpected error, don't reveal anything about the
-      // email's registration status — just let the user know something
-      // went wrong and they can try again.
+      if (err.code === "NOT_FOUND") {
+        setError("email", { type: "server", message: err.message });
+        setNotRegistered(true);
+        return;
+      }
       toast.error(err.message || "Something went wrong. Please try again.");
       return;
     }
@@ -57,8 +64,7 @@ export default function ForgotPasswordForm() {
       <div className="w-full max-w-md space-y-6 p-8 bg-white rounded-2xl shadow-xl border border-gray-100 text-center">
         <h2 className="text-2xl font-bold text-gray-900">Check your email</h2>
         <p className="text-gray-500">
-          If that email is registered, we&apos;ve sent a link to reset your password.
-          The link expires in 1 hour.
+          We&apos;ve sent a link to reset your password. The link expires in 1 hour.
         </p>
         <Link href="/sign-in" className="font-semibold text-blue-600 hover:text-blue-500">
           Back to sign in
@@ -94,6 +100,14 @@ export default function ForgotPasswordForm() {
           </div>
           {errors.email && (
             <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
+          )}
+          {notRegistered && (
+            <p className="text-xs text-gray-500">
+              <Link href="/sign-up" className="font-semibold text-blue-600 hover:text-blue-500">
+                Create an account
+              </Link>{" "}
+              instead?
+            </p>
           )}
         </div>
 
