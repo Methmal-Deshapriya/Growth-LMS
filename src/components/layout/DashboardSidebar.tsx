@@ -127,21 +127,21 @@ export default function DashboardSidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-gray-200 bg-white transition-transform lg:translate-x-0">
+    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card transition-transform lg:translate-x-0">
       <div className="flex h-full flex-col px-3 py-4">
         {/* Logo Area */}
         <Link href="/" className="mb-10 flex items-center px-2 py-4">
-          <span className="text-xl font-extrabold text-blue-600 tracking-tight">
-            Foundry<span className="text-gray-900">Academy</span>
+          <span className="text-xl font-extrabold text-primary tracking-tight">
+            Foundry<span className="text-foreground">Academy</span>
           </span>
         </Link>
 
         {/* User Brief */}
-        <div className="mb-6 rounded-xl bg-gray-50 p-4">
-          <p className="text-sm font-semibold text-gray-900 truncate">
+        <div className="mb-6 rounded-xl bg-muted p-4">
+          <p className="text-sm font-semibold text-foreground truncate">
             {user?.firstName} {user?.lastName}
           </p>
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mt-0.5">
+          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-0.5">
             {role}
           </p>
         </div>
@@ -154,22 +154,22 @@ export default function DashboardSidebar() {
               href={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
-                item.active 
-                  ? "bg-blue-50 text-blue-600" 
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                item.active
+                  ? "bg-primary/10 text-primary"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               )}
             >
-              <item.icon className={cn("h-5 w-5", item.active ? "text-blue-600" : "text-gray-400")} />
+              <item.icon className={cn("h-5 w-5", item.active ? "text-primary" : "text-muted-foreground")} />
               {item.label}
             </Link>
           ))}
         </nav>
 
         {/* Footer Area / Logout */}
-        <div className="mt-auto border-t border-gray-100 pt-4">
+        <div className="mt-auto border-t border-border pt-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors"
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950 transition-colors"
           >
             <LogOut className="h-5 w-5" />
             Sign Out

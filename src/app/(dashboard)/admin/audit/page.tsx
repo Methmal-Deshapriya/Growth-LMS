@@ -39,9 +39,9 @@ export default function AdminAuditPage() {
   // --- Security Check ---
   if (!canViewAuditLogs(role)) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 mb-2">Access Restricted</h2>
-        <p className="text-red-700">
+      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
+        <p className="text-red-700 dark:text-red-400">
           Only Super Administrators can view system audit logs.
         </p>
       </div>
@@ -65,11 +65,11 @@ export default function AdminAuditPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <History className="text-blue-600 h-8 w-8" />
+          <h1 className="text-3xl font-bold text-foreground flex items-center gap-3">
+            <History className="text-primary h-8 w-8" />
             Audit Logs
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             System-wide activity history and accountability tracking.
           </p>
         </div>
@@ -77,9 +77,9 @@ export default function AdminAuditPage() {
         {/* Filter Bar Simple */}
         <div className="flex items-center gap-2">
           <div className="relative">
-            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Filter className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <select 
-              className="pl-10 pr-8 h-10 bg-white border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600/20 outline-none appearance-none cursor-pointer"
+              className="pl-10 pr-8 h-10 bg-card border border-border rounded-lg text-sm focus:ring-2 focus:ring-primary/20 outline-none appearance-none cursor-pointer"
               value={action}
               onChange={(e) => {
                 setAction(e.target.value);
@@ -100,13 +100,13 @@ export default function AdminAuditPage() {
       {/* Main Content */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-          <p className="text-gray-500 font-medium">Retrieving system history...</p>
+          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <p className="text-muted-foreground font-medium">Retrieving system history...</p>
         </div>
       ) : isError ? (
-        <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 mb-2">Service Error</h2>
-          <p className="text-red-700">
+        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Service Error</h2>
+          <p className="text-red-700 dark:text-red-400">
             We couldn&apos;t load the audit logs. Please try again.
           </p>
         </div>
@@ -117,9 +117,9 @@ export default function AdminAuditPage() {
           </div>
 
           {/* Pagination Controls */}
-          <div className="flex items-center justify-between bg-white px-6 py-4 rounded-xl border border-gray-100 shadow-sm">
-            <p className="text-sm text-gray-500">
-              Showing <span className="font-bold text-gray-900">{offset + 1}</span> to <span className="font-bold text-gray-900">{offset + data.logs.length}</span> of <span className="font-bold text-gray-900">{data.pagination.total}</span> logs
+          <div className="flex items-center justify-between bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
+            <p className="text-sm text-muted-foreground">
+              Showing <span className="font-bold text-foreground">{offset + 1}</span> to <span className="font-bold text-foreground">{offset + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
             </p>
             
             <div className="flex items-center gap-2">
@@ -145,12 +145,12 @@ export default function AdminAuditPage() {
           </div>
         </div>
       ) : (
-        <div className="bg-white border border-dashed border-gray-200 rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6">
-            <Search className="h-10 w-10 text-gray-300" />
+        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
+          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
+            <Search className="h-10 w-10 text-muted-foreground" />
           </div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">No logs found</h2>
-          <p className="text-gray-500 max-w-md mx-auto">
+          <h2 className="text-2xl font-bold text-foreground mb-2">No logs found</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
             Try adjusting your filters or check back later as system actions are recorded.
           </p>
         </div>

@@ -27,7 +27,7 @@ const BootCampCard = ({
   theme,
 }: Bootcamp) => {
   return (
-    <div className="w-full max-w-xl z-10 bg-white rounded-2xl shadow-md border border-gray-200 overflow-hidden">
+    <div className="w-full max-w-xl z-10 bg-card rounded-2xl shadow-md border border-border overflow-hidden">
       {/* Image Section */}
       <div className="relative w-full h-56">
         <Image
@@ -51,16 +51,16 @@ const BootCampCard = ({
       {/* Content Section */}
       <div className="p-6 space-y-4">
         {/* Title */}
-        <h2 className="text-2xl font-semibold text-gray-900">{title}</h2>
+        <h2 className="text-2xl font-semibold text-foreground">{title}</h2>
 
         {/* Description */}
-        <p className="text-gray-600 leading-relaxed">{description}</p>
+        <p className="text-foreground leading-relaxed">{description}</p>
 
         {/* CTA */}
         <div className="w-full flex justify-end">
           <Link
             href={`/bootcamps/${slug}`}
-            className="text-lg font-medium text-blue-700 hover:underline flex items-center gap-2"
+            className="text-lg font-medium text-primary hover:underline flex items-center gap-2"
           >
             {cta}
           </Link>

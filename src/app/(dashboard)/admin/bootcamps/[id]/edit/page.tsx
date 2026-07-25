@@ -37,8 +37,8 @@ export default function EditBootcampPage() {
   if (isFetching) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-500">Loading bootcamp data...</p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground">Loading bootcamp data...</p>
       </div>
     );
   }
@@ -46,8 +46,8 @@ export default function EditBootcampPage() {
   if (!targetBootcamp) {
     return (
       <div className="text-center py-20">
-        <h2 className="text-2xl font-bold text-gray-900">Bootcamp not found</h2>
-        <Link href="/admin/bootcamps" className="text-blue-600 hover:underline mt-4 inline-block">
+        <h2 className="text-2xl font-bold text-foreground">Bootcamp not found</h2>
+        <Link href="/admin/bootcamps" className="text-primary hover:underline mt-4 inline-block">
           Return to list
         </Link>
       </div>
@@ -59,15 +59,15 @@ export default function EditBootcampPage() {
       {/* Navigation */}
       <Link 
         href="/admin/bootcamps" 
-        className="inline-flex items-center text-sm font-medium text-gray-500 hover:text-blue-600 transition-colors mb-6"
+        className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-primary transition-colors mb-6"
       >
         <ChevronLeft className="mr-1 h-4 w-4" />
         Back to List
       </Link>
 
       <div className="mb-10">
-        <h1 className="text-3xl font-bold text-gray-900">Edit Bootcamp</h1>
-        <p className="text-gray-500 mt-1">
+        <h1 className="text-3xl font-bold text-foreground">Edit Bootcamp</h1>
+        <p className="text-muted-foreground mt-1">
           Update the information for &quot;{targetBootcamp.title}&quot;
         </p>
       </div>

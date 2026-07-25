@@ -66,28 +66,28 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
   };
 
   return (
-    <div className="overflow-hidden bg-white rounded-2xl border border-gray-100 shadow-sm">
+    <div className="overflow-hidden bg-card rounded-2xl border border-border shadow-sm">
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
-            <tr className="bg-gray-50/50 border-b border-gray-100">
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Bootcamp</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Status</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Price</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest">Created</th>
-              <th className="px-6 py-4 text-xs font-bold text-gray-500 uppercase tracking-widest text-right">Actions</th>
+            <tr className="bg-muted/50 border-b border-border">
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Bootcamp</th>
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Price</th>
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Created</th>
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50">
             {bootcamps.map((bootcamp) => (
-              <tr key={bootcamp.id} className="hover:bg-gray-50/50 transition-colors group">
+              <tr key={bootcamp.id} className="hover:bg-muted/50 transition-colors group">
                 {/* 1. Name & Slug */}
                 <td className="px-6 py-4">
                   <div className="flex flex-col">
-                    <span className="font-bold text-gray-900 group-hover:text-blue-600 transition-colors">
+                    <span className="font-bold text-foreground group-hover:text-primary transition-colors">
                       {bootcamp.title}
                     </span>
-                    <span className="text-xs text-gray-400 font-mono mt-0.5">
+                    <span className="text-xs text-muted-foreground font-mono mt-0.5">
                       /{bootcamp.slug}
                     </span>
                   </div>
@@ -98,8 +98,8 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
                   <div className={cn(
                     "inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider",
                     bootcamp.isPublished 
-                      ? "bg-green-50 text-green-700 border border-green-100" 
-                      : "bg-orange-50 text-orange-700 border border-orange-100"
+                      ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border border-green-100 dark:border-green-900/40" 
+                      : "bg-orange-50 dark:bg-orange-950/40 text-orange-700 dark:text-orange-400 border border-orange-100 dark:border-orange-900/40"
                   )}>
                     {bootcamp.isPublished ? (
                       <><CheckCircle2 className="h-3 w-3" /> Live</>
@@ -111,14 +111,14 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
 
                 {/* 3. Price */}
                 <td className="px-6 py-4">
-                  <span className="text-sm font-semibold text-gray-700">
+                  <span className="text-sm font-semibold text-foreground">
                     LKR {bootcamp.price.toLocaleString()}
                   </span>
                 </td>
 
                 {/* 4. Created At */}
                 <td className="px-6 py-4">
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-muted-foreground">
                     {format(new Date(bootcamp.createdAt), "MMM dd, yyyy")}
                   </span>
                 </td>
@@ -128,13 +128,13 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
                   <div className="flex items-center justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild title="Sessions">
                       <Link href={`/admin/bootcamps/${bootcamp.id}/sessions`}>
-                        <ListVideo className="h-4 w-4 text-purple-600" />
+                        <ListVideo className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                       </Link>
                     </Button>
 
                     <Button variant="ghost" size="icon" asChild title="Students">
                       <Link href={`/admin/bootcamps/${bootcamp.id}/students`}>
-                        <Users className="h-4 w-4 text-gray-400" />
+                        <Users className="h-4 w-4 text-muted-foreground" />
                       </Link>
                     </Button>
                     
@@ -147,13 +147,13 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
                       {bootcamp.isPublished ? (
                         <EyeOff className="h-4 w-4 text-orange-500" />
                       ) : (
-                        <Globe className="h-4 w-4 text-green-600" />
+                        <Globe className="h-4 w-4 text-green-600 dark:text-green-400" />
                       )}
                     </Button>
 
                     <Button variant="ghost" size="icon" asChild title="Edit">
                       <Link href={`/admin/bootcamps/${bootcamp.id}/edit`}>
-                        <Edit className="h-4 w-4 text-blue-600" />
+                        <Edit className="h-4 w-4 text-primary" />
                       </Link>
                     </Button>
 
@@ -164,7 +164,7 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
                       disabled={isDeleting}
                       title="Delete"
                     >
-                      <Trash2 className="h-4 w-4 text-red-500" />
+                      <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                     </Button>
                   </div>
                 </td>

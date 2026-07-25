@@ -21,8 +21,8 @@ export default function StudentOnlyRoute({
 
   if (!isStudent(role)) {
     return (
-      <div className="rounded-2xl border border-amber-100 bg-amber-50 p-12 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-white text-amber-600 shadow-sm">
+      <div className="rounded-2xl border border-amber-100 dark:border-amber-900/40 bg-amber-50 dark:bg-amber-950/40 p-12 text-center">
+        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-card text-amber-600 dark:text-amber-400 shadow-sm">
           <ShieldAlert className="h-8 w-8" />
         </div>
         <h2 className="mb-2 text-2xl font-bold text-amber-950">{title}</h2>

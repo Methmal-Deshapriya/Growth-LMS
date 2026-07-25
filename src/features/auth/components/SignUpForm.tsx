@@ -40,14 +40,14 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 // Shared styling to give inputs/selects the taller, more rounded, softer
 // look (overrides the Input component's defaults via class-merging).
-const inputClassName = "h-12 rounded-xl border-gray-200 bg-gray-50/50 px-4";
+const inputClassName = "h-12 rounded-xl border-input bg-muted/50 px-4";
 
 // Native <select> — no Select component exists in this project yet, so
 // this mirrors the Input styling above plus the error-state pattern used
 // elsewhere (e.g. src/app/(dashboard)/admin/users/page.tsx).
 const selectClassName =
-  "flex h-12 w-full rounded-xl border border-gray-200 bg-gray-50/50 px-4 py-2 text-sm ring-offset-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-const selectErrorClassName = "border-red-500 focus-visible:ring-red-500";
+  "flex h-12 w-full rounded-xl border border-input bg-muted/50 px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
+const selectErrorClassName = "border-red-500 dark:border-red-500 focus-visible:ring-red-500 dark:focus-visible:ring-red-400";
 
 /**
  * SignUpForm Component
@@ -108,7 +108,7 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-gray-50">
+    <div className="min-h-screen w-full flex bg-background">
       {/* Left Panel — Form */}
       <div className="w-full lg:w-1/2 flex items-center justify-center p-4 py-12">
         <div className="w-full max-w-lg space-y-6">
@@ -117,8 +117,8 @@ export default function SignUpForm() {
           </Link>
 
           <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-gray-900">Create Account</h2>
-            <p className="text-gray-500">Start your journey with Foundry Academy</p>
+            <h2 className="text-3xl font-bold text-foreground">Create Account</h2>
+            <p className="text-muted-foreground">Start your journey with Foundry Academy</p>
           </div>
 
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -136,7 +136,7 @@ export default function SignUpForm() {
                   {...register("firstName")}
                 />
                 {errors.firstName && (
-                  <p className="text-xs font-medium text-red-500">{errors.firstName.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.firstName.message}</p>
                 )}
               </div>
 
@@ -153,7 +153,7 @@ export default function SignUpForm() {
                   {...register("lastName")}
                 />
                 {errors.lastName && (
-                  <p className="text-xs font-medium text-red-500">{errors.lastName.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.lastName.message}</p>
                 )}
               </div>
 
@@ -170,7 +170,7 @@ export default function SignUpForm() {
                   {...register("phone")}
                 />
                 {errors.phone && (
-                  <p className="text-xs font-medium text-red-500">{errors.phone.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.phone.message}</p>
                 )}
               </div>
 
@@ -186,7 +186,7 @@ export default function SignUpForm() {
                   {...register("dateOfBirth")}
                 />
                 {errors.dateOfBirth && (
-                  <p className="text-xs font-medium text-red-500">
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">
                     {errors.dateOfBirth.message}
                   </p>
                 )}
@@ -214,7 +214,7 @@ export default function SignUpForm() {
                   ))}
                 </select>
                 {errors.district && (
-                  <p className="text-xs font-medium text-red-500">{errors.district.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.district.message}</p>
                 )}
               </div>
 
@@ -240,7 +240,7 @@ export default function SignUpForm() {
                   ))}
                 </select>
                 {errors.alStream && (
-                  <p className="text-xs font-medium text-red-500">{errors.alStream.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.alStream.message}</p>
                 )}
               </div>
 
@@ -257,7 +257,7 @@ export default function SignUpForm() {
                   {...register("address")}
                 />
                 {errors.address && (
-                  <p className="text-xs font-medium text-red-500">{errors.address.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.address.message}</p>
                 )}
               </div>
 
@@ -274,7 +274,7 @@ export default function SignUpForm() {
                   {...register("email")}
                 />
                 {errors.email && (
-                  <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.email.message}</p>
                 )}
               </div>
 
@@ -291,7 +291,7 @@ export default function SignUpForm() {
                   {...register("password")}
                 />
                 {errors.password && (
-                  <p className="text-xs font-medium text-red-500">{errors.password.message}</p>
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.password.message}</p>
                 )}
               </div>
 
@@ -308,7 +308,7 @@ export default function SignUpForm() {
                   {...register("confirmPassword")}
                 />
                 {errors.confirmPassword && (
-                  <p className="text-xs font-medium text-red-500">
+                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">
                     {errors.confirmPassword.message}
                   </p>
                 )}
@@ -318,7 +318,7 @@ export default function SignUpForm() {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 rounded-full bg-blue-600 hover:bg-blue-700 text-white mt-2"
+              className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-white mt-2"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -331,9 +331,9 @@ export default function SignUpForm() {
               )}
             </Button>
 
-            <div className="text-center text-sm text-gray-500">
+            <div className="text-center text-sm text-muted-foreground">
               Already have an account?{" "}
-              <Link href="/sign-in" className="font-semibold text-blue-600 hover:text-blue-500">
+              <Link href="/sign-in" className="font-semibold text-primary hover:text-primary/80">
                 Sign in
               </Link>
             </div>
@@ -342,8 +342,8 @@ export default function SignUpForm() {
       </div>
 
       {/* Right Panel — Branding */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center bg-gray-50 p-6">
-        <div className="w-full h-full rounded-4xl bg-blue-600 shadow-xl flex items-center justify-center p-12">
+      <div className="hidden lg:flex w-1/2 items-center justify-center bg-background p-6">
+        <div className="w-full h-full rounded-4xl bg-primary shadow-xl flex items-center justify-center p-12">
           <div className="max-w-md text-white space-y-4">
             <h1 className="text-4xl font-bold leading-tight">
               Become job-ready in AI, Full-Stack &amp; Cybersecurity

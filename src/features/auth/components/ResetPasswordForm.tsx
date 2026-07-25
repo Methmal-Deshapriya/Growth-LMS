@@ -71,14 +71,14 @@ export default function ResetPasswordForm() {
 
   if (!token) {
     return (
-      <div className="w-full max-w-md space-y-6 p-8 bg-white rounded-2xl shadow-xl border border-gray-100 text-center">
-        <h2 className="text-2xl font-bold text-gray-900">Invalid reset link</h2>
-        <p className="text-gray-500">
+      <div className="w-full max-w-md space-y-6 p-8 bg-card rounded-2xl shadow-xl border border-border text-center">
+        <h2 className="text-2xl font-bold text-foreground">Invalid reset link</h2>
+        <p className="text-muted-foreground">
           This password reset link is missing or invalid. Please request a new one.
         </p>
         <Link
           href="/forgot-password"
-          className="font-semibold text-blue-600 hover:text-blue-500"
+          className="font-semibold text-primary hover:text-primary"
         >
           Request a new link
         </Link>
@@ -87,10 +87,10 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-white rounded-2xl shadow-xl border border-gray-100">
+    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
       <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-gray-900">Reset Password</h2>
-        <p className="text-gray-500">Choose a new password for your account</p>
+        <h2 className="text-3xl font-bold text-foreground">Reset Password</h2>
+        <p className="text-muted-foreground">Choose a new password for your account</p>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
@@ -98,7 +98,7 @@ export default function ResetPasswordForm() {
         <div className="space-y-2">
           <Label htmlFor="newPassword">New Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="newPassword"
               type="password"
@@ -110,7 +110,7 @@ export default function ResetPasswordForm() {
             />
           </div>
           {errors.newPassword && (
-            <p className="text-xs font-medium text-red-500">{errors.newPassword.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.newPassword.message}</p>
           )}
         </div>
 
@@ -118,7 +118,7 @@ export default function ResetPasswordForm() {
         <div className="space-y-2">
           <Label htmlFor="confirmPassword">Confirm New Password</Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="confirmPassword"
               type="password"
@@ -130,14 +130,14 @@ export default function ResetPasswordForm() {
             />
           </div>
           {errors.confirmPassword && (
-            <p className="text-xs font-medium text-red-500">{errors.confirmPassword.message}</p>
+            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.confirmPassword.message}</p>
           )}
         </div>
 
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white"
           disabled={isLoading}
         >
           {isLoading ? (

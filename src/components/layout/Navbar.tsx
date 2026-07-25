@@ -10,6 +10,7 @@ import {
   selectAuthUser,
 } from "@/features/auth/authSelectors";
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { isStudent } from "@/lib/access";
 
 const Navbar = () => {
@@ -18,15 +19,15 @@ const Navbar = () => {
   const user = useAppSelector(selectAuthUser);
 
   return (
-    <nav className=" z-100 lg:w-[70vw] lg:mt-5 w-full bg-white rounded-xl shadow-sm border border-gray-200 px-6 py-3 flex items-center justify-between">
+    <nav className=" z-100 lg:w-[70vw] lg:mt-5 w-full bg-card rounded-xl shadow-sm border border-border px-6 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2">
         <Link href="/">
           <Image src="/assets/logo.png" alt="logo" width={100} height={100} />
         </Link>
       </div>
-      
+
       <div className="flex items-center gap-8">
-        <ul className="hidden md:flex items-center gap-8 text-black font-medium">
+        <ul className="hidden md:flex items-center gap-8 text-foreground font-medium">
           <Link href="/" className="cursor-pointer hover:opacity-70">
             Home
           </Link>
@@ -50,10 +51,11 @@ const Navbar = () => {
           )}
         </ul>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
           {isAuthenticated ? (
             <Link href="/dashboard" className="flex items-center gap-2 group">
-              <div className="w-10 h-10 rounded-full bg-black flex items-center justify-center text-white font-bold text-sm transition-transform group-hover:scale-110">
+              <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm transition-transform group-hover:scale-110">
                 {user?.firstName?.charAt(0).toUpperCase() || "U"}
               </div>
             </Link>

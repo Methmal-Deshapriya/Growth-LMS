@@ -21,13 +21,13 @@ export default function AdminSessionsPage() {
   const bootcamp = bootcamps?.find(b => b.id === id);
 
   if (isLoading) {
-    return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-blue-600" /></div>;
+    return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-primary" /></div>;
   }
 
   if (!bootcamp) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 mb-2">Bootcamp not found</h2>
+      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Bootcamp not found</h2>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/admin/bootcamps">Back to Bootcamps</Link>
         </Button>
@@ -45,11 +45,11 @@ export default function AdminSessionsPage() {
           </Link>
         </Button>
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">
+          <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-1">
             <BookOpen className="h-3.5 w-3.5" />
             Curriculum Management
           </div>
-          <h1 className="text-3xl font-bold text-gray-900">{bootcamp.title}</h1>
+          <h1 className="text-3xl font-bold text-foreground">{bootcamp.title}</h1>
         </div>
       </div>
 

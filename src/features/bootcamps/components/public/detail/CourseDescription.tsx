@@ -20,7 +20,7 @@ const CourseDescription = ({
 }: Props) => {
   return (
     <section className="w-full flex flex-col  justify-center items-center pt-10 px-6 md:px-12 lg:px-20 ">
-      <h3 className="text-center text-2xl md:text-4xl font-bold text-black leading-tight mb-12">
+      <h3 className="text-center text-2xl md:text-4xl font-bold text-foreground leading-tight mb-12">
         Want to learn the {courseDescription_headline_persuational} <br /> in{" "}
         <span
           className={cn(
@@ -32,7 +32,7 @@ const CourseDescription = ({
         </span>{" "}
         Hear me out
       </h3>
-      <p className="text-center max-w-[1000px] lg:text-2xl md:text-lg font-poppins leading-relaxed text-gray-600 mb-10">
+      <p className="text-center max-w-[1000px] lg:text-2xl md:text-lg font-poppins leading-relaxed text-foreground mb-10">
         {courseDescription_description}
       </p>
     </section>

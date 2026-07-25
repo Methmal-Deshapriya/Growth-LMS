@@ -26,7 +26,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
   );
 
   return (
-    <div className="group bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <div className="group bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
       <div className="flex flex-col md:flex-row">
         {/* Visual Side */}
         <div className="md:w-48 bg-linear-to-br from-indigo-500 to-blue-600 flex items-center justify-center p-6 text-white group-hover:from-indigo-600 group-hover:to-blue-700 transition-colors">
@@ -36,16 +36,16 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
         {/* Content Side */}
         <div className="flex-1 p-6 flex flex-col justify-between">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-blue-600 uppercase tracking-widest mb-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-2">
               <Calendar className="h-3.5 w-3.5" />
               Enrolled on {formattedDate}
             </div>
 
-            <h3 className="text-xl font-bold text-gray-900 mb-2 group-hover:text-blue-600 transition-colors">
+            <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
               {bootcamp.title}
             </h3>
 
-            <p className="text-gray-600 text-sm line-clamp-2 mb-4">
+            <p className="text-foreground text-sm line-clamp-2 mb-4">
               {bootcamp.description ||
                 "Continue your journey and master professional skills in this comprehensive bootcamp."}
             </p>

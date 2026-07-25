@@ -93,13 +93,13 @@ export default function BootcampForm({
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="space-y-6 bg-white p-8 rounded-2xl border border-gray-100 shadow-sm"
+      className="space-y-6 bg-card p-8 rounded-2xl border border-border shadow-sm"
     >
       {/* Title */}
       <div className="space-y-2">
         <Label htmlFor="title">Bootcamp Title</Label>
         <div className="relative">
-          <Type className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <Type className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="title"
             placeholder="e.g. Full-Stack Web Engineering"
@@ -110,7 +110,7 @@ export default function BootcampForm({
           />
         </div>
         {errors.title && (
-          <p className="text-xs text-red-500 font-medium">
+          <p className="text-xs text-red-500 dark:text-red-400 font-medium">
             {errors.title.message}
           </p>
         )}
@@ -120,7 +120,7 @@ export default function BootcampForm({
       <div className="space-y-2">
         <Label htmlFor="slug">URL Slug</Label>
         <div className="relative">
-          <LinkIcon className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <LinkIcon className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="slug"
             placeholder="e.g. full-stack-engineering"
@@ -130,12 +130,12 @@ export default function BootcampForm({
             {...register("slug")}
           />
         </div>
-        <p className="text-[10px] text-gray-400">
+        <p className="text-[10px] text-muted-foreground">
           This will be the web address: foundrylms.com/bootcamps/
           <strong>{watch("slug") || "slug"}</strong>
         </p>
         {errors.slug && (
-          <p className="text-xs text-red-500 font-medium">
+          <p className="text-xs text-red-500 dark:text-red-400 font-medium">
             {errors.slug.message}
           </p>
         )}
@@ -145,7 +145,7 @@ export default function BootcampForm({
       <div className="space-y-2">
         <Label htmlFor="price">Price (LKR)</Label>
         <div className="relative">
-          <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+          <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
           <Input
             id="price"
             type="number"
@@ -157,7 +157,7 @@ export default function BootcampForm({
           />
         </div>
         {errors.price && (
-          <p className="text-xs text-red-500 font-medium">
+          <p className="text-xs text-red-500 dark:text-red-400 font-medium">
             {errors.price.message}
           </p>
         )}
@@ -167,13 +167,13 @@ export default function BootcampForm({
       <div className="space-y-2">
         <Label htmlFor="description">Description</Label>
         <div className="relative">
-          <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          <AlignLeft className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
           <textarea
             id="description"
             rows={4}
             placeholder="Describe the learning outcomes and target audience..."
             className={cn(
-              "flex w-full rounded-md border border-gray-300 bg-white px-3 py-2 text-sm pl-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 outline-none transition-all",
+              "flex w-full rounded-md border border-border bg-card px-3 py-2 text-sm pl-10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary outline-none transition-all",
               errors.description && "border-red-500",
               isLoading && "opacity-50 cursor-not-allowed",
             )}
@@ -182,7 +182,7 @@ export default function BootcampForm({
           />
         </div>
         {errors.description && (
-          <p className="text-xs text-red-500 font-medium">
+          <p className="text-xs text-red-500 dark:text-red-400 font-medium">
             {errors.description.message}
           </p>
         )}
@@ -193,7 +193,7 @@ export default function BootcampForm({
         <Button
           type="submit"
           disabled={isLoading}
-          className="w-full h-11 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all"
+          className="w-full h-11 bg-primary hover:bg-primary/90 text-white font-bold rounded-xl shadow-lg shadow-blue-200 transition-all"
         >
           {isLoading ? (
             <>

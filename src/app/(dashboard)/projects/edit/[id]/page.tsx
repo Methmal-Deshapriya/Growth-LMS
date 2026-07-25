@@ -71,16 +71,16 @@ export default function EditProjectPage() {
   if (isProjectLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-20">
-        <Loader2 className="h-10 w-10 animate-spin text-blue-600 mb-4" />
-        <p className="text-gray-500 font-medium">Loading project data...</p>
+        <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+        <p className="text-muted-foreground font-medium">Loading project data...</p>
       </div>
     );
   }
 
   if (isError || !project) {
     return (
-      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 mb-2">Project not found</h2>
+      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Project not found</h2>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/projects">Back to Projects</Link>
         </Button>
@@ -90,12 +90,12 @@ export default function EditProjectPage() {
 
   if (project.status !== "PENDING") {
     return (
-      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-12 text-center">
+      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40 rounded-2xl p-12 text-center">
         <div className="h-16 w-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle className="h-8 w-8 text-amber-600" />
+          <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
         </div>
         <h2 className="text-2xl font-bold text-amber-900 mb-2">Editing Restricted</h2>
-        <p className="text-amber-700 mb-6">
+        <p className="text-amber-700 dark:text-amber-400 mb-6">
           This project has already been {project.status.toLowerCase()} and can no longer be edited.
         </p>
         <Button asChild variant="outline">
@@ -113,17 +113,17 @@ export default function EditProjectPage() {
             <ArrowLeft className="h-5 w-5" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold text-gray-900">Edit Project</h1>
+        <h1 className="text-3xl font-bold text-foreground">Edit Project</h1>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+      <div className="bg-card rounded-2xl border border-border shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl text-sm text-blue-700">
+          <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-sm text-primary">
             Editing project for: <strong>{project.bootcamp?.title}</strong>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="title" className="text-sm font-bold text-gray-700">Project Title</Label>
+            <Label htmlFor="title" className="text-sm font-bold text-foreground">Project Title</Label>
             <Input
               id="title"
               className="h-12 rounded-xl"
@@ -134,11 +134,11 @@ export default function EditProjectPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description" className="text-sm font-bold text-gray-700">Description</Label>
+            <Label htmlFor="description" className="text-sm font-bold text-foreground">Description</Label>
             <textarea
               id="description"
               rows={4}
-              className="w-full rounded-xl border border-gray-200 p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-hidden"
+              className="w-full rounded-xl border border-border p-4 text-sm focus:ring-2 focus:ring-primary outline-hidden"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             />
@@ -146,7 +146,7 @@ export default function EditProjectPage() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-2">
-              <Label htmlFor="githubUrl" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <Label htmlFor="githubUrl" className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Github className="h-4 w-4" /> GitHub Repository
               </Label>
               <Input
@@ -157,7 +157,7 @@ export default function EditProjectPage() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="demoUrl" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+              <Label htmlFor="demoUrl" className="text-sm font-bold text-foreground flex items-center gap-2">
                 <Globe className="h-4 w-4" /> Live Demo URL
               </Label>
               <Input
@@ -170,7 +170,7 @@ export default function EditProjectPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="thumbnailUrl" className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            <Label htmlFor="thumbnailUrl" className="text-sm font-bold text-foreground flex items-center gap-2">
               <ImageIcon className="h-4 w-4" /> Thumbnail Image URL
             </Label>
             <Input
@@ -182,7 +182,7 @@ export default function EditProjectPage() {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="technologies" className="text-sm font-bold text-gray-700">Technologies (comma separated)</Label>
+            <Label htmlFor="technologies" className="text-sm font-bold text-foreground">Technologies (comma separated)</Label>
             <Input
               id="technologies"
               className="h-12 rounded-xl"
@@ -191,14 +191,14 @@ export default function EditProjectPage() {
             />
           </div>
 
-          <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-100">
+          <div className="flex items-center gap-3 p-4 bg-background rounded-xl border border-border">
             <div className="flex-1">
-              <p className="text-sm font-bold text-gray-900">Make project public</p>
-              <p className="text-xs text-gray-500">Public projects appear in our community showcase after approval.</p>
+              <p className="text-sm font-bold text-foreground">Make project public</p>
+              <p className="text-xs text-muted-foreground">Public projects appear in our community showcase after approval.</p>
             </div>
             <input 
               type="checkbox"
-              className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              className="h-5 w-5 rounded border-border text-primary focus:ring-primary"
               checked={formData.isPublic}
               onChange={(e) => setFormData({ ...formData, isPublic: e.target.checked })}
             />
@@ -208,11 +208,11 @@ export default function EditProjectPage() {
             <Button 
               type="submit" 
               disabled={isUpdating}
-              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white h-12 rounded-xl text-lg font-bold"
+              className="flex-1 bg-primary hover:bg-primary/90 text-white h-12 rounded-xl text-lg font-bold"
             >
               {isUpdating ? <Loader2 className="h-5 w-5 animate-spin" /> : <><Save className="h-5 w-5 mr-2" /> Save Changes</>}
             </Button>
-            <Button asChild variant="outline" className="h-12 rounded-xl px-8 border-gray-200">
+            <Button asChild variant="outline" className="h-12 rounded-xl px-8 border-border">
               <Link href="/projects">Cancel</Link>
             </Button>
           </div>
