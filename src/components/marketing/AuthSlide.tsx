@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import SignUpForm from "@/features/auth/components/SignUpForm";
 import SignInForm from "@/features/auth/components/SignInForm";
-import { useGuestGuard } from "@/features/auth/hooks/useGuestGuard";
 
 /**
  * AuthSlide
@@ -25,10 +24,6 @@ export function AuthSlide() {
   const [view, setView] = React.useState<"sign-up" | "sign-in">(
     searchParams.get("authView") === "sign-up" ? "sign-up" : "sign-in"
   );
-
-  // Same behavior GuestGuard gave the old /sign-in /sign-up routes — bounce
-  // already-authenticated visitors straight to the dashboard.
-  useGuestGuard();
 
   return (
     <div className="w-full max-w-6xl xl:max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-[1fr_1.15fr] gap-10 xl:gap-16 items-center px-2">

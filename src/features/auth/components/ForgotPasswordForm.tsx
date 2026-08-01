@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Mail } from "lucide-react";
+import { Loader2, Mail, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 // 1. Define Validation Schema (Matches backend forgotPasswordSchema)
@@ -18,6 +18,11 @@ const forgotPasswordSchema = z.object({
 });
 
 type ForgotPasswordFormValues = z.infer<typeof forgotPasswordSchema>;
+
+// Matches SignUpForm/SignInForm's input styling so all auth forms look
+// like one consistent family instead of a mix of card and non-card forms.
+const inputClassName =
+  "h-12 rounded-xl border-input bg-muted/50 pl-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary";
 
 /**
  * ForgotPasswordForm Component
@@ -61,12 +66,15 @@ export default function ForgotPasswordForm() {
 
   if (submitted) {
     return (
-      <div className="w-full max-w-md space-y-6 p-8 bg-card rounded-2xl shadow-xl border border-border text-center">
-        <h2 className="text-2xl font-bold text-foreground">Check your email</h2>
-        <p className="text-muted-foreground">
+      <div className="w-full max-w-md space-y-4 text-center">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">Check your email</h2>
+        <p className="font-alt text-[#5B6472]">
           We&apos;ve sent a link to reset your password. The link expires in 1 hour.
         </p>
-        <Link href="/?slide=auth&authView=sign-in" className="font-semibold text-primary hover:text-primary">
+        <Link
+          href="/?slide=auth&authView=sign-in"
+          className="inline-block font-semibold text-primary hover:text-primary/80"
+        >
           Back to sign in
         </Link>
       </div>
@@ -74,25 +82,25 @@ export default function ForgotPasswordForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-foreground">Forgot Password</h2>
-        <p className="text-muted-foreground">
+    <div className="w-full max-w-md space-y-4">
+      <div className="space-y-1">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">Forgot Password</h2>
+        <p className="font-alt text-[#5B6472]">
           Enter your email and we&apos;ll send you a link to reset your password
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         {/* Email Field */}
-        <div className="space-y-2">
+        <div className="space-y-4">
           <Label htmlFor="email">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Mail className="pointer-events-none absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="pl-10"
+              className={inputClassName}
               error={!!errors.email}
               disabled={isLoading}
               {...register("email")}
@@ -103,7 +111,7 @@ export default function ForgotPasswordForm() {
           )}
           {notRegistered && (
             <p className="text-xs text-muted-foreground">
-              <Link href="/?slide=auth&authView=sign-up" className="font-semibold text-primary hover:text-primary">
+              <Link href="/?slide=auth&authView=sign-up" className="font-semibold text-primary hover:text-primary/80">
                 Create an account
               </Link>{" "}
               instead?
@@ -114,22 +122,25 @@ export default function ForgotPasswordForm() {
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-white"
+          className="w-full h-12 rounded-full bg-linear-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white mt-6 flex items-center justify-center gap-2"
           disabled={isLoading}
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Sending link...
             </>
           ) : (
-            "Send Reset Link"
+            <>
+              Send Reset Link
+              <ArrowRight className="h-4 w-4" />
+            </>
           )}
         </Button>
 
         <div className="text-center text-sm text-muted-foreground">
           Remembered your password?{" "}
-          <Link href="/?slide=auth&authView=sign-in" className="font-semibold text-primary hover:text-primary">
+          <Link href="/?slide=auth&authView=sign-in" className="font-semibold text-primary hover:text-primary/80">
             Sign in
           </Link>
         </div>
