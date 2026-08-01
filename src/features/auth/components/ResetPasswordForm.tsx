@@ -56,7 +56,7 @@ export default function ResetPasswordForm() {
     try {
       await resetPassword({ token, newPassword: values.newPassword }).unwrap();
       toast.success("Password reset successful. Please sign in.");
-      router.push("/sign-in");
+      router.push("/?slide=auth&authView=sign-in");
     } catch (err: any) {
       if (err.field) {
         setError(err.field === "token" ? "confirmPassword" : err.field, {

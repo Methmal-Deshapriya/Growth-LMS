@@ -23,7 +23,7 @@ const SWIPE_THRESHOLD = 50;
  * Navigation, beyond the Next/Back buttons:
  * - Progress dots are clickable — jump straight to any slide instead of
  *   being forced through every one in order.
- * - A "Skip to sign up" link appears once you're a couple slides in, for
+ * - A "Skip to sign in" link appears once you're a couple slides in, for
  *   anyone who already knows they want the CTA.
  * - Arrow keys (desktop) and horizontal swipe (touch) also advance/go back.
  */
@@ -102,7 +102,7 @@ export function SlideDeck({ slides }: { slides: Slide[] }) {
           onClick={() => setIndex(slides.length - 1)}
           className="absolute top-4 sm:top-6 right-4 sm:right-6 z-50 font-alt text-xs sm:text-sm text-[#5B6472] hover:text-[#0E1116] transition-colors"
         >
-          Skip to sign up →
+          Skip to sign in →
         </button>
       )}
 

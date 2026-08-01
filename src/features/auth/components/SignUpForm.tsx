@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
@@ -9,11 +9,11 @@ import { useRegisterMutation } from "../authApi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Select } from "@/components/ui/select";
+import { DatePicker } from "@/components/ui/date-picker";
 import { DISTRICTS, AL_STREAMS } from "@/lib/constants";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
+import { Loader2, User, Phone, MapPin, GraduationCap, Home, Mail, Lock, ArrowRight } from "lucide-react";
 
 // 1. Define Validation Schema (Matches backend registerSchema + confirm password)
 const registerSchema = z
@@ -40,23 +40,22 @@ type RegisterFormValues = z.infer<typeof registerSchema>;
 
 // Shared styling to give inputs/selects the taller, more rounded, softer
 // look (overrides the Input component's defaults via class-merging).
-const inputClassName = "h-12 rounded-xl border-input bg-muted/50 px-4";
+// pl-10 leaves room for the leading icon every field carries.
+const inputClassName =
+  "h-12 rounded-xl border-input bg-muted/50 pl-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary";
 
-// Native <select> — no Select component exists in this project yet, so
-// this mirrors the Input styling above plus the error-state pattern used
-// elsewhere (e.g. src/app/(dashboard)/admin/users/page.tsx).
-const selectClassName =
-  "flex h-12 w-full rounded-xl border border-input bg-muted/50 px-4 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50";
-const selectErrorClassName = "border-red-500 dark:border-red-500 focus-visible:ring-red-500 dark:focus-visible:ring-red-400";
+const fieldIconClassName = "absolute left-3 top-3.5 h-4 w-4 text-muted-foreground pointer-events-none";
 
 /**
  * SignUpForm Component
  *
  * Handles user registration (all 10 required fields) with validation and
- * error feedback, in a split-panel layout: form on the left, Foundry
- * branding on the right (hidden on small screens).
+ * error feedback. Rendered as the swappable left-panel content inside
+ * AuthSlide, which owns the shared two-column shell/branding panel —
+ * `onSignInClick` swaps to the sign-in view in place rather than
+ * navigating to a separate route.
  */
-export default function SignUpForm() {
+export default function SignUpForm({ onSignInClick }: { onSignInClick: () => void }) {
   const router = useRouter();
   const [registerUser, { isLoading }] = useRegisterMutation();
 
@@ -64,6 +63,7 @@ export default function SignUpForm() {
   const {
     register,
     handleSubmit,
+    control,
     formState: { errors },
     setError,
   } = useForm<RegisterFormValues>({
@@ -108,253 +108,266 @@ export default function SignUpForm() {
   };
 
   return (
-    <div className="min-h-screen w-full flex bg-background">
-      {/* Left Panel — Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 py-12">
-        <div className="w-full max-w-lg space-y-6">
-          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
-            <Image src="/assets/logo.png" alt="Foundry Academy" width={120} height={120} />
-          </Link>
+    <div className="w-full space-y-4">
+      <div className="space-y-1">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">
+          New to{" "}
+          <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-500">
+            Foundry?
+          </span>
+        </h2>
+        <p className="font-alt text-[#5B6472]">Start your journey with Foundry Academy</p>
+      </div>
 
-          <div className="space-y-2">
-            <h2 className="text-3xl font-bold text-foreground">Create Account</h2>
-            <p className="text-muted-foreground">Start your journey with Foundry Academy</p>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* First Name */}
+          <div className="space-y-2.5">
+            <Label htmlFor="firstName">First Name</Label>
+            <div className="relative">
+              <User className={fieldIconClassName} />
+              <Input
+                id="firstName"
+                type="text"
+                placeholder="Jane"
+                className={inputClassName}
+                error={!!errors.firstName}
+                disabled={isLoading}
+                {...register("firstName")}
+              />
+            </div>
+            {errors.firstName && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.firstName.message}</p>
+            )}
           </div>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* First Name */}
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  type="text"
-                  placeholder="Jane"
-                  className={inputClassName}
-                  error={!!errors.firstName}
-                  disabled={isLoading}
-                  {...register("firstName")}
-                />
-                {errors.firstName && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.firstName.message}</p>
-                )}
-              </div>
+          {/* Last Name */}
+          <div className="space-y-2.5">
+            <Label htmlFor="lastName">Last Name</Label>
+            <div className="relative">
+              <User className={fieldIconClassName} />
+              <Input
+                id="lastName"
+                type="text"
+                placeholder="Doe"
+                className={inputClassName}
+                error={!!errors.lastName}
+                disabled={isLoading}
+                {...register("lastName")}
+              />
+            </div>
+            {errors.lastName && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.lastName.message}</p>
+            )}
+          </div>
 
-              {/* Last Name */}
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  placeholder="Doe"
-                  className={inputClassName}
-                  error={!!errors.lastName}
-                  disabled={isLoading}
-                  {...register("lastName")}
-                />
-                {errors.lastName && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.lastName.message}</p>
-                )}
-              </div>
+          {/* Phone */}
+          <div className="space-y-2.5">
+            <Label htmlFor="phone">Phone Number</Label>
+            <div className="relative">
+              <Phone className={fieldIconClassName} />
+              <Input
+                id="phone"
+                type="tel"
+                placeholder="0771234567"
+                className={inputClassName}
+                error={!!errors.phone}
+                disabled={isLoading}
+                {...register("phone")}
+              />
+            </div>
+            {errors.phone && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.phone.message}</p>
+            )}
+          </div>
 
-              {/* Phone */}
-              <div className="space-y-2">
-                <Label htmlFor="phone">Phone Number</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  placeholder="0771234567"
-                  className={inputClassName}
-                  error={!!errors.phone}
-                  disabled={isLoading}
-                  {...register("phone")}
-                />
-                {errors.phone && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.phone.message}</p>
-                )}
-              </div>
-
-              {/* Date of Birth */}
-              <div className="space-y-2">
-                <Label htmlFor="dateOfBirth">Date of Birth</Label>
-                <Input
+          {/* Date of Birth */}
+          <div className="space-y-2.5">
+            <Label htmlFor="dateOfBirth">Date of Birth</Label>
+            <Controller
+              name="dateOfBirth"
+              control={control}
+              render={({ field }) => (
+                <DatePicker
                   id="dateOfBirth"
-                  type="date"
-                  className={inputClassName}
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
                   error={!!errors.dateOfBirth}
                   disabled={isLoading}
-                  {...register("dateOfBirth")}
                 />
-                {errors.dateOfBirth && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">
-                    {errors.dateOfBirth.message}
-                  </p>
-                )}
-              </div>
-
-              {/* District */}
-              <div className="space-y-2">
-                <Label htmlFor="district">District</Label>
-                <select
-                  id="district"
-                  className={
-                    selectClassName + (errors.district ? ` ${selectErrorClassName}` : "")
-                  }
-                  disabled={isLoading}
-                  defaultValue=""
-                  {...register("district")}
-                >
-                  <option value="" disabled>
-                    Select district
-                  </option>
-                  {DISTRICTS.map((district) => (
-                    <option key={district} value={district}>
-                      {district}
-                    </option>
-                  ))}
-                </select>
-                {errors.district && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.district.message}</p>
-                )}
-              </div>
-
-              {/* AL Stream */}
-              <div className="space-y-2">
-                <Label htmlFor="alStream">A/L Stream</Label>
-                <select
-                  id="alStream"
-                  className={
-                    selectClassName + (errors.alStream ? ` ${selectErrorClassName}` : "")
-                  }
-                  disabled={isLoading}
-                  defaultValue=""
-                  {...register("alStream")}
-                >
-                  <option value="" disabled>
-                    Select A/L stream
-                  </option>
-                  {AL_STREAMS.map((stream) => (
-                    <option key={stream} value={stream}>
-                      {stream}
-                    </option>
-                  ))}
-                </select>
-                {errors.alStream && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.alStream.message}</p>
-                )}
-              </div>
-
-              {/* Address (full width) */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="address">Address</Label>
-                <Input
-                  id="address"
-                  type="text"
-                  placeholder="123 Main Street, Colombo"
-                  className={inputClassName}
-                  error={!!errors.address}
-                  disabled={isLoading}
-                  {...register("address")}
-                />
-                {errors.address && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.address.message}</p>
-                )}
-              </div>
-
-              {/* Email (full width) */}
-              <div className="space-y-2 sm:col-span-2">
-                <Label htmlFor="email">Email Address</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className={inputClassName}
-                  error={!!errors.email}
-                  disabled={isLoading}
-                  {...register("email")}
-                />
-                {errors.email && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.email.message}</p>
-                )}
-              </div>
-
-              {/* Password */}
-              <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  className={inputClassName}
-                  error={!!errors.password}
-                  disabled={isLoading}
-                  {...register("password")}
-                />
-                {errors.password && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">{errors.password.message}</p>
-                )}
-              </div>
-
-              {/* Confirm Password */}
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirm Password</Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  placeholder="••••••••"
-                  className={inputClassName}
-                  error={!!errors.confirmPassword}
-                  disabled={isLoading}
-                  {...register("confirmPassword")}
-                />
-                {errors.confirmPassword && (
-                  <p className="text-xs font-medium text-red-500 dark:text-red-400 dark:text-red-400">
-                    {errors.confirmPassword.message}
-                  </p>
-                )}
-              </div>
-            </div>
-
-            {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full h-12 rounded-full bg-primary hover:bg-primary/90 text-white mt-2"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Creating account...
-                </>
-              ) : (
-                "Create Account"
               )}
-            </Button>
+            />
+            {errors.dateOfBirth && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">
+                {errors.dateOfBirth.message}
+              </p>
+            )}
+          </div>
 
-            <div className="text-center text-sm text-muted-foreground">
-              Already have an account?{" "}
-              <Link href="/sign-in" className="font-semibold text-primary hover:text-primary/80">
-                Sign in
-              </Link>
+          {/* District */}
+          <div className="space-y-2.5">
+            <Label htmlFor="district">District</Label>
+            <Controller
+              name="district"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  id="district"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  options={DISTRICTS}
+                  placeholder="Select district"
+                  icon={MapPin}
+                  error={!!errors.district}
+                  disabled={isLoading}
+                />
+              )}
+            />
+            {errors.district && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.district.message}</p>
+            )}
+          </div>
+
+          {/* AL Stream */}
+          <div className="space-y-2.5">
+            <Label htmlFor="alStream">A/L Stream</Label>
+            <Controller
+              name="alStream"
+              control={control}
+              render={({ field }) => (
+                <Select
+                  id="alStream"
+                  value={field.value}
+                  onChange={field.onChange}
+                  onBlur={field.onBlur}
+                  options={AL_STREAMS}
+                  placeholder="Select A/L stream"
+                  icon={GraduationCap}
+                  error={!!errors.alStream}
+                  disabled={isLoading}
+                />
+              )}
+            />
+            {errors.alStream && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.alStream.message}</p>
+            )}
+          </div>
+
+          {/* Address (full width) */}
+          <div className="space-y-2.5 sm:col-span-2">
+            <Label htmlFor="address">Address</Label>
+            <div className="relative">
+              <Home className={fieldIconClassName} />
+              <Input
+                id="address"
+                type="text"
+                placeholder="123 Main Street, Colombo"
+                className={inputClassName}
+                error={!!errors.address}
+                disabled={isLoading}
+                {...register("address")}
+              />
             </div>
-          </form>
-        </div>
-      </div>
+            {errors.address && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.address.message}</p>
+            )}
+          </div>
 
-      {/* Right Panel — Branding */}
-      <div className="hidden lg:flex w-1/2 items-center justify-center bg-background p-6">
-        <div className="w-full h-full rounded-4xl bg-primary shadow-xl flex items-center justify-center p-12">
-          <div className="max-w-md text-white space-y-4">
-            <h1 className="text-4xl font-bold leading-tight">
-              Become job-ready in AI, Full-Stack &amp; Cybersecurity
-            </h1>
-            <p className="text-blue-100 text-lg">
-              Join Foundry Academy&apos;s practical bootcamps — real projects, expert mentorship,
-              and a clear path into tech careers.
-            </p>
+          {/* Email (full width) */}
+          <div className="space-y-2.5 sm:col-span-2">
+            <Label htmlFor="email">Email Address</Label>
+            <div className="relative">
+              <Mail className={fieldIconClassName} />
+              <Input
+                id="email"
+                type="email"
+                placeholder="name@example.com"
+                className={inputClassName}
+                error={!!errors.email}
+                disabled={isLoading}
+                {...register("email")}
+              />
+            </div>
+            {errors.email && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
+            )}
+          </div>
+
+          {/* Password */}
+          <div className="space-y-2.5">
+            <Label htmlFor="password">Password</Label>
+            <div className="relative">
+              <Lock className={fieldIconClassName} />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                className={inputClassName}
+                error={!!errors.password}
+                disabled={isLoading}
+                {...register("password")}
+              />
+            </div>
+            {errors.password && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.password.message}</p>
+            )}
+          </div>
+
+          {/* Confirm Password */}
+          <div className="space-y-2.5">
+            <Label htmlFor="confirmPassword">Confirm Password</Label>
+            <div className="relative">
+              <Lock className={fieldIconClassName} />
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                className={inputClassName}
+                error={!!errors.confirmPassword}
+                disabled={isLoading}
+                {...register("confirmPassword")}
+              />
+            </div>
+            {errors.confirmPassword && (
+              <p className="text-xs font-medium text-red-500 dark:text-red-400">
+                {errors.confirmPassword.message}
+              </p>
+            )}
           </div>
         </div>
-      </div>
+
+        {/* Submit Button */}
+        <Button
+          type="submit"
+          className="w-full h-12 rounded-full bg-linear-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white mt-6 flex items-center justify-center gap-2"
+          disabled={isLoading}
+        >
+          {isLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Creating account...
+            </>
+          ) : (
+            <>
+              Create Account
+              <ArrowRight className="h-4 w-4" />
+            </>
+          )}
+        </Button>
+
+        <div className="text-center text-sm text-muted-foreground">
+          Already have an account?{" "}
+          <button
+            type="button"
+            onClick={onSignInClick}
+            className="font-semibold text-primary hover:text-primary/80"
+          >
+            Sign in
+          </button>
+        </div>
+      </form>
     </div>
   );
 }

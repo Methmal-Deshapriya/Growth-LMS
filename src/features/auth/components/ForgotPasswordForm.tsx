@@ -66,7 +66,7 @@ export default function ForgotPasswordForm() {
         <p className="text-muted-foreground">
           We&apos;ve sent a link to reset your password. The link expires in 1 hour.
         </p>
-        <Link href="/sign-in" className="font-semibold text-primary hover:text-primary">
+        <Link href="/?slide=auth&authView=sign-in" className="font-semibold text-primary hover:text-primary">
           Back to sign in
         </Link>
       </div>
@@ -103,7 +103,7 @@ export default function ForgotPasswordForm() {
           )}
           {notRegistered && (
             <p className="text-xs text-muted-foreground">
-              <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
+              <Link href="/?slide=auth&authView=sign-up" className="font-semibold text-primary hover:text-primary">
                 Create an account
               </Link>{" "}
               instead?
@@ -129,7 +129,7 @@ export default function ForgotPasswordForm() {
 
         <div className="text-center text-sm text-muted-foreground">
           Remembered your password?{" "}
-          <Link href="/sign-in" className="font-semibold text-primary hover:text-primary">
+          <Link href="/?slide=auth&authView=sign-in" className="font-semibold text-primary hover:text-primary">
             Sign in
           </Link>
         </div>

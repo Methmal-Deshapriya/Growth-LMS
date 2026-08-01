@@ -1,0 +1,28 @@
+"use client";
+
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAppSelector } from "@/store/hooks";
+import { selectIsAuthenticated, selectIsAuthResolved } from "../authSelectors";
+
+/**
+ * useGuestGuard
+ *
+ * Redirects to /dashboard once the session resolves as authenticated.
+ * Shared by GuestGuard (wraps forgot-password/reset-password/verify-email
+ * routes) and AuthSlide (the landing page's sign-up/sign-in slide, which
+ * isn't a route so can't use a route-level guard component).
+ */
+export function useGuestGuard() {
+  const router = useRouter();
+  const isAuthenticated = useAppSelector(selectIsAuthenticated);
+  const isAuthResolved = useAppSelector(selectIsAuthResolved);
+
+  useEffect(() => {
+    if (isAuthResolved && isAuthenticated) {
+      router.replace("/dashboard");
+    }
+  }, [isAuthenticated, isAuthResolved, router]);
+
+  return { isAuthResolved, isAuthenticated };
+}

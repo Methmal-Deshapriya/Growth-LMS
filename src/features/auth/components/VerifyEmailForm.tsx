@@ -92,7 +92,7 @@ export default function VerifyEmailForm() {
         <p className="text-muted-foreground">
           We couldn&apos;t tell which account to verify. Please sign up again.
         </p>
-        <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
+        <Link href="/?slide=auth&authView=sign-up" className="font-semibold text-primary hover:text-primary">
           Back to sign up
         </Link>
       </div>

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
-import { Loader2, Mail, Lock } from "lucide-react";
+import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 // 1. Define Validation Schema (Matches backend logic)
@@ -22,12 +22,20 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+// Matches SignUpForm's input styling so both views look identical apart
+// from the fields themselves.
+const inputClassName =
+  "h-12 rounded-xl border-input bg-muted/50 pl-10 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:border-primary";
+
 /**
  * SignInForm Component
- * 
- * Handles user login with validation and error feedback.
+ *
+ * Handles user login with validation and error feedback. Rendered as the
+ * swappable left-panel content inside AuthSlide, which owns the shared
+ * two-column shell/branding panel — `onSignUpClick` swaps to the sign-up
+ * view in place rather than navigating to a separate route.
  */
-export default function SignInForm() {
+export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => void }) {
   const router = useRouter();
   const [login, { isLoading }] = useLoginMutation();
 
@@ -50,7 +58,7 @@ export default function SignInForm() {
     try {
       await login(data).unwrap();
       toast.success("Welcome back to Foundry Academy!");
-      // Redirection is handled by GuestGuard automatically because isAuthenticated changes
+      // Redirection is handled by useGuestGuard automatically because isAuthenticated changes
     } catch (err: any) {
       if (err.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before logging in.");
@@ -70,23 +78,23 @@ export default function SignInForm() {
   };
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-foreground">Sign In</h2>
-        <p className="text-muted-foreground">Access your learning dashboard</p>
+    <div className="w-full space-y-6">
+      <div className="space-y-2">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">Sign In</h2>
+        <p className="font-alt text-[#5B6472]">Access your learning dashboard</p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         {/* Email Field */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <Label htmlFor="email">Email Address</Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="email"
               type="email"
               placeholder="name@example.com"
-              className="pl-10"
+              className={inputClassName}
               error={!!errors.email}
               disabled={isLoading}
               {...register("email")}
@@ -98,23 +106,23 @@ export default function SignInForm() {
         </div>
 
         {/* Password Field */}
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           <div className="flex items-center justify-between">
             <Label htmlFor="password">Password</Label>
-            <Link 
-              href="/forgot-password" 
+            <Link
+              href="/forgot-password"
               className="text-xs font-medium text-primary hover:text-primary"
             >
               Forgot password?
             </Link>
           </div>
           <div className="relative">
-            <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="password"
               type="password"
               placeholder="••••••••"
-              className="pl-10"
+              className={inputClassName}
               error={!!errors.password}
               disabled={isLoading}
               {...register("password")}
@@ -126,26 +134,33 @@ export default function SignInForm() {
         </div>
 
         {/* Submit Button */}
-        <Button 
-          type="submit" 
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-white" 
+        <Button
+          type="submit"
+          className="w-full h-12 rounded-full bg-linear-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white mt-6 flex items-center justify-center gap-2"
           disabled={isLoading}
         >
           {isLoading ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Signing in...
             </>
           ) : (
-            "Sign In"
+            <>
+              Sign In
+              <ArrowRight className="h-4 w-4" />
+            </>
           )}
         </Button>
 
         <div className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
+          <button
+            type="button"
+            onClick={onSignUpClick}
+            className="font-semibold text-primary hover:text-primary"
+          >
             Sign up for free
-          </Link>
+          </button>
         </div>
       </form>
     </div>

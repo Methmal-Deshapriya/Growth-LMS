@@ -1,18 +1,14 @@
 import React, { Suspense } from "react";
 import VerifyEmailForm from "@/features/auth/components/VerifyEmailForm";
-import Image from "next/image";
-import Link from "next/link";
+import { AuthPageShell } from "@/components/auth/AuthPageShell";
 
 const VerifyEmailPage = () => {
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-background p-4">
-      <Link href="/" className="mb-8 hover:opacity-80 transition-opacity">
-        <Image src="/assets/logo.png" alt="Foundry Academy" width={150} height={150} />
-      </Link>
+    <AuthPageShell>
       <Suspense fallback={null}>
         <VerifyEmailForm />
       </Suspense>
-    </div>
+    </AuthPageShell>
   );
 };
 
