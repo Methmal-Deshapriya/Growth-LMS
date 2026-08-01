@@ -8,8 +8,6 @@ const PROTECTED_PATHS = [
   "/certificates",
 ];
 const AUTH_ONLY_PATHS = [
-  "/sign-in",
-  "/sign-up",
   "/forgot-password",
   "/reset-password",
   "/verify-email",
@@ -23,7 +21,7 @@ export function proxy(req: NextRequest) {
   const isAuthOnly = AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p));
 
   if (isProtected && !token) {
-    return NextResponse.redirect(new URL("/sign-in", req.url));
+    return NextResponse.redirect(new URL("/?slide=auth", req.url));
   }
 
   if (isAuthOnly && token) {
@@ -40,8 +38,6 @@ export const config = {
     "/my-courses/:path*",
     "/projects/:path*",
     "/certificates/:path*",
-    "/sign-in",
-    "/sign-up",
     "/forgot-password",
     "/reset-password",
     "/verify-email",

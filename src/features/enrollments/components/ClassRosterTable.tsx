@@ -4,12 +4,11 @@ import React, { useState } from "react";
 import { ClassRosterEntry, PaymentStatus, EnrollmentStatus } from "../enrollmentsTypes";
 import { useUpdateEnrollmentMutation } from "../enrollmentsApi";
 import { useIssueCertificateMutation } from "@/features/certificates/certificatesApi";
-import { format } from "date-fns";
-import { User, Mail, Calendar, Shield, Edit2, Check, X, Award, Loader2 } from "lucide-react";
+import { User, Mail, Edit2, Check, X, Award, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/api";
 
 interface ClassRosterTableProps {
   entries: ClassRosterEntry[];
@@ -23,11 +22,9 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
   const [editForm, setEditForm] = useState<{
     status: EnrollmentStatus;
     paymentStatus: PaymentStatus;
-    studentCode: string;
   }>({
     status: "ACTIVE",
     paymentStatus: "PENDING",
-    studentCode: "",
   });
 
   const handleEdit = (entry: ClassRosterEntry) => {
@@ -35,7 +32,6 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
     setEditForm({
       status: entry.status,
       paymentStatus: entry.paymentStatus,
-      studentCode: entry.studentCode || "",
     });
   };
 
@@ -44,8 +40,8 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
       await updateEnrollment({ id, data: editForm }).unwrap();
       toast.success("Enrollment updated successfully");
       setEditingId(null);
-    } catch (err: any) {
-      toast.error(err.data?.message || "Failed to update enrollment");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to update enrollment"));
     }
   };
 
@@ -57,8 +53,8 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
         data: { description: "Successfully completed the bootcamp." },
       }).unwrap();
       toast.success("Certificate issued successfully!");
-    } catch (err: any) {
-      toast.error(err.data?.message || "Failed to issue certificate");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to issue certificate"));
     }
   };
 
@@ -87,7 +83,6 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Enrollment Status</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Payment</th>
-              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student Code</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
             </tr>
           </thead>
@@ -144,19 +139,6 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                     <span className={cn("inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border", getPaymentColor(entry.paymentStatus))}>
                       {entry.paymentStatus}
                     </span>
-                  )}
-                </td>
-
-                <td className="px-6 py-4">
-                  {editingId === entry.id ? (
-                    <Input
-                      className="h-8 text-sm"
-                      value={editForm.studentCode}
-                      onChange={(e) => setEditForm({ ...editForm, studentCode: e.target.value })}
-                      placeholder="Code"
-                    />
-                  ) : (
-                    <span className="text-sm font-mono text-foreground">{entry.studentCode || "-"}</span>
                   )}
                 </td>
 

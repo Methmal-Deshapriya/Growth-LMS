@@ -6,9 +6,6 @@ import AuthInitializer from "@/features/auth/components/AuthInitializer";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { ThemedToaster } from "@/components/ThemedToaster";
 
-// ... (skipping metadata for brevity in old_string if possible, but tool requires exact match)
-
-
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

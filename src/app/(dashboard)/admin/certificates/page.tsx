@@ -2,13 +2,14 @@
 
 import React, { useState } from "react";
 import { useGetAllCertificatesAdminQuery, useRevokeCertificateMutation } from "@/features/certificates/certificatesApi";
-import { Loader2, Award, ShieldAlert, XCircle, Search, ExternalLink } from "lucide-react";
+import { Loader2, ShieldAlert, XCircle, Search, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Link from "next/link";
+import { getApiErrorMessage } from "@/lib/api";
 
 /**
  * Admin Certificates Page
@@ -31,8 +32,8 @@ export default function AdminCertificatesPage() {
         data: { revocationReason: reason },
       }).unwrap();
       toast.success("Certificate revoked successfully");
-    } catch (err: any) {
-      toast.error(err.data?.message || "Failed to revoke certificate");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to revoke certificate"));
     }
   };
 

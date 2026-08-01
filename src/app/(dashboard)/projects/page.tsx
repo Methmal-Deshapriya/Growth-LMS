@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
+import Image from "next/image";
+import { projectImageLoader } from "@/lib/projectImage";
 
 /**
  * My Projects Page
@@ -73,7 +75,15 @@ export default function MyProjectsPage() {
                 {/* Image Preview Placeholder / Thumbnail */}
                 <div className="aspect-video bg-muted relative overflow-hidden">
                   {project.thumbnailUrl ? (
-                    <img src={project.thumbnailUrl} alt={project.title} className="object-cover w-full h-full transition-transform duration-500 group-hover:scale-105" />
+                    <Image
+                      loader={projectImageLoader}
+                      unoptimized
+                      src={project.thumbnailUrl}
+                      alt={project.title}
+                      fill
+                      sizes="(max-width: 1024px) 100vw, 50vw"
+                      className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-muted-foreground">
                       <FolderCode className="h-20 w-20 opacity-20" />

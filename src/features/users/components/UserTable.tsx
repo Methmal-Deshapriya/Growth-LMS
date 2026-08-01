@@ -11,11 +11,11 @@ import {
   ShieldCheck,
   ArrowUpCircle,
   ArrowDownCircle,
-  MoreHorizontal,
 } from "lucide-react";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/api";
 
 interface UserTableProps {
   users: UserRecord[];
@@ -40,8 +40,8 @@ export default function UserTable({ users }: UserTableProps) {
     try {
       await promote(id).unwrap();
       toast.success(`${name} has been promoted to ADMIN`);
-    } catch (err: any) {
-      toast.error(err.message || "Promotion failed");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Promotion failed"));
     }
   };
 
@@ -55,8 +55,8 @@ export default function UserTable({ users }: UserTableProps) {
     try {
       await demote(id).unwrap();
       toast.success(`${name} has been demoted to STUDENT`);
-    } catch (err: any) {
-      toast.error(err.message || "Demotion failed");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Demotion failed"));
     }
   };
 

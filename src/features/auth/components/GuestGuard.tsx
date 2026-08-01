@@ -1,32 +1,22 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAppSelector } from "@/store/hooks";
-import { selectIsAuthenticated, selectIsAuthResolved } from "../authSelectors";
+import React from "react";
+import { useGuestGuard } from "../hooks/useGuestGuard";
 import { Loader2 } from "lucide-react";
 
 /**
  * GuestGuard Component
- * 
- * Protects routes that should only be accessible to guests (e.g. sign-in, sign-up).
- * If the user IS authenticated, it redirects them to the dashboard.
+ *
+ * Protects routes that should only be accessible to guests (e.g.
+ * forgot-password, reset-password, verify-email). If the user IS
+ * authenticated, it redirects them to the dashboard.
  */
 export default function GuestGuard({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const router = useRouter();
-  const isAuthenticated = useAppSelector(selectIsAuthenticated);
-  const isAuthResolved = useAppSelector(selectIsAuthResolved);
-
-  useEffect(() => {
-    // If we've checked the session and the user IS authenticated
-    if (isAuthResolved && isAuthenticated) {
-      router.replace("/dashboard");
-    }
-  }, [isAuthenticated, isAuthResolved, router]);
+  const { isAuthResolved, isAuthenticated } = useGuestGuard();
 
   // While checking or if already authenticated (before redirect happens)
   if (!isAuthResolved || isAuthenticated) {

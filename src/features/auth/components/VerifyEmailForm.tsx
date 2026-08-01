@@ -1,21 +1,21 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSearchParams, useRouter } from "next/navigation";
 import { useVerifyOtpMutation, useResendOtpMutation } from "../authApi";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { OtpInput } from "@/components/ui/otp-input";
 import { toast } from "sonner";
-import { Loader2, KeyRound } from "lucide-react";
+import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend verifyOtpSchema)
 const verifyOtpSchema = z.object({
-  code: z.string().regex(/^\d{6}$/, "Code must be 6 digits"),
+  code: z.string().regex(/^\d{6}$/, "Enter all 6 digits"),
 });
 
 type VerifyOtpFormValues = z.infer<typeof verifyOtpSchema>;
@@ -39,8 +39,8 @@ export default function VerifyEmailForm() {
   const [cooldown, setCooldown] = useState(0);
 
   const {
-    register,
     handleSubmit,
+    control,
     formState: { errors },
     setError,
   } = useForm<VerifyOtpFormValues>({
@@ -61,14 +61,18 @@ export default function VerifyEmailForm() {
       await verifyOtp({ email, code: values.code }).unwrap();
       toast.success("Email verified! Welcome to Foundry Academy.");
       router.push("/dashboard");
-    } catch (err: any) {
-      if (err.field) {
-        setError(err.field as keyof VerifyOtpFormValues, {
+    } catch (error: unknown) {
+      if (isNormalizedApiError(error) && error.field) {
+        setError("code", {
           type: "server",
-          message: err.message,
+          message: error.message,
         });
       } else {
-        toast.error(err.message || "Verification failed. Please try again.");
+        toast.error(
+          isNormalizedApiError(error)
+            ? error.message
+            : "Verification failed. Please try again.",
+        );
       }
     }
   };
@@ -80,19 +84,26 @@ export default function VerifyEmailForm() {
       await resendOtp({ email }).unwrap();
       toast.success("A new code has been sent to your email.");
       setCooldown(RESEND_COOLDOWN_SECONDS);
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Please try again.");
+    } catch (error: unknown) {
+      toast.error(
+        isNormalizedApiError(error)
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
     }
   };
 
   if (!email) {
     return (
-      <div className="w-full max-w-md space-y-6 p-8 bg-card rounded-2xl shadow-xl border border-border text-center">
-        <h2 className="text-2xl font-bold text-foreground">Missing email</h2>
-        <p className="text-muted-foreground">
+      <div className="w-full max-w-md space-y-4 text-center">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">Missing email</h2>
+        <p className="font-alt text-[#5B6472]">
           We couldn&apos;t tell which account to verify. Please sign up again.
         </p>
-        <Link href="/sign-up" className="font-semibold text-primary hover:text-primary">
+        <Link
+          href="/?slide=auth&authView=sign-up"
+          className="inline-block font-semibold text-primary hover:text-primary/80"
+        >
           Back to sign up
         </Link>
       </div>
@@ -100,50 +111,53 @@ export default function VerifyEmailForm() {
   }
 
   return (
-    <div className="w-full max-w-md space-y-8 p-8 bg-card rounded-2xl shadow-xl border border-border">
-      <div className="text-center space-y-2">
-        <h2 className="text-3xl font-bold text-foreground">Verify Your Email</h2>
-        <p className="text-muted-foreground">
-          Enter the 6-digit code sent to <span className="font-medium">{email}</span>
+    <div className="w-full max-w-md space-y-4">
+      <div className="space-y-1">
+        <h2 className="font-sans text-3xl font-bold text-[#0E1116]">Verify Your Email</h2>
+        <p className="font-alt text-[#5B6472]">
+          Enter the 6-digit code sent to <span className="font-medium text-[#0E1116]">{email}</span>
         </p>
       </div>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         {/* Code Field */}
-        <div className="space-y-2">
-          <Label htmlFor="code">Verification Code</Label>
-          <div className="relative">
-            <KeyRound className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              id="code"
-              type="text"
-              inputMode="numeric"
-              maxLength={6}
-              placeholder="123456"
-              className="pl-10 tracking-[0.3em] text-center"
-              error={!!errors.code}
-              disabled={isVerifying}
-              {...register("code")}
-            />
-          </div>
+        <div className="space-y-4">
+          <Controller
+            name="code"
+            control={control}
+            render={({ field }) => (
+              <OtpInput
+                value={field.value}
+                onChange={field.onChange}
+                onBlur={field.onBlur}
+                error={!!errors.code}
+                disabled={isVerifying}
+              />
+            )}
+          />
           {errors.code && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.code.message}</p>
+            <p className="text-center text-xs font-medium text-red-500 dark:text-red-400">
+              {errors.code.message}
+            </p>
           )}
         </div>
 
         {/* Submit Button */}
         <Button
           type="submit"
-          className="w-full h-11 bg-primary hover:bg-primary/90 text-white"
+          className="w-full h-12 rounded-full bg-linear-to-r from-blue-600 to-indigo-500 hover:opacity-90 text-white mt-6 flex items-center justify-center gap-2"
           disabled={isVerifying}
         >
           {isVerifying ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Loader2 className="h-4 w-4 animate-spin" />
               Verifying...
             </>
           ) : (
-            "Verify Email"
+            <>
+              Verify Email
+              <ArrowRight className="h-4 w-4" />
+            </>
           )}
         </Button>
 
@@ -153,7 +167,7 @@ export default function VerifyEmailForm() {
             type="button"
             onClick={handleResend}
             disabled={isResending || cooldown > 0}
-            className="font-semibold text-primary hover:text-primary disabled:text-muted-foreground disabled:cursor-not-allowed"
+            className="font-semibold text-primary hover:text-primary/80 disabled:text-muted-foreground disabled:cursor-not-allowed"
           >
             {cooldown > 0 ? `Resend code (${cooldown}s)` : "Resend code"}
           </button>

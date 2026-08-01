@@ -4,12 +4,10 @@ import React from "react";
 import { AuditLog } from "../auditTypes";
 import { format } from "date-fns";
 import {
-  History,
   User as UserIcon,
   Activity,
   Database,
   Info,
-  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 

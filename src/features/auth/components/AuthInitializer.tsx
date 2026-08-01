@@ -29,7 +29,7 @@ export default function AuthInitializer({
   // 1. Trigger the /auth/me query
   // We use skip: false (default) so it runs on mount.
   // RTK Query handles the caching, so this won't re-run unnecessarily.
-  const { data, error, isLoading, isSuccess, isError } = useGetMeQuery(
+  const { data, isLoading, isSuccess, isError } = useGetMeQuery(
     undefined,
     {
       // We want to ensure it always tries to fetch on first load

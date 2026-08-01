@@ -4,9 +4,11 @@ import React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useGetAdminBootcampsQuery, useUpdateBootcampMutation } from "@/features/bootcamps/bootcampsApi";
 import BootcampForm from "@/features/bootcamps/components/admin/BootcampForm";
+import type { BootcampFormValues } from "@/features/bootcamps/components/admin/BootcampForm";
 import { ChevronLeft, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api";
 
 /**
  * Edit Bootcamp Page
@@ -24,13 +26,13 @@ export default function EditBootcampPage() {
 
   const targetBootcamp = bootcamps?.find(b => b.id === id);
 
-  const handleUpdate = async (data: any) => {
+  const handleUpdate = async (data: BootcampFormValues) => {
     try {
       await updateBootcamp({ id: id as string, body: data }).unwrap();
       toast.success("Bootcamp updated successfully");
       router.push("/admin/bootcamps");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to update bootcamp");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to update bootcamp"));
     }
   };
 

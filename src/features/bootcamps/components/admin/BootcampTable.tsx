@@ -9,7 +9,6 @@ import {
 } from "../../bootcampsApi";
 import { Button } from "@/components/ui/button";
 import { 
-  MoreVertical, 
   Edit, 
   Trash2, 
   Globe, 
@@ -23,6 +22,7 @@ import { toast } from "sonner";
 import Link from "next/link";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/api";
 
 interface BootcampTableProps {
   bootcamps: BootcampAdmin[];
@@ -46,8 +46,8 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
     try {
       await deleteBootcamp(id).unwrap();
       toast.success("Bootcamp deleted successfully");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete bootcamp");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to delete bootcamp"));
     }
   };
 
@@ -60,8 +60,8 @@ export default function BootcampTable({ bootcamps }: BootcampTableProps) {
         await publish(bootcamp.id).unwrap();
         toast.success(`"${bootcamp.title}" is now live!`);
       }
-    } catch (err: any) {
-      toast.error(err.message || "Action failed");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Action failed"));
     }
   };
 

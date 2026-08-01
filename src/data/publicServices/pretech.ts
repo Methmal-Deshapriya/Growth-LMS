@@ -1,0 +1,115 @@
+import { Layers, BookOpen, Compass } from "lucide-react";
+import type { PublicServiceConfig } from "@/components/marketing/public-service/types";
+import { SERVICE_ACCENT } from "@/components/marketing/public-service/accent";
+import { pretechSection } from "@/data/catalog/pretech";
+
+const SUBJECT_META: Record<string, { description: string; iconGradient: string; accentText: string }> = {
+  maths: {
+    description: "Algebra, functions and calculus fundamentals shared across BICT, BBST and BET.",
+    iconGradient: "from-indigo-500 to-indigo-600",
+    accentText: "text-indigo-600",
+  },
+  physics: {
+    description: "Mechanics, waves and the physics fundamentals every incoming student needs.",
+    iconGradient: "from-blue-500 to-blue-600",
+    accentText: "text-blue-600",
+  },
+  statistics: {
+    description: "Descriptive and inferential statistics for reasoning about real data.",
+    iconGradient: "from-violet-500 to-violet-600",
+    accentText: "text-violet-600",
+  },
+  "c-programming": {
+    description: "Your first steps writing structured programs, from variables to pointers.",
+    iconGradient: "from-teal-500 to-teal-600",
+    accentText: "text-teal-600",
+  },
+};
+
+export const pretechServiceConfig: PublicServiceConfig = {
+  basePath: pretechSection.basePath,
+  breadcrumbLabel: pretechSection.eyebrow,
+  accent: SERVICE_ACCENT,
+  hero: {
+    eyebrow: "PreTech",
+    title: "Build a strong foundation before",
+    highlight: "university starts",
+    description:
+      "Structured preparation in the core subjects every BICT, BBST and BET student needs — built to make your first year feel familiar, not overwhelming.",
+    illustration: {
+      src: "/assets/pretech-hero.png",
+      alt: "Illustration of a tablet with maths and physics formulas, a periodic table, books, and a calculator, representing PreTech subjects",
+    },
+    indicators: [
+      { icon: Layers, label: "4 core subjects" },
+      { icon: BookOpen, label: "Exam-style practice" },
+      { icon: Compass, label: "Foundation-level pacing" },
+    ],
+  },
+  categorySection: {
+    title: "Choose your",
+    highlight: "subject",
+    description: "Start with the subject you want to strengthen before your first semester.",
+    itemLabel: "subjects",
+    items: pretechSection.groups.map((group) => {
+      const meta = SUBJECT_META[group.slug];
+      return {
+        id: group.slug,
+        title: group.title,
+        description: meta.description,
+        href: `${pretechSection.basePath}/${group.slug}`,
+        icon: group.icon,
+        accentText: meta.accentText,
+        iconGradient: meta.iconGradient,
+        metadata: [`${group.courses.length} courses`, "Foundation level"],
+      };
+    }),
+  },
+  processSection: {
+    title: "How PreTech works",
+    description: "A steady path from assessing your foundation to being ready for your first university modules.",
+    steps: [
+      { title: "Assess your foundation", description: "See where you stand before your first semester begins." },
+      { title: "Learn core theory", description: "Build a clear understanding of the key concepts in each subject." },
+      { title: "Practise questions", description: "Work through exam-style problems to build confidence." },
+      { title: "Prepare for university modules", description: "Enter your first year with the foundations already in place." },
+    ],
+  },
+  faqSection: {
+    title: "Frequently asked questions",
+    items: [
+      {
+        question: "Do I need to have studied these subjects before?",
+        answer:
+          "Some subjects assume no prior background, while others build on general secondary-level knowledge. Each subject page shows what's expected before you start.",
+      },
+      {
+        question: "Which subject should I start with?",
+        answer:
+          "Most students begin with Mathematics and Physics, since they underpin the other subjects, but you can start wherever you feel least confident.",
+      },
+      {
+        question: "Is this the same as my university's syllabus?",
+        answer:
+          "PreTech covers the core foundations shared across BICT, BBST and BET rather than one specific university's syllabus, so it transfers well regardless of where you enrol.",
+      },
+      {
+        question: "Can I study more than one subject at a time?",
+        answer:
+          "Yes. Many students work through two subjects in parallel, especially Mathematics alongside Physics or Statistics.",
+      },
+      {
+        question: "How is this different from the IT bootcamps?",
+        answer:
+          "PreTech is aimed at preparing you before university starts, while the IT bootcamps are industry-facing tracks for building job-ready skills.",
+      },
+    ],
+  },
+  ctaSection: {
+    title: "Pick a subject and start preparing.",
+    description: "Compare the modules inside each subject and start at the level that matches where you are right now.",
+    primaryLabel: "Explore subjects",
+    secondaryLabel: "Not sure where to begin?",
+    secondaryHref: "/consultations",
+  },
+};

@@ -1,6 +1,5 @@
 import React from "react";
-import Navbar from "@/components/layout/Navbar";
-import Footer from "@/components/layout/Footer";
+import { ForceLightTheme } from "@/components/ForceLightTheme";
 
 export default function PublicLayout({
   children,
@@ -8,12 +7,8 @@ export default function PublicLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <main>
-      <div className="relative flex flex-col items-center justify-center bg-background font-sans">
-        <Navbar />
-        {children}
-        <Footer />
-      </div>
-    </main>
+    <ForceLightTheme>
+      <main>{children}</main>
+    </ForceLightTheme>
   );
 }
