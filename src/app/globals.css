@@ -131,3 +131,24 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Slim, soft-blue scrollbar for the click-driven marketing/catalog pages */
+.catalog-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(37, 99, 235, 0.3) transparent;
+}
+.catalog-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.catalog-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.catalog-scrollbar::-webkit-scrollbar-thumb {
+  background-color: rgba(37, 99, 235, 0.3);
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+.catalog-scrollbar::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(37, 99, 235, 0.5);
+}

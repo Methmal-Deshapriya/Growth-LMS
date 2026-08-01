@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { GroupGrid } from "@/components/marketing/catalog/GroupGrid";
-import { itBootcampsSection } from "@/data/catalog/itBootcamps";
+import { PublicServicePage } from "@/components/marketing/public-service/PublicServicePage";
+import { itBootcampsServiceConfig } from "@/data/publicServices/itBootcamps";
 
 export default function ItBootcampsPage() {
-  return <GroupGrid section={itBootcampsSection} />;
+  return <PublicServicePage config={itBootcampsServiceConfig} />;
 }

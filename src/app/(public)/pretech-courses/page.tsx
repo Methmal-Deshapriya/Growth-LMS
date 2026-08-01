@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { GroupGrid } from "@/components/marketing/catalog/GroupGrid";
-import { pretechSection } from "@/data/catalog/pretech";
+import { PublicServicePage } from "@/components/marketing/public-service/PublicServicePage";
+import { pretechServiceConfig } from "@/data/publicServices/pretech";
 
 export default function PretechCoursesPage() {
-  return <GroupGrid section={pretechSection} />;
+  return <PublicServicePage config={pretechServiceConfig} />;
 }

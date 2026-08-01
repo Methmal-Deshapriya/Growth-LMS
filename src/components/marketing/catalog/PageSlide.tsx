@@ -64,7 +64,7 @@ export function PageSlide({
       )}
 
       <div
-        className="absolute inset-0 overflow-y-auto flex items-start sm:items-center justify-center px-3 sm:px-6 pt-20 sm:pt-16 pb-24"
+        className="catalog-scrollbar absolute inset-0 overflow-y-auto scroll-smooth flex items-start justify-center px-3 sm:px-6 pt-28 sm:pt-24 pb-24"
         style={background ? { background } : undefined}
       >
         <div className="w-full">{children}</div>

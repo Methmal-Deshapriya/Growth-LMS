@@ -1,9 +1,9 @@
 "use client";
 
 import React from "react";
-import { GroupGrid } from "@/components/marketing/catalog/GroupGrid";
-import { contributionsSection } from "@/data/catalog/contributions";
+import { PublicServicePage } from "@/components/marketing/public-service/PublicServicePage";
+import { contributionsServiceConfig } from "@/data/publicServices/contributions";
 
 export default function ContributionsPage() {
-  return <GroupGrid section={contributionsSection} />;
+  return <PublicServicePage config={contributionsServiceConfig} />;
 }
