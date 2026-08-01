@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
@@ -28,15 +28,12 @@ import {
 import { useLogoutMutation } from "@/features/auth/authApi";
 import { toast } from "sonner";
 
-const COLLAPSE_STORAGE_KEY = "dashboard-sidebar-collapsed";
-
 /**
  * DashboardSidebar Component
  *
  * Renders the main navigation for authenticated users, as a floating navy
- * panel alongside the main content area. Collapsible to an icon-only rail
- * (state persisted in localStorage) — navigation items are filtered based
- * on the user's role.
+ * panel alongside the main content area. It collapses to an icon-only rail,
+ * and navigation items are filtered based on the user's role.
  */
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -46,19 +43,7 @@ export default function DashboardSidebar() {
   const [logout] = useLogoutMutation();
   const [collapsed, setCollapsed] = useState(false);
 
-  useEffect(() => {
-    if (localStorage.getItem(COLLAPSE_STORAGE_KEY) === "true") {
-      setCollapsed(true);
-    }
-  }, []);
-
-  const toggleCollapsed = () => {
-    setCollapsed((prev) => {
-      const next = !prev;
-      localStorage.setItem(COLLAPSE_STORAGE_KEY, String(next));
-      return next;
-    });
-  };
+  const toggleCollapsed = () => setCollapsed((previous) => !previous);
 
   const handleLogout = async () => {
     try {

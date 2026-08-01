@@ -10,7 +10,6 @@ export type MyEnrollment = {
   userId: string;
   bootcampId: string;
   status: EnrollmentStatus;
-  studentCode?: string | null;
   paymentStatus: PaymentStatus;
   paymentCompletedAt?: string | null;
   completedAt?: string | null;
@@ -26,13 +25,11 @@ export type ClassRosterEntry = Omit<MyEnrollment, "bootcamp"> & {
 export type CreateEnrollmentRequest = {
   userId: string;
   bootcampId: string;
-  studentCode?: string;
   paymentStatus?: PaymentStatus;
 };
 
 export type UpdateEnrollmentRequest = {
   status?: EnrollmentStatus;
-  studentCode?: string;
   paymentStatus?: PaymentStatus;
   paymentCompletedAt?: string | null;
   completedAt?: string | null;

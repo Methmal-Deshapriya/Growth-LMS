@@ -6,7 +6,6 @@ import {
   useCreateSessionMutation, 
   useUpdateSessionMutation, 
   useDeleteSessionMutation,
-  useReorderSessionsMutation
 } from "../../sessionsApi";
 import { Session, CreateSessionRequest } from "../../sessionsTypes";
 import { 
@@ -28,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
+import { getApiErrorMessage } from "@/lib/api";
 
 interface SessionManagerProps {
   bootcampId: string;
@@ -43,8 +42,7 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
   const { data: sessions, isLoading, isError } = useGetBootcampSessionsQuery(bootcampId);
   const [createSession, { isLoading: isCreating }] = useCreateSessionMutation();
   const [updateSession, { isLoading: isUpdating }] = useUpdateSessionMutation();
-  const [deleteSession, { isLoading: isDeleting }] = useDeleteSessionMutation();
-  const [reorderSessions] = useReorderSessionsMutation();
+  const [deleteSession] = useDeleteSessionMutation();
 
   const [isAdding, setIsAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -105,8 +103,8 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
         toast.success("Session created");
       }
       resetForm();
-    } catch (err: any) {
-      toast.error(err.message || "Action failed");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Action failed"));
     }
   };
 
@@ -115,8 +113,8 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
     try {
       await deleteSession(id).unwrap();
       toast.success("Session deleted");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to delete");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to delete"));
     }
   };
 
@@ -126,12 +124,20 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
         id: session.id, 
         data: { isPublished: !session.isPublished } 
       }).unwrap();
-    } catch (err: any) {
-      toast.error("Failed to update status");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to update status"));
     }
   };
 
   if (isLoading) return <div className="py-20 text-center"><Loader2 className="animate-spin mx-auto h-8 w-8 text-primary" /></div>;
+
+  if (isError) {
+    return (
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center text-red-700">
+        Failed to load sessions.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

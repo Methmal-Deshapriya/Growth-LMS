@@ -1,5 +1,4 @@
 import { baseApi } from "@/store/baseApi";
-import type { ApiSuccess } from "@/lib/api";
 import type {
   Bootcamp,
   BootcampAdmin,

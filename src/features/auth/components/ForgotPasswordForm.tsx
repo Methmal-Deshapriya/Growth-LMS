@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Mail, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend forgotPasswordSchema)
 const forgotPasswordSchema = z.object({
@@ -52,13 +53,17 @@ export default function ForgotPasswordForm() {
 
     try {
       await forgotPassword(data).unwrap();
-    } catch (err: any) {
-      if (err.code === "NOT_FOUND") {
-        setError("email", { type: "server", message: err.message });
+    } catch (error: unknown) {
+      if (isNormalizedApiError(error) && error.code === "NOT_FOUND") {
+        setError("email", { type: "server", message: error.message });
         setNotRegistered(true);
         return;
       }
-      toast.error(err.message || "Something went wrong. Please try again.");
+      toast.error(
+        isNormalizedApiError(error)
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
       return;
     }
     setSubmitted(true);

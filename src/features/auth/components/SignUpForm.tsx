@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useRegisterMutation } from "../authApi";
+import type { RegisterRequest } from "../authTypes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -14,6 +15,7 @@ import { DatePicker } from "@/components/ui/date-picker";
 import { DISTRICTS, AL_STREAMS } from "@/lib/constants";
 import { toast } from "sonner";
 import { Loader2, User, Phone, MapPin, GraduationCap, Home, Mail, Lock, ArrowRight } from "lucide-react";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend registerSchema + confirm password)
 const registerSchema = z
@@ -85,8 +87,17 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
   // 3. Handle Submit
   const onSubmit = async (values: RegisterFormValues) => {
     try {
-      // Send only the fields the backend expects (drop confirmPassword)
-      const { confirmPassword: _confirmPassword, ...payload } = values;
+      const payload: RegisterRequest = {
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        phone: values.phone,
+        address: values.address,
+        district: values.district,
+        dateOfBirth: values.dateOfBirth,
+        alStream: values.alStream,
+      };
 
       await registerUser(payload).unwrap();
       toast.success("Account created! Check your email for a verification code.");
@@ -94,15 +105,19 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
       // email via OTP first, so we redirect explicitly rather than
       // relying on GuestGuard's isAuthenticated-driven redirect.
       router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
-    } catch (err: any) {
+    } catch (error: unknown) {
       // Check if it's a normalized field error from our baseApi
-      if (err.field) {
-        setError(err.field as any, {
+      if (isNormalizedApiError(error) && error.field) {
+        setError(error.field as keyof RegisterFormValues, {
           type: "server",
-          message: err.message,
+          message: error.message,
         });
       } else {
-        toast.error(err.message || "Registration failed. Please try again.");
+        toast.error(
+          isNormalizedApiError(error)
+            ? error.message
+            : "Registration failed. Please try again.",
+        );
       }
     }
   };

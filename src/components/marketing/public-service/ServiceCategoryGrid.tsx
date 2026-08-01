@@ -6,7 +6,6 @@ import type { PublicServiceConfig } from "./types";
 
 export function ServiceCategoryGrid({
   categorySection,
-  accent,
 }: Pick<PublicServiceConfig, "categorySection" | "accent">) {
   return (
     <section id="categories" className="mb-16 sm:mb-24 scroll-mt-20">

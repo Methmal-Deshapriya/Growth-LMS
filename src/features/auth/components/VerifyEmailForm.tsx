@@ -11,6 +11,7 @@ import { OtpInput } from "@/components/ui/otp-input";
 import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend verifyOtpSchema)
 const verifyOtpSchema = z.object({
@@ -60,14 +61,18 @@ export default function VerifyEmailForm() {
       await verifyOtp({ email, code: values.code }).unwrap();
       toast.success("Email verified! Welcome to Foundry Academy.");
       router.push("/dashboard");
-    } catch (err: any) {
-      if (err.field) {
-        setError(err.field as keyof VerifyOtpFormValues, {
+    } catch (error: unknown) {
+      if (isNormalizedApiError(error) && error.field) {
+        setError("code", {
           type: "server",
-          message: err.message,
+          message: error.message,
         });
       } else {
-        toast.error(err.message || "Verification failed. Please try again.");
+        toast.error(
+          isNormalizedApiError(error)
+            ? error.message
+            : "Verification failed. Please try again.",
+        );
       }
     }
   };
@@ -79,8 +84,12 @@ export default function VerifyEmailForm() {
       await resendOtp({ email }).unwrap();
       toast.success("A new code has been sent to your email.");
       setCooldown(RESEND_COOLDOWN_SECONDS);
-    } catch (err: any) {
-      toast.error(err.message || "Something went wrong. Please try again.");
+    } catch (error: unknown) {
+      toast.error(
+        isNormalizedApiError(error)
+          ? error.message
+          : "Something went wrong. Please try again.",
+      );
     }
   };
 

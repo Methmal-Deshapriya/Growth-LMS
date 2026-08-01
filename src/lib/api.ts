@@ -22,6 +22,30 @@ export type NormalizedApiError = {
   details?: unknown;
 };
 
+export function isNormalizedApiError(
+  value: unknown,
+): value is NormalizedApiError {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "status" in value &&
+    "message" in value &&
+    typeof (value as { message?: unknown }).message === "string"
+  );
+}
+
+export function getApiErrorMessage(error: unknown, fallback: string) {
+  if (isNormalizedApiError(error)) {
+    return error.message;
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return fallback;
+}
+
 export function isApiErrorResponse(value: unknown): value is ApiErrorResponse {
   return (
     typeof value === "object" &&
@@ -65,4 +89,3 @@ export function toNormalizedApiError(
     details: data,
   };
 }
-

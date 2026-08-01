@@ -3,11 +3,13 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import { useGetProjectDetailsQuery } from "@/features/projects/projectsApi";
-import { Loader2, ArrowLeft, Github, Globe, Calendar, User, BookOpen, Layout, MessageSquare, CheckCircle2, XCircle, Clock } from "lucide-react";
+import { Loader2, ArrowLeft, Github, Globe, Calendar, User, BookOpen, Layout, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
+import { projectImageLoader } from "@/lib/projectImage";
 
 /**
  * Project Details Page (Student/Admin View)
@@ -65,9 +67,17 @@ export default function ProjectDetailsPage() {
         <div className="lg:col-span-2 space-y-8">
           <div className="bg-card rounded-3xl border border-border shadow-sm overflow-hidden">
             {/* Project Cover/Thumbnail */}
-            <div className="aspect-video bg-background flex items-center justify-center border-b border-border overflow-hidden">
+            <div className="relative aspect-video bg-background flex items-center justify-center border-b border-border overflow-hidden">
               {project.thumbnailUrl ? (
-                <img src={project.thumbnailUrl} alt={project.title} className="w-full h-full object-cover" />
+                <Image
+                  loader={projectImageLoader}
+                  unoptimized
+                  src={project.thumbnailUrl}
+                  alt={project.title}
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 66vw"
+                  className="object-cover"
+                />
               ) : (
                 <Layout className="h-24 w-24 text-muted-foreground" />
               )}
@@ -113,7 +123,7 @@ export default function ProjectDetailsPage() {
                 <h3 className="text-lg font-bold text-primary">Instructor Feedback</h3>
               </div>
               <p className="text-blue-800 leading-relaxed italic">
-                "{project.adminFeedback}"
+                &ldquo;{project.adminFeedback}&rdquo;
               </p>
             </div>
           )}

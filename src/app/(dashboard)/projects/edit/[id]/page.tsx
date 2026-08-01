@@ -1,9 +1,10 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { useGetProjectDetailsQuery, useUpdateProjectMutation } from "@/features/projects/projectsApi";
-import { Loader2, ArrowLeft, Save, Image as ImageIcon, Github, Globe, Info, AlertTriangle } from "lucide-react";
+import type { StudentProject } from "@/features/projects/projectsTypes";
+import { Loader2, ArrowLeft, Save, Image as ImageIcon, Github, Globe, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,57 +17,10 @@ import { toast } from "sonner";
  * Allows students to edit their projects while in PENDING status.
  */
 export default function EditProjectPage() {
-  const router = useRouter();
   const params = useParams();
   const projectId = params.id as string;
 
   const { data: project, isLoading: isProjectLoading, isError } = useGetProjectDetailsQuery(projectId);
-  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
-
-  const [formData, setFormData] = useState({
-    title: "",
-    description: "",
-    thumbnailUrl: "",
-    projectUrl: "",
-    githubUrl: "",
-    demoUrl: "",
-    technologies: "",
-    isPublic: true,
-  });
-
-  useEffect(() => {
-    if (project) {
-      setFormData({
-        title: project.title,
-        description: project.description || "",
-        thumbnailUrl: project.thumbnailUrl || "",
-        projectUrl: project.projectUrl || "",
-        githubUrl: project.githubUrl || "",
-        demoUrl: project.demoUrl || "",
-        technologies: project.technologies.join(", "),
-        isPublic: project.isPublic,
-      });
-    }
-  }, [project]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      await updateProject({
-        id: projectId,
-        data: {
-          ...formData,
-          technologies: formData.technologies.split(",").map(t => t.trim()).filter(Boolean),
-        }
-      }).unwrap();
-      
-      toast.success("Project updated successfully!");
-      router.push("/projects");
-    } catch (err) {
-      toast.error("Failed to update project");
-    }
-  };
 
   if (isProjectLoading) {
     return (
@@ -104,6 +58,45 @@ export default function EditProjectPage() {
       </div>
     );
   }
+
+  return <ProjectEditForm key={project.id} project={project} />;
+}
+
+function ProjectEditForm({ project }: { project: StudentProject }) {
+  const router = useRouter();
+  const [updateProject, { isLoading: isUpdating }] = useUpdateProjectMutation();
+  const [formData, setFormData] = useState({
+    title: project.title,
+    description: project.description || "",
+    thumbnailUrl: project.thumbnailUrl || "",
+    projectUrl: project.projectUrl || "",
+    githubUrl: project.githubUrl || "",
+    demoUrl: project.demoUrl || "",
+    technologies: project.technologies.join(", "),
+    isPublic: project.isPublic,
+  });
+
+  const handleSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    try {
+      await updateProject({
+        id: project.id,
+        data: {
+          ...formData,
+          technologies: formData.technologies
+            .split(",")
+            .map((technology) => technology.trim())
+            .filter(Boolean),
+        },
+      }).unwrap();
+
+      toast.success("Project updated successfully!");
+      router.push("/projects");
+    } catch {
+      toast.error("Failed to update project");
+    }
+  };
 
   return (
     <div className="max-w-3xl mx-auto space-y-8 pb-20">

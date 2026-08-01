@@ -6,13 +6,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useRouter } from "next/navigation";
 import { useLoginMutation } from "../authApi";
-import { LoginRequest } from "../authTypes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend logic)
 const loginSchema = z.object({
@@ -59,20 +59,24 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
       await login(data).unwrap();
       toast.success("Welcome back to Foundry Academy!");
       // Redirection is handled by useGuestGuard automatically because isAuthenticated changes
-    } catch (err: any) {
-      if (err.code === "EMAIL_NOT_VERIFIED") {
+    } catch (error: unknown) {
+      if (isNormalizedApiError(error) && error.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before logging in.");
         router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
         return;
       }
       // Check if it's a normalized field error from our baseApi
-      if (err.field) {
-        setError(err.field as keyof LoginFormValues, {
+      if (isNormalizedApiError(error) && error.field) {
+        setError(error.field as keyof LoginFormValues, {
           type: "server",
-          message: err.message,
+          message: error.message,
         });
       } else {
-        toast.error(err.message || "Login failed. Please try again.");
+        toast.error(
+          isNormalizedApiError(error)
+            ? error.message
+            : "Login failed. Please try again.",
+        );
       }
     }
   };

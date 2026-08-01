@@ -1,14 +1,13 @@
 "use client";
 
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { CreateBootcampRequest, BootcampAdmin } from "../../bootcampsTypes";
+import { BootcampAdmin } from "../../bootcampsTypes";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
 import {
   Loader2,
   Type,
@@ -34,11 +33,11 @@ const bootcampSchema = z.object({
 });
 
 type BootcampFormInput = z.input<typeof bootcampSchema>;
-type BootcampFormOutput = z.output<typeof bootcampSchema>;
+export type BootcampFormValues = z.output<typeof bootcampSchema>;
 
 interface BootcampFormProps {
   initialData?: BootcampAdmin;
-  onSubmit: (data: BootcampFormOutput) => Promise<void>;
+  onSubmit: (data: BootcampFormValues) => Promise<void>;
   isLoading: boolean;
 }
 
@@ -57,9 +56,9 @@ export default function BootcampForm({
     register,
     handleSubmit,
     setValue,
-    watch,
+    control,
     formState: { errors },
-  } = useForm<BootcampFormInput, unknown, BootcampFormOutput>({
+  } = useForm<BootcampFormInput, unknown, BootcampFormValues>({
     resolver: zodResolver(bootcampSchema),
     defaultValues: initialData
       ? {
@@ -76,7 +75,8 @@ export default function BootcampForm({
         },
   });
 
-  const watchedTitle = watch("title");
+  const watchedTitle = useWatch({ control, name: "title" });
+  const watchedSlug = useWatch({ control, name: "slug" });
 
   // --- Auto-generate slug ---
   useEffect(() => {
@@ -132,7 +132,7 @@ export default function BootcampForm({
         </div>
         <p className="text-[10px] text-muted-foreground">
           This will be the web address: foundrylms.com/bootcamps/
-          <strong>{watch("slug") || "slug"}</strong>
+          <strong>{watchedSlug || "slug"}</strong>
         </p>
         {errors.slug && (
           <p className="text-xs text-red-500 dark:text-red-400 font-medium">

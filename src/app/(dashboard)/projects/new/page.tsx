@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import Link from "next/link";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 
 /**
  * Project Submission Page
@@ -53,7 +52,7 @@ export default function NewProjectPage() {
       
       toast.success("Project submitted successfully!");
       router.push("/projects");
-    } catch (err) {
+    } catch {
       toast.error("Failed to submit project");
     }
   };

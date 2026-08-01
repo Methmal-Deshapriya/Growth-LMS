@@ -45,7 +45,7 @@ const baseQueryWithGlobalHandling: BaseQueryFn<
 
   // --- Handle Success: Global Unwrapping ---
   // The backend always returns { success: true, data: T, message: string }
-  const payload = result.data as ApiSuccess<any>;
+  const payload = result.data as ApiSuccess<unknown>;
   
   if (payload && payload.success === true && payload.data !== undefined) {
     return { data: payload.data };

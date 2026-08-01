@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend resetPasswordSchema + confirm password)
 const resetPasswordSchema = z
@@ -62,14 +63,20 @@ export default function ResetPasswordForm() {
       await resetPassword({ token, newPassword: values.newPassword }).unwrap();
       toast.success("Password reset successful. Please sign in.");
       router.push("/?slide=auth&authView=sign-in");
-    } catch (err: any) {
-      if (err.field) {
-        setError(err.field === "token" ? "confirmPassword" : err.field, {
+    } catch (error: unknown) {
+      if (isNormalizedApiError(error) && error.field) {
+        const field =
+          error.field === "newPassword" ? "newPassword" : "confirmPassword";
+        setError(field, {
           type: "server",
-          message: err.message,
+          message: error.message,
         });
       } else {
-        toast.error(err.message || "Something went wrong. Please try again.");
+        toast.error(
+          isNormalizedApiError(error)
+            ? error.message
+            : "Something went wrong. Please try again.",
+        );
       }
     }
   };

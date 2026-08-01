@@ -4,9 +4,11 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import { useCreateBootcampMutation } from "@/features/bootcamps/bootcampsApi";
 import BootcampForm from "@/features/bootcamps/components/admin/BootcampForm";
+import type { BootcampFormValues } from "@/features/bootcamps/components/admin/BootcampForm";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/api";
 
 /**
  * Create Bootcamp Page
@@ -17,13 +19,13 @@ export default function CreateBootcampPage() {
   const router = useRouter();
   const [createBootcamp, { isLoading }] = useCreateBootcampMutation();
 
-  const handleCreate = async (data: any) => {
+  const handleCreate = async (data: BootcampFormValues) => {
     try {
       await createBootcamp(data).unwrap();
       toast.success("Bootcamp created successfully as a draft.");
       router.push("/admin/bootcamps");
-    } catch (err: any) {
-      toast.error(err.message || "Failed to create bootcamp");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to create bootcamp"));
     }
   };
 

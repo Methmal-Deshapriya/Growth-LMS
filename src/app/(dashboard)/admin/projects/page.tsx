@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import Link from "next/link";
 import { ProjectStatus } from "@/features/projects/projectsTypes";
+import { getApiErrorMessage } from "@/lib/api";
 
 /**
  * Admin Projects Page
@@ -41,8 +42,8 @@ export default function AdminProjectsPage() {
         data: { status, adminFeedback: feedback || null },
       }).unwrap();
       toast.success(`Project ${status.toLowerCase()} successfully`);
-    } catch (err: any) {
-      toast.error(err.data?.message || "Failed to update project status");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to update project status"));
     }
   };
 

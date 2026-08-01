@@ -5,13 +5,12 @@ import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole, selectAuthUser } from "@/features/auth/authSelectors";
 import {
   BookOpen,
-  Users,
   ShieldCheck,
   TrendingUp,
   ArrowRight,
   GraduationCap,
 } from "lucide-react";
-import { isStudent, isAdmin, isSuperAdmin } from "@/lib/access";
+import { isStudent, isSuperAdmin } from "@/lib/access";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard } from "lucide-react";
