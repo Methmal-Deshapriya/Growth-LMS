@@ -3,19 +3,22 @@
 import React from "react";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthUser } from "@/features/auth/authSelectors";
-import { Bell, Search, User as UserIcon } from "lucide-react";
+import { Bell, Search } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 
 /**
  * DashboardHeader Component
  *
- * Provides global utility actions and search for the dashboard area.
+ * Provides global utility actions and search for the dashboard area. Sits
+ * inside the same rounded panel as the main content (no separate card
+ * background) — just a hairline divider to mark it off from the scroll
+ * area below.
  */
 export default function DashboardHeader() {
   const user = useAppSelector(selectAuthUser);
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-border bg-card/80 px-8 backdrop-blur-md">
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-black/5 px-8 dark:border-white/5">
       {/* Left: Search Bar Placeholder */}
       <div className="hidden md:flex w-96 relative">
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />

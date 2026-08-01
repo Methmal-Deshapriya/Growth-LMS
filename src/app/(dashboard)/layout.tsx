@@ -10,15 +10,16 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthenticatedGuard>
-      <div className="min-h-screen bg-background">
-        {/* Sidebar */}
+      <div className="flex h-dvh gap-3 bg-sidebar p-3 md:gap-4 md:p-4">
+        {/* Sidebar — its own rounded panel, full height */}
         <DashboardSidebar />
 
-        {/* Main Content Area */}
-        <div className="lg:ml-64 flex flex-col min-h-screen">
+        {/* Main content — a separate rounded panel, floating with a gap
+            from the sidebar and the outer edges */}
+        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-dashboard-surface">
           <DashboardHeader />
-          
-          <main className="flex-1 p-8">
+
+          <main className="flex-1 overflow-y-auto p-8">
             <div className="mx-auto max-w-7xl">
               {children}
             </div>

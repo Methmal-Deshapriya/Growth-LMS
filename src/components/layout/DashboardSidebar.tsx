@@ -1,36 +1,42 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole, selectAuthUser } from "@/features/auth/authSelectors";
-import { 
-  LayoutDashboard, 
-  BookOpen, 
-  Users, 
-  ShieldCheck, 
+import {
+  LayoutDashboard,
+  BookOpen,
+  Users,
+  ShieldCheck,
   FileText,
   LogOut,
   PlusCircle,
   Award,
-  FolderCode
+  FolderCode,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { 
+import {
   isStudent,
-  canAccessAdminArea, 
-  canManageUsers, 
-  canViewAuditLogs 
+  canAccessAdminArea,
+  canManageUsers,
+  canViewAuditLogs
 } from "@/lib/access";
 import { useLogoutMutation } from "@/features/auth/authApi";
 import { toast } from "sonner";
 
+const COLLAPSE_STORAGE_KEY = "dashboard-sidebar-collapsed";
+
 /**
  * DashboardSidebar Component
- * 
- * Renders the main navigation for authenticated users.
- * Navigation items are filtered based on the user's role.
+ *
+ * Renders the main navigation for authenticated users, as a floating navy
+ * panel alongside the main content area. Collapsible to an icon-only rail
+ * (state persisted in localStorage) — navigation items are filtered based
+ * on the user's role.
  */
 export default function DashboardSidebar() {
   const pathname = usePathname();
@@ -38,6 +44,21 @@ export default function DashboardSidebar() {
   const role = useAppSelector(selectAuthRole);
   const user = useAppSelector(selectAuthUser);
   const [logout] = useLogoutMutation();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem(COLLAPSE_STORAGE_KEY) === "true") {
+      setCollapsed(true);
+    }
+  }, []);
+
+  const toggleCollapsed = () => {
+    setCollapsed((prev) => {
+      const next = !prev;
+      localStorage.setItem(COLLAPSE_STORAGE_KEY, String(next));
+      return next;
+    });
+  };
 
   const handleLogout = async () => {
     try {
@@ -127,24 +148,48 @@ export default function DashboardSidebar() {
   ];
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r border-border bg-card transition-transform lg:translate-x-0">
-      <div className="flex h-full flex-col px-3 py-4">
+    <aside
+      className={cn(
+        "relative flex shrink-0 flex-col rounded-2xl bg-sidebar transition-[width] duration-200",
+        collapsed ? "w-20" : "w-64"
+      )}
+    >
+      {/* Collapse toggle */}
+      <button
+        type="button"
+        onClick={toggleCollapsed}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className="absolute -right-3 top-8 z-10 flex h-6 w-6 items-center justify-center rounded-full border border-sidebar-border bg-sidebar text-sidebar-foreground shadow-sm transition-colors hover:bg-sidebar-accent"
+      >
+        {collapsed ? <ChevronRight className="h-3.5 w-3.5" /> : <ChevronLeft className="h-3.5 w-3.5" />}
+      </button>
+
+      <div className="flex h-full flex-col overflow-y-auto px-3 py-4">
         {/* Logo Area */}
-        <Link href="/" className="mb-10 flex items-center px-2 py-4">
-          <span className="text-xl font-extrabold text-primary tracking-tight">
-            Foundry<span className="text-foreground">Academy</span>
-          </span>
+        <Link
+          href="/"
+          className={cn("mb-8 flex items-center py-2", collapsed ? "justify-center px-0" : "px-2")}
+        >
+          {collapsed ? (
+            <span className="text-xl font-extrabold text-sidebar-primary">F</span>
+          ) : (
+            <span className="text-xl font-extrabold tracking-tight text-sidebar-foreground">
+              Foundry<span className="text-sidebar-primary">Academy</span>
+            </span>
+          )}
         </Link>
 
         {/* User Brief */}
-        <div className="mb-6 rounded-xl bg-muted p-4">
-          <p className="text-sm font-semibold text-foreground truncate">
-            {user?.firstName} {user?.lastName}
-          </p>
-          <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider mt-0.5">
-            {role}
-          </p>
-        </div>
+        {!collapsed && (
+          <div className="mb-6 rounded-xl bg-white/5 p-4">
+            <p className="truncate text-sm font-semibold text-sidebar-foreground">
+              {user?.firstName} {user?.lastName}
+            </p>
+            <p className="mt-0.5 text-xs font-medium uppercase tracking-wider text-sidebar-foreground/60">
+              {role}
+            </p>
+          </div>
+        )}
 
         {/* Navigation Items */}
         <nav className="flex-1 space-y-1">
@@ -152,27 +197,33 @@ export default function DashboardSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              title={collapsed ? item.label : undefined}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                collapsed && "justify-center px-0",
                 item.active
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                  ? "bg-sidebar-accent text-sidebar-accent-foreground"
+                  : "text-sidebar-foreground/70 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground"
               )}
             >
-              <item.icon className={cn("h-5 w-5", item.active ? "text-primary" : "text-muted-foreground")} />
-              {item.label}
+              <item.icon className={cn("h-5 w-5 shrink-0", item.active && "text-sidebar-primary")} />
+              {!collapsed && item.label}
             </Link>
           ))}
         </nav>
 
         {/* Footer Area / Logout */}
-        <div className="mt-auto border-t border-border pt-4">
+        <div className="mt-auto border-t border-sidebar-border pt-4">
           <button
             onClick={handleLogout}
-            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:bg-red-950/40 dark:text-red-400 dark:hover:bg-red-950 transition-colors"
+            title={collapsed ? "Sign Out" : undefined}
+            className={cn(
+              "flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-red-300 transition-colors hover:bg-red-500/10 hover:text-red-200",
+              collapsed && "justify-center px-0"
+            )}
           >
-            <LogOut className="h-5 w-5" />
-            Sign Out
+            <LogOut className="h-5 w-5 shrink-0" />
+            {!collapsed && "Sign Out"}
           </button>
         </div>
       </div>
