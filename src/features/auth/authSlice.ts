@@ -1,7 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import type { User } from "./authTypes";
 
-export type AuthStatus = "unknown" | "authenticated" | "unauthenticated";
+export type AuthStatus =
+  | "unknown"
+  | "authenticated"
+  | "unauthenticated"
+  | "unavailable";
 
 export type AuthState = {
   user: User | null;
@@ -25,6 +29,10 @@ const authSlice = createSlice({
       state.user = null;
       state.status = "unauthenticated";
     },
+    setAuthUnavailable(state) {
+      state.user = null;
+      state.status = "unavailable";
+    },
     resetAuthState(state) {
       state.user = null;
       state.status = "unknown";
@@ -32,5 +40,6 @@ const authSlice = createSlice({
   },
 });
 
-export const { setUser, clearUser, resetAuthState } = authSlice.actions;
+export const { setUser, clearUser, setAuthUnavailable, resetAuthState } =
+  authSlice.actions;
 export default authSlice.reducer;

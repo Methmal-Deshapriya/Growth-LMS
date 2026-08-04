@@ -17,7 +17,7 @@ interface EnrollmentCardProps {
  * Displays an active course enrollment for a student.
  */
 export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
-  const { bootcamp } = enrollment;
+  const { course } = enrollment;
 
   // Format the enrollment date (April 14, 2026 format)
   const formattedDate = format(
@@ -42,12 +42,11 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
             </div>
 
             <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
-              {bootcamp.title}
+              {course.title}
             </h3>
 
             <p className="text-foreground text-sm line-clamp-2 mb-4">
-              {bootcamp.description ||
-                "Continue your journey and master professional skills in this comprehensive bootcamp."}
+              {course.summary}
             </p>
           </div>
 
@@ -56,7 +55,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
               asChild
               className="bg-gray-900 hover:bg-black text-white rounded-xl px-6"
             >
-              <Link href={`/my-courses/${bootcamp.id}`}>
+              <Link href={`/my-courses/${course.id}`}>
                 Go to Course
                 <ArrowRight className="ml-2 h-4 w-4" />
               </Link>

@@ -50,7 +50,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
     try {
       await issueCertificate({
         enrollmentId,
-        data: { description: "Successfully completed the bootcamp." },
+        data: { description: "Successfully completed the course." },
       }).unwrap();
       toast.success("Certificate issued successfully!");
     } catch (error: unknown) {

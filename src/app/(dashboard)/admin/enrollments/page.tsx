@@ -6,7 +6,7 @@ import ManualEnrollmentForm from "@/features/enrollments/components/ManualEnroll
 /**
  * Admin Enrollments Page
  * 
- * Provides tools for managing student access to bootcamps.
+ * Provides tools for managing student access to courses.
  */
 export default function AdminEnrollmentsPage() {
   return (

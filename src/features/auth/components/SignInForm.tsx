@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLoginMutation } from "../authApi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,7 +12,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { isNormalizedApiError } from "@/lib/api";
+import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
+import { useSelfEnrollCourseMutation } from "@/features/catalog/catalogApi";
 
 // 1. Define Validation Schema (Matches backend logic)
 const loginSchema = z.object({
@@ -37,7 +38,10 @@ const inputClassName =
  */
 export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const enrollmentCourseId = searchParams.get("enrollCourse");
   const [login, { isLoading }] = useLoginMutation();
+  const [selfEnroll] = useSelfEnrollCourseMutation();
 
   // 2. Initialize Form
   const {
@@ -57,8 +61,16 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data).unwrap();
+      if (enrollmentCourseId) {
+        try {
+          await selfEnroll(enrollmentCourseId).unwrap();
+          toast.success("The free course was added to My Courses.");
+        } catch (enrollmentError) {
+          toast.error(getApiErrorMessage(enrollmentError, "Signed in, but the course could not be added."));
+        }
+      }
       toast.success("Welcome back to Foundry Academy!");
-      // Redirection is handled by useGuestGuard automatically because isAuthenticated changes
+      router.replace("/dashboard");
     } catch (error: unknown) {
       if (isNormalizedApiError(error) && error.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before logging in.");

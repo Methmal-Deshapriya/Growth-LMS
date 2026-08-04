@@ -3,9 +3,10 @@
 import React, { useEffect } from "react";
 import { useGetMeQuery } from "../authApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setUser, clearUser } from "../authSlice";
+import { setUser, clearUser, setAuthUnavailable } from "../authSlice";
 import { selectIsAuthResolved } from "../authSelectors";
 import { Loader2 } from "lucide-react";
+import { isNormalizedApiError } from "@/lib/api";
 
 /**
  * AuthInitializer Component
@@ -29,7 +30,7 @@ export default function AuthInitializer({
   // 1. Trigger the /auth/me query
   // We use skip: false (default) so it runs on mount.
   // RTK Query handles the caching, so this won't re-run unnecessarily.
-  const { data, isLoading, isSuccess, isError } = useGetMeQuery(
+  const { data, error, isLoading, isSuccess, isError } = useGetMeQuery(
     undefined,
     {
       // We want to ensure it always tries to fetch on first load
@@ -42,10 +43,19 @@ export default function AuthInitializer({
       // Session found
       dispatch(setUser(data));
     } else if (isError) {
-      // No session or expired (usually 401)
-      dispatch(clearUser());
+      if (
+        isNormalizedApiError(error) &&
+        (error.status === 401 || error.status === 403)
+      ) {
+        // No session, an expired cookie, or a session that is no longer valid.
+        dispatch(clearUser());
+      } else {
+        // Keep infrastructure failures distinct from a signed-out session so
+        // protected routes can explain the problem instead of spinning forever.
+        dispatch(setAuthUnavailable());
+      }
     }
-  }, [data, isSuccess, isError, dispatch]);
+  }, [data, error, isSuccess, isError, dispatch]);
 
   // 2. Full-screen loading state
   // We only show this while the INITIAL check is happening (status is 'unknown').

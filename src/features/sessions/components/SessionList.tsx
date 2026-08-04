@@ -11,13 +11,13 @@ interface SessionListProps {
 /**
  * SessionList Component
  * 
- * Displays a list of sessions for a bootcamp.
+ * Displays the published sessions for a course.
  */
 export default function SessionList({ sessions }: SessionListProps) {
   if (sessions.length === 0) {
     return (
       <div className="bg-card rounded-2xl border border-dashed border-border p-12 text-center">
-        <p className="text-muted-foreground">No sessions published yet for this bootcamp.</p>
+        <p className="text-muted-foreground">No sessions are published for this course yet.</p>
       </div>
     );
   }

@@ -14,7 +14,7 @@ import { toast } from "sonner";
 /**
  * Project Submission Page
  * 
- * Allows students to submit a project for one of their enrolled bootcamps.
+ * Allows students to submit a project for one of their enrolled courses.
  */
 export default function NewProjectPage() {
   const router = useRouter();
@@ -37,7 +37,7 @@ export default function NewProjectPage() {
     e.preventDefault();
     
     if (!formData.enrollmentId) {
-      toast.error("Please select a bootcamp");
+      toast.error("Please select a course");
       return;
     }
 
@@ -46,7 +46,7 @@ export default function NewProjectPage() {
     try {
       await submitProject({
         ...formData,
-        bootcampId: enrollment?.bootcamp?.id || "",
+        courseId: enrollment?.course?.id || "",
         technologies: formData.technologies.split(",").map(t => t.trim()).filter(Boolean),
       }).unwrap();
       
@@ -79,9 +79,9 @@ export default function NewProjectPage() {
 
       <div className="bg-card rounded-2xl border border-border shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Bootcamp Selection */}
+          {/* Course Selection */}
           <div className="space-y-2">
-            <Label htmlFor="enrollmentId" className="text-sm font-bold text-foreground">Select Bootcamp</Label>
+            <Label htmlFor="enrollmentId" className="text-sm font-bold text-foreground">Select Course</Label>
             <select
               id="enrollmentId"
               className="w-full h-12 rounded-xl border border-border px-4 bg-card text-sm focus:ring-2 focus:ring-primary outline-hidden"
@@ -92,7 +92,7 @@ export default function NewProjectPage() {
               <option value="">-- Choose a course --</option>
               {enrollments?.filter(e => e.status !== "CANCELLED").map((enrollment) => (
                 <option key={enrollment.id} value={enrollment.id}>
-                  {enrollment.bootcamp.title}
+                  {enrollment.course.title}
                 </option>
               ))}
             </select>

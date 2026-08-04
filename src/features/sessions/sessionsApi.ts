@@ -10,10 +10,10 @@ import type {
 export const sessionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Student & Admin: Get all sessions for a bootcamp
-    getBootcampSessions: builder.query<Session[], string>({
-      query: (bootcampId) => `bootcamps/${bootcampId}/sessions`,
-      providesTags: (result, error, bootcampId) => [
-        { type: "Sessions", id: `LIST-${bootcampId}` },
+    getCourseSessions: builder.query<Session[], string>({
+      query: (courseId) => `courses/${courseId}/sessions`,
+      providesTags: (result, error, courseId) => [
+        { type: "Sessions", id: `LIST-${courseId}` },
         ...(result ? result.map((s) => ({ type: "Sessions" as const, id: s.id })) : []),
       ],
     }),
@@ -25,14 +25,14 @@ export const sessionsApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Create a new session
-    createSession: builder.mutation<Session, { bootcampId: string; data: CreateSessionRequest }>({
-      query: ({ bootcampId, data }) => ({
-        url: `bootcamps/${bootcampId}/sessions`,
+    createSession: builder.mutation<Session, { courseId: string; data: CreateSessionRequest }>({
+      query: ({ courseId, data }) => ({
+        url: `courses/${courseId}/sessions`,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: (result, error, { bootcampId }) => [
-        { type: "Sessions", id: `LIST-${bootcampId}` },
+      invalidatesTags: (result, error, { courseId }) => [
+        { type: "Sessions", id: `LIST-${courseId}` },
       ],
     }),
 
@@ -62,14 +62,14 @@ export const sessionsApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Reorder sessions
-    reorderSessions: builder.mutation<void, { bootcampId: string; data: ReorderSessionsRequest }>({
-      query: ({ bootcampId, data }) => ({
-        url: `bootcamps/${bootcampId}/sessions/reorder`,
+    reorderSessions: builder.mutation<void, { courseId: string; data: ReorderSessionsRequest }>({
+      query: ({ courseId, data }) => ({
+        url: `courses/${courseId}/sessions/reorder`,
         method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { bootcampId }) => [
-        { type: "Sessions", id: `LIST-${bootcampId}` },
+      invalidatesTags: (result, error, { courseId }) => [
+        { type: "Sessions", id: `LIST-${courseId}` },
       ],
     }),
 
@@ -108,7 +108,7 @@ export const sessionsApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useGetBootcampSessionsQuery,
+  useGetCourseSessionsQuery,
   useGetSessionDetailsQuery,
   useCreateSessionMutation,
   useUpdateSessionMutation,

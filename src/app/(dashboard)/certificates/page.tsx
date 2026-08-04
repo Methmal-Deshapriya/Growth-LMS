@@ -52,7 +52,7 @@ export default function MyCertificatesPage() {
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold text-foreground">{cert.bootcampName}</h3>
+                    <h3 className="text-xl font-bold text-foreground">{cert.courseName}</h3>
                     <p className="text-sm text-muted-foreground mt-1 flex items-center gap-1.5">
                       <Calendar className="h-4 w-4" />
                       Issued on {format(new Date(cert.issuedDate), "MMMM dd, yyyy")}
@@ -96,7 +96,7 @@ export default function MyCertificatesPage() {
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">No certificates yet</h2>
             <p className="text-muted-foreground max-w-md mx-auto mb-8">
-              Complete your enrolled bootcamps and your certificates will appear here once issued by the administration.
+              Complete your enrolled courses and your certificates will appear here once issued by the administration.
             </p>
             <Button asChild className="bg-primary hover:bg-primary/90 text-white px-8 h-12 text-lg rounded-xl">
               <Link href="/my-courses">

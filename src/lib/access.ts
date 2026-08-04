@@ -1,33 +1,49 @@
 import { ROLES, type Role } from "@/lib/constants";
 
-export function hasRole(
-  userRole: Role | null | undefined,
-  allowedRoles: readonly Role[]
-) {
-  return !!userRole && allowedRoles.includes(userRole);
-}
+export const PERMISSIONS = {
+  USERS_VIEW: "USERS_VIEW",
+  USERS_MANAGE_ROLES: "USERS_MANAGE_ROLES",
+  CATALOG_VIEW_ADMIN: "CATALOG_VIEW_ADMIN",
+  CATALOG_EDIT_DRAFTS: "CATALOG_EDIT_DRAFTS",
+  CATALOG_PUBLISH: "CATALOG_PUBLISH",
+  COURSES_SELF_ENROLL: "COURSES_SELF_ENROLL",
+  SESSIONS_MANAGE: "SESSIONS_MANAGE",
+  ENROLLMENTS_MANAGE: "ENROLLMENTS_MANAGE",
+  CERTIFICATES_MANAGE: "CERTIFICATES_MANAGE",
+  PROJECTS_REVIEW: "PROJECTS_REVIEW",
+  AUDIT_VIEW: "AUDIT_VIEW",
+} as const;
+export type Permission = (typeof PERMISSIONS)[keyof typeof PERMISSIONS];
 
-export function isStudent(userRole: Role | null | undefined) {
-  return userRole === ROLES.STUDENT;
-}
+const ADMIN_PERMISSIONS: Permission[] = [
+  PERMISSIONS.USERS_VIEW,
+  PERMISSIONS.CATALOG_VIEW_ADMIN,
+  PERMISSIONS.CATALOG_EDIT_DRAFTS,
+  PERMISSIONS.SESSIONS_MANAGE,
+  PERMISSIONS.ENROLLMENTS_MANAGE,
+  PERMISSIONS.CERTIFICATES_MANAGE,
+  PERMISSIONS.PROJECTS_REVIEW,
+];
 
-export function isAdmin(userRole: Role | null | undefined) {
-  return userRole === ROLES.ADMIN;
-}
+const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
+  [ROLES.STUDENT]: [PERMISSIONS.COURSES_SELF_ENROLL],
+  [ROLES.ADMIN]: ADMIN_PERMISSIONS,
+  [ROLES.SUPER_ADMIN]: [
+    ...ADMIN_PERMISSIONS,
+    PERMISSIONS.USERS_MANAGE_ROLES,
+    PERMISSIONS.CATALOG_PUBLISH,
+    PERMISSIONS.AUDIT_VIEW,
+  ],
+};
 
-export function isSuperAdmin(userRole: Role | null | undefined) {
-  return userRole === ROLES.SUPER_ADMIN;
+export function hasPermission(role: Role | null | undefined, permission: Permission) {
+  return Boolean(role && ROLE_PERMISSIONS[role]?.includes(permission));
 }
-
-export function canAccessAdminArea(userRole: Role | null | undefined) {
-  return hasRole(userRole, [ROLES.ADMIN, ROLES.SUPER_ADMIN]);
-}
-
-export function canManageUsers(userRole: Role | null | undefined) {
-  return isSuperAdmin(userRole);
-}
-
-export function canViewAuditLogs(userRole: Role | null | undefined) {
-  return isSuperAdmin(userRole);
-}
-
+export function hasRole(role: Role | null | undefined, allowed: readonly Role[]) { return Boolean(role && allowed.includes(role)); }
+export const isStudent = (role: Role | null | undefined) => role === ROLES.STUDENT;
+export const isAdmin = (role: Role | null | undefined) => role === ROLES.ADMIN;
+export const isSuperAdmin = (role: Role | null | undefined) => role === ROLES.SUPER_ADMIN;
+export const canAccessAdminArea = (role: Role | null | undefined) => hasPermission(role, PERMISSIONS.CATALOG_VIEW_ADMIN);
+export const canManageUsers = (role: Role | null | undefined) => hasPermission(role, PERMISSIONS.USERS_MANAGE_ROLES);
+export const canViewUsers = (role: Role | null | undefined) => hasPermission(role, PERMISSIONS.USERS_VIEW);
+export const canViewAuditLogs = (role: Role | null | undefined) => hasPermission(role, PERMISSIONS.AUDIT_VIEW);

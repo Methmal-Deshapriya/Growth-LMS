@@ -11,7 +11,8 @@ import { OtpInput } from "@/components/ui/otp-input";
 import { toast } from "sonner";
 import { Loader2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { isNormalizedApiError } from "@/lib/api";
+import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
+import { useSelfEnrollCourseMutation } from "@/features/catalog/catalogApi";
 
 // 1. Define Validation Schema (Matches backend verifyOtpSchema)
 const verifyOtpSchema = z.object({
@@ -33,9 +34,11 @@ export default function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email");
+  const enrollmentCourseId = searchParams.get("enrollCourse");
 
   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
+  const [selfEnroll] = useSelfEnrollCourseMutation();
   const [cooldown, setCooldown] = useState(0);
 
   const {
@@ -59,6 +62,14 @@ export default function VerifyEmailForm() {
 
     try {
       await verifyOtp({ email, code: values.code }).unwrap();
+      if (enrollmentCourseId) {
+        try {
+          await selfEnroll(enrollmentCourseId).unwrap();
+          toast.success("The free course was added to My Courses.");
+        } catch (enrollmentError) {
+          toast.error(getApiErrorMessage(enrollmentError, "Account verified, but the course could not be added."));
+        }
+      }
       toast.success("Email verified! Welcome to Foundry Academy.");
       router.push("/dashboard");
     } catch (error: unknown) {

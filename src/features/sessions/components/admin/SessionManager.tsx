@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { 
-  useGetBootcampSessionsQuery, 
+  useGetCourseSessionsQuery,
   useCreateSessionMutation, 
   useUpdateSessionMutation, 
   useDeleteSessionMutation,
@@ -30,16 +30,20 @@ import { toast } from "sonner";
 import { getApiErrorMessage } from "@/lib/api";
 
 interface SessionManagerProps {
-  bootcampId: string;
+  courseId: string;
+  readOnly?: boolean;
 }
 
 /**
  * SessionManager Component
  * 
- * Administrative interface for managing bootcamp curriculum.
+ * Administrative interface for managing course curriculum.
  */
-export default function SessionManager({ bootcampId }: SessionManagerProps) {
-  const { data: sessions, isLoading, isError } = useGetBootcampSessionsQuery(bootcampId);
+export default function SessionManager({
+  courseId,
+  readOnly = false,
+}: SessionManagerProps) {
+  const { data: sessions, isLoading, isError } = useGetCourseSessionsQuery(courseId);
   const [createSession, { isLoading: isCreating }] = useCreateSessionMutation();
   const [updateSession, { isLoading: isUpdating }] = useUpdateSessionMutation();
   const [deleteSession] = useDeleteSessionMutation();
@@ -99,7 +103,7 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
         await updateSession({ id: editingId, data: formData }).unwrap();
         toast.success("Session updated");
       } else {
-        await createSession({ bootcampId, data: formData }).unwrap();
+        await createSession({ courseId, data: formData }).unwrap();
         toast.success("Session created");
       }
       resetForm();
@@ -141,9 +145,17 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
 
   return (
     <div className="space-y-6">
+      {readOnly ? (
+        <div className="rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-200">
+          This course is archived. Its sessions remain available to existing
+          learners, but administrators cannot add, edit, publish, reorder, or
+          delete them.
+        </div>
+      ) : null}
+
       <div className="flex items-center justify-between">
         <h2 className="text-xl font-bold text-foreground">Curriculum Structure</h2>
-        {!isAdding && !editingId && (
+        {!readOnly && !isAdding && !editingId && (
           <Button onClick={() => { setIsAdding(true); setFormData({ ...formData, orderIndex: sessions?.length || 0 }); }} className="bg-primary text-white rounded-xl">
             <Plus className="h-4 w-4 mr-2" /> Add Session
           </Button>
@@ -229,9 +241,11 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
         ) : (
           sessions?.map((session) => (
             <div key={session.id} className="group bg-card rounded-xl border border-border p-4 hover:border-primary/30 transition-all flex items-center gap-4">
-              <div className="cursor-grab active:cursor-grabbing text-muted-foreground hover:text-muted-foreground">
-                <GripVertical className="h-5 w-5" />
-              </div>
+              {!readOnly ? (
+                <div className="cursor-grab text-muted-foreground hover:text-muted-foreground active:cursor-grabbing">
+                  <GripVertical className="h-5 w-5" />
+                </div>
+              ) : null}
 
               <div className="flex-1">
                 <div className="flex items-center gap-2">
@@ -247,7 +261,7 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
                 <h4 className="font-bold text-foreground mt-1">{session.title}</h4>
               </div>
 
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              {!readOnly ? <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 <Button variant="ghost" size="icon" onClick={() => handleTogglePublish(session)} title={session.isPublished ? "Unpublish" : "Publish"}>
                   {session.isPublished ? <EyeOff className="h-4 w-4 text-orange-500" /> : <Eye className="h-4 w-4 text-green-600 dark:text-green-400" />}
                 </Button>
@@ -257,7 +271,7 @@ export default function SessionManager({ bootcampId }: SessionManagerProps) {
                 <Button variant="ghost" size="icon" onClick={() => handleDelete(session.id, session.title)}>
                   <Trash2 className="h-4 w-4 text-red-500 dark:text-red-400" />
                 </Button>
-              </div>
+              </div> : null}
             </div>
           ))
         )}

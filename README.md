@@ -16,7 +16,11 @@ Create `.env.local` with:
 
 ```env
 NEXT_PUBLIC_API_BASE_URL=http://localhost:5000/api/v1
+CATALOG_REVALIDATION_SECRET=replace-with-the-same-strong-secret-used-by-the-api
 ```
+
+The shared server-only revalidation secret lets the Express API immediately
+expire public catalog caches after published category or course changes.
 
 Then run:
 

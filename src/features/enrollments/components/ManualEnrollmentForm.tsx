@@ -9,7 +9,7 @@ import {
   useCreateEnrollmentMutation,
   useGetEligibleStudentsQuery,
 } from "../enrollmentsApi";
-import { useGetAdminBootcampsQuery } from "@/features/bootcamps/bootcampsApi";
+import { useGetAdminCoursesQuery } from "@/features/catalog/catalogApi";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 
 const enrollmentSchema = z.object({
   userId: z.string().uuid("Please select a student"),
-  bootcampId: z.string().uuid("Please select a bootcamp"),
+  courseId: z.string().uuid("Please select a course"),
 });
 
 type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
@@ -33,7 +33,7 @@ type EnrollmentFormValues = z.infer<typeof enrollmentSchema>;
 /**
  * ManualEnrollmentForm Component
  *
- * Requires admins to choose a bootcamp first, then search eligible students
+ * Requires admins to choose a course first, then search eligible students
  * by email before confirming a manual enrollment.
  */
 export default function ManualEnrollmentForm() {
@@ -43,8 +43,11 @@ export default function ManualEnrollmentForm() {
 
   const [createEnrollment, { isLoading: isSubmitting }] =
     useCreateEnrollmentMutation();
-  const { data: bootcamps, isLoading: isLoadingBootcamps } =
-    useGetAdminBootcampsQuery();
+  const { data: courseData, isLoading: isLoadingCourses } = useGetAdminCoursesQuery();
+  const courses = courseData?.courses.filter(
+    (course) =>
+      course.status !== "ARCHIVED" && course.category.status !== "ARCHIVED",
+  );
 
   const {
     control,
@@ -58,16 +61,16 @@ export default function ManualEnrollmentForm() {
     resolver: zodResolver(enrollmentSchema),
     defaultValues: {
       userId: "",
-      bootcampId: "",
+      courseId: "",
     },
   });
 
-  const selectedBootcampId = useWatch({ control, name: "bootcampId" });
+  const selectedCourseId = useWatch({ control, name: "courseId" });
   const selectedUserId = useWatch({ control, name: "userId" });
-  const shouldLoadEligibleStudents = Boolean(selectedBootcampId);
+  const shouldLoadEligibleStudents = Boolean(selectedCourseId);
   const eligibleStudentsQueryArg = shouldLoadEligibleStudents
     ? {
-        bootcampId: selectedBootcampId,
+        courseId: selectedCourseId,
         q: deferredStudentSearch || undefined,
         limit: 5,
       }
@@ -106,13 +109,13 @@ export default function ManualEnrollmentForm() {
     }
   };
 
-  const isLoadingData = isLoadingBootcamps;
-  const isStudentSelectionLocked = !selectedBootcampId || isSubmitting;
-  const studentFieldMessage = !selectedBootcampId
-    ? "Select a bootcamp first to unlock student search."
+  const isLoadingData = isLoadingCourses;
+  const isStudentSelectionLocked = !selectedCourseId || isSubmitting;
+  const studentFieldMessage = !selectedCourseId
+    ? "Select a course first to unlock student search."
     : deferredStudentSearch
       ? "Matching students are filtered by email and excluded if already enrolled."
-      : "Showing up to 5 students who are not yet enrolled in this bootcamp.";
+      : "Showing up to 5 students who are not yet enrolled in this course.";
 
   return (
     <form
@@ -126,20 +129,20 @@ export default function ManualEnrollmentForm() {
         <div>
           <h3 className="text-lg font-bold text-foreground">Manual Enrollment</h3>
           <p className="text-sm text-muted-foreground">
-            Pick a bootcamp first, then search for an eligible student by email.
+            Pick a course first, then search for an eligible student by email.
           </p>
         </div>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="bootcampId">Select Bootcamp</Label>
+        <Label htmlFor="courseId">Select Course</Label>
         <div className="relative">
           <Book className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           <select
-            id="bootcampId"
+            id="courseId"
             className="flex h-11 w-full appearance-none rounded-md border border-border bg-card py-2 pl-10 pr-3 text-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary"
             disabled={isLoadingData || isSubmitting}
-            {...register("bootcampId", {
+            {...register("courseId", {
               onChange: () => {
                 resetField("userId");
                 setStudentSearch("");
@@ -147,17 +150,17 @@ export default function ManualEnrollmentForm() {
               },
             })}
           >
-            <option value="">-- Choose a bootcamp --</option>
-            {bootcamps?.map((bootcamp) => (
-              <option key={bootcamp.id} value={bootcamp.id}>
-                {bootcamp.title} {bootcamp.isPublished ? "" : "(Draft)"}
+            <option value="">-- Choose a course --</option>
+            {courses?.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.title} {course.status === "PUBLISHED" ? "" : `(${course.status})`}
               </option>
             ))}
           </select>
         </div>
-        {errors.bootcampId && (
+        {errors.courseId && (
           <p className="text-xs font-medium text-red-500 dark:text-red-400">
-            {errors.bootcampId.message}
+            {errors.courseId.message}
           </p>
         )}
       </div>
@@ -166,7 +169,7 @@ export default function ManualEnrollmentForm() {
         <Label htmlFor="student-search">Choose Student</Label>
         <div className="relative">
           <UserIcon className="absolute left-3 top-3 h-4 w-4 text-muted-foreground z-10" />
-          {!selectedBootcampId ? (
+          {!selectedCourseId ? (
             <Lock className="absolute right-3 top-3 h-4 w-4 text-muted-foreground z-10" />
           ) : (
             <Search className="absolute right-3 top-3 h-4 w-4 text-muted-foreground z-10" />
@@ -181,14 +184,14 @@ export default function ManualEnrollmentForm() {
               setIsStudentMenuOpen(true);
             }}
             onFocus={() => {
-              if (selectedBootcampId) {
+              if (selectedCourseId) {
                 setIsStudentMenuOpen(true);
               }
             }}
             placeholder={
-              selectedBootcampId
+              selectedCourseId
                 ? "Type the student's email"
-                : "Select a bootcamp to unlock student search"
+                : "Select a course to unlock student search"
             }
             disabled={isStudentSelectionLocked}
             autoComplete="off"
@@ -200,7 +203,7 @@ export default function ManualEnrollmentForm() {
             )}
           />
 
-          {selectedBootcampId && isStudentMenuOpen && (
+          {selectedCourseId && isStudentMenuOpen && (
             <div className="absolute z-20 mt-2 max-h-72 w-full overflow-y-auto rounded-xl border border-border bg-card p-2 shadow-xl">
               {isLoadingEligibleStudents || isFetchingEligibleStudents ? (
                 <div className="flex items-center gap-2 px-3 py-3 text-sm text-muted-foreground">
@@ -232,7 +235,7 @@ export default function ManualEnrollmentForm() {
                 ))
               ) : (
                 <div className="px-3 py-3 text-sm text-muted-foreground">
-                  No eligible students matched that email for this bootcamp.
+                  No eligible students matched that email for this course.
                 </div>
               )}
             </div>
@@ -267,7 +270,7 @@ export default function ManualEnrollmentForm() {
         disabled={
           isLoadingData ||
           isSubmitting ||
-          !selectedBootcampId ||
+          !selectedCourseId ||
           !selectedUserId
         }
         className="mt-4 h-11 w-full rounded-xl bg-primary font-bold text-white shadow-lg shadow-blue-100 hover:bg-primary/90"
@@ -287,9 +290,9 @@ export default function ManualEnrollmentForm() {
         </p>
       )}
 
-      {!isLoadingData && bootcamps?.length === 0 && (
+      {!isLoadingData && courses?.length === 0 && (
         <p className="text-center text-xs italic text-amber-600 dark:text-amber-400">
-          Create a bootcamp first before manually enrolling students.
+          No active courses are available for new enrollments.
         </p>
       )}
     </form>

@@ -89,8 +89,10 @@ export default function AdminAuditPage() {
               <option value="">All Actions</option>
               <option value="USER_PROMOTED">User Promoted</option>
               <option value="USER_DEMOTED">User Demoted</option>
-              <option value="BOOTCAMP_CREATED">Bootcamp Created</option>
-              <option value="BOOTCAMP_DELETED">Bootcamp Deleted</option>
+              <option value="CATEGORY_CREATED">Category Created</option>
+              <option value="COURSE_CREATED">Course Created</option>
+              <option value="COURSE_PUBLISHED">Course Published</option>
+              <option value="COURSE_ARCHIVED">Course Archived</option>
               <option value="STUDENT_ENROLLED">Student Enrolled</option>
             </select>
           </div>

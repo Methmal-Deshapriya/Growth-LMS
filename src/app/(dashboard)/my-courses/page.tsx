@@ -11,19 +11,19 @@ import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
 /**
  * My Courses Page
  *
- * Displays all bootcamps the current student is enrolled in.
+ * Displays all courses the current student is enrolled in.
  */
 export default function MyCoursesPage() {
   const { data: enrollments, isLoading, isError } = useGetMyEnrollmentsQuery();
 
   return (
-    <StudentOnlyRoute description="Admins no longer need the student course workspace. Use the admin tools to manage bootcamps and enrollments instead.">
+    <StudentOnlyRoute description="Admins use the catalog and enrollment tools instead of the student classroom.">
       <div className="space-y-8 pb-20">
       {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
           <p className="text-muted-foreground mt-1">
-            Access all your enrolled bootcamps and learning materials.
+            Access all your enrolled courses and learning materials.
           </p>
         </div>
 
@@ -57,7 +57,7 @@ export default function MyCoursesPage() {
               No enrollments yet
             </h2>
             <p className="mx-auto mb-8 max-w-md text-muted-foreground">
-              You are not enrolled in any bootcamps yet. Explore our programs and
+              You are not enrolled in any courses yet. Explore our programs and
               start your tech career today!
             </p>
             <Button

@@ -112,7 +112,7 @@ function ProjectEditForm({ project }: { project: StudentProject }) {
       <div className="bg-card rounded-2xl border border-border shadow-sm p-8">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="p-4 bg-primary/10 border border-primary/20 rounded-xl text-sm text-primary">
-            Editing project for: <strong>{project.bootcamp?.title}</strong>
+            Editing project for: <strong>{project.course?.title}</strong>
           </div>
 
           <div className="space-y-2">

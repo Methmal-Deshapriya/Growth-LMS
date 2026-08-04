@@ -12,6 +12,7 @@ const AUTH_ONLY_PATHS = [
   "/reset-password",
   "/verify-email",
 ];
+const PUBLIC_MARKETING_PATHS = ["/", "/bootcamps", "/pretech-courses", "/free-learning", "/consultations"];
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
@@ -19,12 +20,15 @@ export function proxy(req: NextRequest) {
 
   const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
   const isAuthOnly = AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p));
+  const isMarketing = PUBLIC_MARKETING_PATHS.some((path) =>
+    path === "/" ? pathname === "/" : pathname.startsWith(path)
+  );
 
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/?slide=auth", req.url));
   }
 
-  if (isAuthOnly && token) {
+  if ((isAuthOnly || isMarketing) && token) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
@@ -41,5 +45,10 @@ export const config = {
     "/forgot-password",
     "/reset-password",
     "/verify-email",
+    "/",
+    "/bootcamps/:path*",
+    "/pretech-courses/:path*",
+    "/free-learning/:path*",
+    "/consultations",
   ],
 };

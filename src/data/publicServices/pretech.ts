@@ -1,34 +1,10 @@
 import { Layers, BookOpen, Compass } from "lucide-react";
 import type { PublicServiceConfig } from "@/components/marketing/public-service/types";
 import { SERVICE_ACCENT } from "@/components/marketing/public-service/accent";
-import { pretechSection } from "@/data/catalog/pretech";
-
-const SUBJECT_META: Record<string, { description: string; iconGradient: string; accentText: string }> = {
-  maths: {
-    description: "Algebra, functions and calculus fundamentals shared across BICT, BBST and BET.",
-    iconGradient: "from-indigo-500 to-indigo-600",
-    accentText: "text-indigo-600",
-  },
-  physics: {
-    description: "Mechanics, waves and the physics fundamentals every incoming student needs.",
-    iconGradient: "from-blue-500 to-blue-600",
-    accentText: "text-blue-600",
-  },
-  statistics: {
-    description: "Descriptive and inferential statistics for reasoning about real data.",
-    iconGradient: "from-violet-500 to-violet-600",
-    accentText: "text-violet-600",
-  },
-  "c-programming": {
-    description: "Your first steps writing structured programs, from variables to pointers.",
-    iconGradient: "from-teal-500 to-teal-600",
-    accentText: "text-teal-600",
-  },
-};
 
 export const pretechServiceConfig: PublicServiceConfig = {
-  basePath: pretechSection.basePath,
-  breadcrumbLabel: pretechSection.eyebrow,
+  basePath: "/pretech-courses",
+  breadcrumbLabel: "PreTech",
   accent: SERVICE_ACCENT,
   hero: {
     eyebrow: "PreTech",
@@ -51,19 +27,7 @@ export const pretechServiceConfig: PublicServiceConfig = {
     highlight: "subject",
     description: "Start with the subject you want to strengthen before your first semester.",
     itemLabel: "subjects",
-    items: pretechSection.groups.map((group) => {
-      const meta = SUBJECT_META[group.slug];
-      return {
-        id: group.slug,
-        title: group.title,
-        description: meta.description,
-        href: `${pretechSection.basePath}/${group.slug}`,
-        icon: group.icon,
-        accentText: meta.accentText,
-        iconGradient: meta.iconGradient,
-        metadata: [`${group.courses.length} courses`, "Foundation level"],
-      };
-    }),
+    items: [],
   },
   processSection: {
     title: "How PreTech works",

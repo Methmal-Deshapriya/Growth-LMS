@@ -6,14 +6,14 @@ import UserTable from "@/features/users/components/UserTable";
 import { Loader2, Users, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
-import { canManageUsers } from "@/lib/access";
+import { canManageUsers, canViewUsers } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { ROLES, type Role } from "@/lib/constants";
 
 /**
  * Admin User Management Page
  * 
- * Allows Super Admins to view all users and manage their platform roles.
+ * Allows admins to view users and super admins to manage roles.
  */
 export default function AdminUsersPage() {
   const role = useAppSelector(selectAuthRole);
@@ -27,12 +27,12 @@ export default function AdminUsersPage() {
   });
 
   // --- Security Check (Double protection) ---
-  if (!canManageUsers(role)) {
+  if (!canViewUsers(role)) {
     return (
       <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
         <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
         <p className="text-red-700 dark:text-red-400">
-          Only Super Administrators can access the user management console.
+          You do not have permission to view platform users.
         </p>
       </div>
     );
@@ -83,7 +83,7 @@ export default function AdminUsersPage() {
       ) : data && data.users.length > 0 ? (
         <div className="space-y-6">
           <div className={isFetching ? "pointer-events-none opacity-50 transition-opacity" : ""}>
-            <UserTable users={data.users} />
+            <UserTable users={data.users} canManageRoles={canManageUsers(role)} />
           </div>
 
           <div className="flex items-center justify-between rounded-xl border border-border bg-card px-6 py-4 shadow-sm">

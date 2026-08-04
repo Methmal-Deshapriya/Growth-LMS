@@ -14,13 +14,13 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       query: () => "/enrollments/my",
       providesTags: ["Enrollments"],
     }),
-    getBootcampRoster: builder.query<ClassRosterEntry[], string>({
-      query: (bootcampId) => `/enrollments/bootcamp/${bootcampId}`,
+    getCourseRoster: builder.query<ClassRosterEntry[], string>({
+      query: (courseId) => `/enrollments/course/${courseId}`,
       providesTags: ["Enrollments"],
     }),
     getEligibleStudents: builder.query<EligibleStudent[], EligibleStudentsParams>({
-      query: ({ bootcampId, q, limit = 5 }) => ({
-        url: `/enrollments/bootcamp/${bootcampId}/eligible-students`,
+      query: ({ courseId, q, limit = 5 }) => ({
+        url: `/enrollments/course/${courseId}/eligible-students`,
         params: { q, limit },
       }),
       providesTags: ["Enrollments"],
@@ -49,7 +49,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
 
 export const {
   useGetMyEnrollmentsQuery,
-  useGetBootcampRosterQuery,
+  useGetCourseRosterQuery,
   useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
   useUpdateEnrollmentMutation,

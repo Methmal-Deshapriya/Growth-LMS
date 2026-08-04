@@ -1,19 +1,12 @@
-"use client";
+import { notFound } from "next/navigation";
+import { ApiCourseDetail } from "@/components/marketing/catalog/ApiCourseDetail";
+import { getPublicCourse } from "@/lib/catalog";
 
-import React from "react";
-import { notFound, useParams } from "next/navigation";
-import { CourseDetail } from "@/components/marketing/catalog/CourseDetail";
-import { pretechSection } from "@/data/catalog/pretech";
-
-export default function PretechCoursePage() {
-  const params = useParams();
-  const groupSlug = params.group as string;
-  const courseSlug = params.course as string;
-
-  const group = pretechSection.groups.find((g) => g.slug === groupSlug);
-  const course = group?.courses.find((c) => c.slug === courseSlug);
-
-  if (!group || !course) return notFound();
-
-  return <CourseDetail section={pretechSection} group={group} course={course} />;
+export const dynamic = "force-dynamic";
+export async function generateMetadata({ params }: { params: Promise<{ group: string; course: string }> }) { const values = await params; const course = await getPublicCourse("pretech-courses", values.group, values.course); return course ? { title: `${course.title} | Foundry Academy`, description: course.summary } : {}; }
+export default async function PretechCoursePage({ params }: { params: Promise<{ group: string; course: string }> }) {
+  const { group, course: courseSlug } = await params;
+  const course = await getPublicCourse("pretech-courses", group, courseSlug);
+  if (!course) notFound();
+  return <ApiCourseDetail course={course} />;
 }

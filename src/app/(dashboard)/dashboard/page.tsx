@@ -55,7 +55,7 @@ export default function DashboardPage() {
           </div>
           <div>
             <p className="text-sm font-medium text-muted-foreground uppercase tracking-wider">
-              {isStudent(role) ? "Your Courses" : "Total Bootcamps"}
+              {isStudent(role) ? "Your Courses" : "Total Courses"}
             </p>
             <h3 className="text-2xl font-bold text-foreground">
               {isStudent(role) ? "2" : "12"}

@@ -5,7 +5,7 @@ export type Certificate = {
   enrollmentId: string;
   certificateCode: string;
   studentName: string;
-  bootcampName: string;
+  courseName: string;
   description?: string | null;
   issuedDate: string;
   status: CertificateStatus;
@@ -15,7 +15,7 @@ export type Certificate = {
   certificateData: {
     skills: string[];
     studentEmail: string;
-    bootcampSlug: string;
+    courseSlug: string;
   };
   snapshotUrl?: string | null;
   createdAt: string;
@@ -24,7 +24,7 @@ export type Certificate = {
 
 export type PublicCertificateVerification = {
   studentName: string;
-  bootcampName: string;
+  courseName: string;
   issuedDate: string;
   certificateCode: string;
   status: CertificateStatus;

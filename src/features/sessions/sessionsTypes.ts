@@ -1,6 +1,6 @@
 export type Session = {
   id: string;
-  bootcampId: string;
+  courseId: string;
   title: string;
   description?: string | null;
   orderIndex: number;
@@ -38,7 +38,7 @@ export type ReorderSessionsRequest = {
 
 export type EnrollmentProgress = {
   enrollmentId: string;
-  bootcampId: string;
+  courseId: string;
   completedCount: number;
   totalPublishedSessions: number;
   progressPercent: number;
