@@ -49,9 +49,13 @@ export function ServiceLanding({
           icon: catalogVisual(category.visualKey),
           iconGradient,
           accentText,
-          badge: category.badgeLabel ?? undefined,
+          badge:
+            category.badgeLabel ??
+            (category.courseCount === 0 ? "Coming soon" : undefined),
           metadata: [
-            `${category.courseCount} ${category.courseCount === 1 ? "course" : "courses"}`,
+            category.courseCount === 0
+              ? "Courses coming soon"
+              : `${category.courseCount} ${category.courseCount === 1 ? "course" : "courses"}`,
             category.levelSummary ?? category.audienceLabel,
           ],
         };

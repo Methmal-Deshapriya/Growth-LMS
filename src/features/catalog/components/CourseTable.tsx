@@ -10,29 +10,61 @@ import { hasPermission, PERMISSIONS } from "@/lib/access";
 import {
   type AdminCourse,
   useArchiveCourseMutation,
+  useDeleteCoursePermanentlyMutation,
   usePublishCourseMutation,
+  useUnarchiveCourseMutation,
   useUnpublishCourseMutation,
 } from "../catalogApi";
 
 export function CourseTable({ courses }: { courses: AdminCourse[] }) {
   const role = useAppSelector(selectAuthRole);
   const canPublish = hasPermission(role, PERMISSIONS.CATALOG_PUBLISH);
+  const canDelete = hasPermission(
+    role,
+    PERMISSIONS.CATALOG_DELETE_PERMANENTLY,
+  );
   const [publishCourse] = usePublishCourseMutation();
   const [unpublishCourse] = useUnpublishCourseMutation();
   const [archiveCourse] = useArchiveCourseMutation();
+  const [unarchiveCourse] = useUnarchiveCourseMutation();
+  const [deleteCoursePermanently] = useDeleteCoursePermanentlyMutation();
 
   const lifecycle = async (
     course: AdminCourse,
-    action: "publish" | "unpublish" | "archive",
+    action: "publish" | "unpublish" | "archive" | "unarchive",
   ) => {
     if (action === "archive" && !confirm(`Archive ${course.title}?`)) return;
     try {
       if (action === "publish") await publishCourse(course.id).unwrap();
       if (action === "unpublish") await unpublishCourse(course.id).unwrap();
       if (action === "archive") await archiveCourse(course.id).unwrap();
-      toast.success(`Course ${action}d`);
+      if (action === "unarchive") await unarchiveCourse(course.id).unwrap();
+      toast.success(
+        action === "unarchive"
+          ? "Course restored as a draft"
+          : `Course ${action}d`,
+      );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Action failed"));
+    }
+  };
+
+  const permanentlyDelete = async (course: AdminCourse) => {
+    const confirmation = `DELETE ${course.title}`;
+    const entered = window.prompt(
+      `This permanently deletes the course, its ${course.sessionCount} session(s), ${course.enrollmentCount} enrollment(s), progress, certificates, and projects. This cannot be undone.\n\nType "${confirmation}" to continue.`,
+    );
+    if (entered === null) return;
+    if (entered !== confirmation) {
+      toast.error("Confirmation text did not match. Nothing was deleted.");
+      return;
+    }
+
+    try {
+      await deleteCoursePermanently(course.id).unwrap();
+      toast.success("Course and all dependent records permanently deleted");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Permanent deletion failed"));
     }
   };
 
@@ -55,6 +87,7 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
               const isArchived =
                 course.status === "ARCHIVED" ||
                 course.category.status === "ARCHIVED";
+              const parentIsArchived = course.category.status === "ARCHIVED";
 
               return (
                 <tr key={course.id}>
@@ -77,7 +110,7 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
                     </span>
                   </td>
                   <td className="p-4">
-                    <div className="flex justify-end gap-2">
+                    <div className="flex flex-wrap justify-end gap-2">
                       <Button size="sm" variant="outline" asChild>
                         <Link href={`/admin/catalog/courses/${course.id}/sessions`}>
                           Sessions
@@ -93,6 +126,21 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
                           <Link href={`/admin/catalog/courses/${course.id}/edit`}>
                             Edit
                           </Link>
+                        </Button>
+                      ) : null}
+                      {canPublish && course.status === "ARCHIVED" ? (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={parentIsArchived}
+                          title={
+                            parentIsArchived
+                              ? "Unarchive the parent category first"
+                              : "Restore this course as a draft"
+                          }
+                          onClick={() => lifecycle(course, "unarchive")}
+                        >
+                          Unarchive
                         </Button>
                       ) : null}
                       {canPublish && !isArchived ? (
@@ -111,6 +159,15 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
                           {course.status === "PUBLISHED"
                             ? "Unpublish"
                             : "Publish"}
+                        </Button>
+                      ) : null}
+                      {canDelete && course.status === "ARCHIVED" ? (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => permanentlyDelete(course)}
+                        >
+                          Delete permanently
                         </Button>
                       ) : null}
                       {canPublish && !isArchived ? (
