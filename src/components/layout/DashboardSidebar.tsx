@@ -15,6 +15,7 @@ import {
   PlusCircle,
   Award,
   FolderCode,
+  Library,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -22,7 +23,7 @@ import { cn } from "@/lib/utils";
 import {
   isStudent,
   canAccessAdminArea,
-  canManageUsers,
+  canViewUsers,
   canViewAuditLogs
 } from "@/lib/access";
 import { useLogoutMutation } from "@/features/auth/authApi";
@@ -88,10 +89,10 @@ export default function DashboardSidebar() {
     },
     // --- Admin Section ---
     {
-      label: "Manage Bootcamps",
-      href: "/admin/bootcamps",
+      label: "Course Catalog",
+      href: "/admin/catalog/courses",
       icon: ShieldCheck,
-      active: pathname.startsWith("/admin/bootcamps"),
+      active: pathname.startsWith("/admin/catalog"),
       show: canAccessAdminArea(role),
     },
     {
@@ -99,6 +100,13 @@ export default function DashboardSidebar() {
       href: "/admin/enrollments",
       icon: PlusCircle,
       active: pathname.startsWith("/admin/enrollments"),
+      show: canAccessAdminArea(role),
+    },
+    {
+      label: "Session Library",
+      href: "/admin/sessions",
+      icon: Library,
+      active: pathname.startsWith("/admin/sessions"),
       show: canAccessAdminArea(role),
     },
     {
@@ -121,7 +129,7 @@ export default function DashboardSidebar() {
       href: "/admin/users",
       icon: Users,
       active: pathname.startsWith("/admin/users"),
-      show: canManageUsers(role),
+      show: canViewUsers(role),
     },
     {
       label: "Audit Logs",

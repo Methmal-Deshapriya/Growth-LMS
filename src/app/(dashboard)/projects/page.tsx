@@ -103,7 +103,7 @@ export default function MyProjectsPage() {
                 <div className="p-6 flex-1 space-y-4">
                   <div className="space-y-1">
                     <p className="text-xs font-bold text-primary uppercase tracking-widest">
-                      {project.bootcamp?.title}
+                      {project.course?.title}
                     </p>
                     <h3 className="text-xl font-bold text-foreground line-clamp-1">{project.title}</h3>
                   </div>

@@ -19,6 +19,7 @@ import { getApiErrorMessage } from "@/lib/api";
 
 interface UserTableProps {
   users: UserRecord[];
+  canManageRoles: boolean;
 }
 
 /**
@@ -26,7 +27,7 @@ interface UserTableProps {
  *
  * A administrative table for Super Admins to manage user roles.
  */
-export default function UserTable({ users }: UserTableProps) {
+export default function UserTable({ users, canManageRoles }: UserTableProps) {
   const [promote, { isLoading: isPromoting }] = usePromoteUserMutation();
   const [demote, { isLoading: isDemoting }] = useDemoteUserMutation();
 
@@ -145,7 +146,7 @@ export default function UserTable({ users }: UserTableProps) {
                 <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
                     {/* Promote: only if current role is STUDENT */}
-                    {user.role === "STUDENT" && (
+                    {canManageRoles && user.role === "STUDENT" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -159,7 +160,7 @@ export default function UserTable({ users }: UserTableProps) {
                     )}
 
                     {/* Demote: only if current role is ADMIN */}
-                    {user.role === "ADMIN" && (
+                    {canManageRoles && user.role === "ADMIN" && (
                       <Button
                         variant="outline"
                         size="sm"
@@ -173,11 +174,12 @@ export default function UserTable({ users }: UserTableProps) {
                     )}
 
                     {/* Super Admin Protection */}
-                    {user.role === "SUPER_ADMIN" && (
+                    {canManageRoles && user.role === "SUPER_ADMIN" && (
                       <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest bg-background px-3 py-1 rounded-md border border-border">
                         PROTECTED
                       </span>
                     )}
+                    {!canManageRoles && <span className="text-xs text-muted-foreground">View only</span>}
                   </div>
                 </td>
               </tr>

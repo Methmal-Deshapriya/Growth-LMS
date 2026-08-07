@@ -1,45 +1,13 @@
 import { Layers, Sparkles, Compass } from "lucide-react";
 import type { PublicServiceConfig } from "@/components/marketing/public-service/types";
 import { SERVICE_ACCENT } from "@/components/marketing/public-service/accent";
-import { itBootcampsSection } from "@/data/catalog/itBootcamps";
-
-const TRACK_META: Record<string, { description: string; iconGradient: string; accentText: string; badge?: string }> = {
-  ai: {
-    description: "Understand intelligent systems, reasoning, search, and modern AI applications.",
-    iconGradient: "from-violet-500 to-violet-600",
-    accentText: "text-violet-600",
-    badge: "Popular",
-  },
-  "machine-learning": {
-    description: "Learn how data and algorithms are used to build systems that improve from experience.",
-    iconGradient: "from-blue-500 to-blue-600",
-    accentText: "text-blue-600",
-  },
-  "software-engineering": {
-    description: "Learn to design and build reliable, production-focused software applications.",
-    iconGradient: "from-cyan-500 to-cyan-600",
-    accentText: "text-cyan-600",
-  },
-  devops: {
-    description: "Explore the practices and tools used to automate, deliver, and operate software.",
-    iconGradient: "from-orange-500 to-orange-600",
-    accentText: "text-orange-600",
-  },
-};
-
-const LEVEL_RANGE: Record<string, string> = {
-  ai: "Beginner to Intermediate",
-  "machine-learning": "Beginner to Intermediate",
-  "software-engineering": "Beginner to Advanced",
-  devops: "Beginner to Intermediate",
-};
 
 export const itBootcampsServiceConfig: PublicServiceConfig = {
-  basePath: itBootcampsSection.basePath,
-  breadcrumbLabel: itBootcampsSection.eyebrow,
+  basePath: "/bootcamps",
+  breadcrumbLabel: "Bootcamps",
   accent: SERVICE_ACCENT,
   hero: {
-    eyebrow: "IT Professional Bootcamps",
+    eyebrow: "Bootcamps",
     title: "Build practical skills for the",
     highlight: "technology industry",
     description:
@@ -59,20 +27,7 @@ export const itBootcampsServiceConfig: PublicServiceConfig = {
     highlight: "career path",
     description: "Start with the field that matches what you want to understand, create, or work toward.",
     itemLabel: "tracks",
-    items: itBootcampsSection.groups.map((group) => {
-      const meta = TRACK_META[group.slug];
-      return {
-        id: group.slug,
-        title: group.title,
-        description: meta.description,
-        href: `${itBootcampsSection.basePath}/${group.slug}`,
-        icon: group.icon,
-        accentText: meta.accentText,
-        iconGradient: meta.iconGradient,
-        badge: meta.badge,
-        metadata: [`${group.courses.length} courses`, LEVEL_RANGE[group.slug]],
-      };
-    }),
+    items: [],
   },
   processSection: {
     title: "How the bootcamps work",

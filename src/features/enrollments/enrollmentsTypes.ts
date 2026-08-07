@@ -1,49 +1,69 @@
-import type { Bootcamp } from "@/features/bootcamps/bootcampsTypes";
+import type { PublicCourseCard } from "@/features/catalog/catalogTypes";
 import type { User } from "@/features/auth/authTypes";
 
 export type EnrollmentStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
-export type PaymentStatus = "PENDING" | "PARTIAL" | "COMPLETED";
+export type PaymentStatus = "NOT_REQUIRED" | "PENDING" | "PARTIAL" | "COMPLETED";
+export type EnrollmentSource = "ADMIN" | "SELF";
 
-export type MyEnrollment = {
-  enrolledAt: string | number | Date;
+export interface EnrollmentBatchSummary {
+  id: string;
+  name: string;
+  code: string;
+  startDate: string;
+  expectedEndDate: string;
+  timezone: string;
+  status: string;
+}
+
+export interface MyEnrollment {
+  enrolledAt: string;
   id: string;
   userId: string;
-  bootcampId: string;
+  courseId: string;
+  batchId: string | null;
+  source: EnrollmentSource;
   status: EnrollmentStatus;
   paymentStatus: PaymentStatus;
   paymentCompletedAt?: string | null;
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  bootcamp: Bootcamp;
-};
+  course: PublicCourseCard;
+  batch: EnrollmentBatchSummary | null;
+}
 
-export type ClassRosterEntry = Omit<MyEnrollment, "bootcamp"> & {
+
+export interface ClassRosterEntry extends MyEnrollment {
   user: User;
-};
+  enrolledBy?: User | null;
+  enrolledByUserId?: string | null;
+  externalPaymentReference?: string | null;
+  paymentNote?: string | null;
+}
 
-export type CreateEnrollmentRequest = {
+export interface CreatePaidEnrollmentRequest {
   userId: string;
-  bootcampId: string;
-  paymentStatus?: PaymentStatus;
-};
+  paymentStatus?: Exclude<PaymentStatus, "NOT_REQUIRED">;
+  externalPaymentReference?: string | null;
+  paymentNote?: string | null;
+}
 
 export type UpdateEnrollmentRequest = {
   status?: EnrollmentStatus;
-  paymentStatus?: PaymentStatus;
-  paymentCompletedAt?: string | null;
-  completedAt?: string | null;
+  paymentStatus?: Exclude<PaymentStatus, "NOT_REQUIRED">;
+  externalPaymentReference?: string | null;
+  paymentNote?: string | null;
 };
+export type EligibleStudent = Pick<User, "id" | "firstName" | "lastName" | "email">;
+export type EligibleStudentsParams = { batchId: string; q?: string; limit?: number };
 
-export type EligibleStudent = {
-  id: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-};
-
-export type EligibleStudentsParams = {
-  bootcampId: string;
-  q?: string;
-  limit?: number;
-};
+export interface BulkEnrollmentResult {
+  results: Array<{
+    userId: string;
+    status: "CREATED" | "FAILED";
+    enrollment?: ClassRosterEntry;
+    code?: string;
+    error?: string;
+  }>;
+  summary: { requested: number; created: number; failed: number };
+}

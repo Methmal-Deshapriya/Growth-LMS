@@ -1,37 +1,13 @@
 import { Layers, Users, Sparkles } from "lucide-react";
 import type { PublicServiceConfig } from "@/components/marketing/public-service/types";
 import { SERVICE_ACCENT } from "@/components/marketing/public-service/accent";
-import { contributionsSection } from "@/data/catalog/contributions";
-
-const AREA_META: Record<string, { description: string; iconGradient: string; accentText: string }> = {
-  "software-engineering-fundamentals": {
-    description: "The core thinking behind writing good software, explained simply.",
-    iconGradient: "from-blue-500 to-blue-600",
-    accentText: "text-blue-600",
-  },
-  "git-github": {
-    description: "Version control and collaboration, the way real teams actually use it.",
-    iconGradient: "from-rose-500 to-rose-600",
-    accentText: "text-rose-600",
-  },
-  "general-knowledge": {
-    description: "Broad awareness sessions open to absolutely anyone.",
-    iconGradient: "from-emerald-500 to-emerald-600",
-    accentText: "text-emerald-600",
-  },
-  "general-english": {
-    description: "Practical communication skills for study, interviews and everyday work.",
-    iconGradient: "from-amber-500 to-amber-600",
-    accentText: "text-amber-600",
-  },
-};
 
 export const contributionsServiceConfig: PublicServiceConfig = {
-  basePath: contributionsSection.basePath,
-  breadcrumbLabel: contributionsSection.eyebrow,
+  basePath: "/free-learning",
+  breadcrumbLabel: "Free Learning",
   accent: SERVICE_ACCENT,
   hero: {
-    eyebrow: "Public Contributions",
+    eyebrow: "Free Learning",
     title: "Open sessions for anyone who wants to",
     highlight: "start learning",
     description:
@@ -47,22 +23,10 @@ export const contributionsServiceConfig: PublicServiceConfig = {
     highlight: "learning area",
     description: "Pick the area you'd like to build confidence in first.",
     itemLabel: "learning areas",
-    items: contributionsSection.groups.map((group) => {
-      const meta = AREA_META[group.slug];
-      return {
-        id: group.slug,
-        title: group.title,
-        description: meta.description,
-        href: `${contributionsSection.basePath}/${group.slug}`,
-        icon: group.icon,
-        accentText: meta.accentText,
-        iconGradient: meta.iconGradient,
-        metadata: [`${group.courses.length} sessions`, "Open to everyone"],
-      };
-    }),
+    items: [],
   },
   processSection: {
-    title: "How Public Contributions works",
+    title: "How Free Learning works",
     description: "No applications, no barriers — just show up and start learning.",
     steps: [
       { title: "Choose an open resource", description: "Pick the learning area that interests you most." },
@@ -94,7 +58,7 @@ export const contributionsServiceConfig: PublicServiceConfig = {
       {
         question: "Is this connected to the paid bootcamps?",
         answer:
-          "Public Contributions is separate from the paid bootcamp tracks, though many learners use it as a first step before enrolling in one.",
+          "Free Learning is separate from the paid bootcamp tracks, though many learners use it as a first step before enrolling in one.",
       },
     ],
   },

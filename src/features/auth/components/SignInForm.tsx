@@ -4,7 +4,7 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useLoginMutation } from "../authApi";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,6 +37,8 @@ const inputClassName =
  */
 export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const enrollmentCourseId = searchParams.get("enrollCourse");
   const [login, { isLoading }] = useLoginMutation();
 
   // 2. Initialize Form
@@ -58,11 +60,17 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
     try {
       await login(data).unwrap();
       toast.success("Welcome back to Foundry Academy!");
-      // Redirection is handled by useGuestGuard automatically because isAuthenticated changes
+      const intent = enrollmentCourseId
+        ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.replace(`/dashboard${intent}`);
     } catch (error: unknown) {
       if (isNormalizedApiError(error) && error.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before logging in.");
-        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        const intent = enrollmentCourseId
+          ? `&enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+          : "";
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}${intent}`);
         return;
       }
       // Check if it's a normalized field error from our baseApi

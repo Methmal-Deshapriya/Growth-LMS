@@ -40,7 +40,7 @@ export default function AdminCertificatesPage() {
   const filteredCertificates = certificates?.filter(c => 
     c.certificateCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
     c.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.bootcampName.toLowerCase().includes(searchTerm.toLowerCase())
+    c.courseName.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -58,7 +58,7 @@ export default function AdminCertificatesPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Search by code, student name, or bootcamp..."
+            placeholder="Search by code, student name, or course..."
             className="pl-10 border-border h-12 rounded-xl"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -84,7 +84,7 @@ export default function AdminCertificatesPage() {
                 <tr className="bg-muted/50 border-b border-border">
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Certificate Code</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Bootcamp</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Course</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Issued Date</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
@@ -97,7 +97,7 @@ export default function AdminCertificatesPage() {
                       <span className="font-mono text-sm text-foreground">{cert.certificateCode}</span>
                     </td>
                     <td className="px-6 py-4 font-semibold text-foreground">{cert.studentName}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{cert.bootcampName}</td>
+                    <td className="px-6 py-4 text-sm text-foreground">{cert.courseName}</td>
                     <td className="px-6 py-4">
                       <span className={cn(
                         "inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",

@@ -21,23 +21,36 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState<{
     status: EnrollmentStatus;
-    paymentStatus: PaymentStatus;
+    paymentStatus: Exclude<PaymentStatus, "NOT_REQUIRED">;
+    externalPaymentReference: string;
+    paymentNote: string;
   }>({
     status: "ACTIVE",
     paymentStatus: "PENDING",
+    externalPaymentReference: "",
+    paymentNote: "",
   });
 
   const handleEdit = (entry: ClassRosterEntry) => {
     setEditingId(entry.id);
     setEditForm({
       status: entry.status,
-      paymentStatus: entry.paymentStatus,
+      paymentStatus: entry.paymentStatus === "NOT_REQUIRED" ? "PENDING" : entry.paymentStatus,
+      externalPaymentReference: entry.externalPaymentReference ?? "",
+      paymentNote: entry.paymentNote ?? "",
     });
   };
 
   const handleSave = async (id: string) => {
     try {
-      await updateEnrollment({ id, data: editForm }).unwrap();
+      await updateEnrollment({
+        id,
+        data: {
+          ...editForm,
+          externalPaymentReference: editForm.externalPaymentReference.trim() || null,
+          paymentNote: editForm.paymentNote.trim() || null,
+        },
+      }).unwrap();
       toast.success("Enrollment updated successfully");
       setEditingId(null);
     } catch (error: unknown) {
@@ -50,7 +63,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
     try {
       await issueCertificate({
         enrollmentId,
-        data: { description: "Successfully completed the bootcamp." },
+        data: { description: "Successfully completed the course." },
       }).unwrap();
       toast.success("Certificate issued successfully!");
     } catch (error: unknown) {
@@ -83,6 +96,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Enrollment Status</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Payment</th>
+              <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Evidence</th>
               <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
             </tr>
           </thead>
@@ -129,7 +143,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                     <select
                       className="border-border rounded-md text-sm p-1"
                       value={editForm.paymentStatus}
-                      onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value as PaymentStatus })}
+                      onChange={(e) => setEditForm({ ...editForm, paymentStatus: e.target.value as Exclude<PaymentStatus, "NOT_REQUIRED"> })}
                     >
                       <option value="PENDING">PENDING</option>
                       <option value="PARTIAL">PARTIAL</option>
@@ -143,13 +157,24 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                 </td>
 
                 <td className="px-6 py-4">
+                  {editingId === entry.id ? (
+                    <div className="min-w-52 space-y-2">
+                      <input className="w-full rounded-md border border-border bg-background p-2 text-sm" value={editForm.externalPaymentReference} onChange={(event) => setEditForm({ ...editForm, externalPaymentReference: event.target.value })} placeholder="Reference" />
+                      <input className="w-full rounded-md border border-border bg-background p-2 text-sm" value={editForm.paymentNote} onChange={(event) => setEditForm({ ...editForm, paymentNote: event.target.value })} placeholder="Internal note" />
+                    </div>
+                  ) : (
+                    <div className="max-w-52 text-xs"><p className="font-semibold text-foreground">{entry.externalPaymentReference || "No reference"}</p><p className="mt-1 truncate text-muted-foreground" title={entry.paymentNote ?? undefined}>{entry.paymentNote || "No note"}</p></div>
+                  )}
+                </td>
+
+                <td className="px-6 py-4">
                   <div className="flex items-center justify-end gap-2">
                     {editingId === entry.id ? (
                       <>
-                        <Button variant="ghost" size="icon" onClick={() => handleSave(entry.id)} disabled={isUpdating}>
+                        <Button aria-label="Save enrollment changes" variant="ghost" size="icon" onClick={() => handleSave(entry.id)} disabled={isUpdating}>
                           {isUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4 text-green-600 dark:text-green-400" />}
                         </Button>
-                        <Button variant="ghost" size="icon" onClick={() => setEditingId(null)} disabled={isUpdating}>
+                        <Button aria-label="Cancel enrollment changes" variant="ghost" size="icon" onClick={() => setEditingId(null)} disabled={isUpdating}>
                           <X className="h-4 w-4 text-red-500 dark:text-red-400" />
                         </Button>
                       </>
@@ -157,6 +182,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                       <>
                         {entry.status === "COMPLETED" && (
                           <Button 
+                            aria-label="Issue certificate"
                             variant="ghost" 
                             size="icon" 
                             title="Issue Certificate"
@@ -166,7 +192,7 @@ export default function ClassRosterTable({ entries }: ClassRosterTableProps) {
                             <Award className="h-4 w-4 text-purple-600 dark:text-purple-400" />
                           </Button>
                         )}
-                        <Button variant="ghost" size="icon" onClick={() => handleEdit(entry)}>
+                        <Button aria-label="Edit enrollment" variant="ghost" size="icon" onClick={() => handleEdit(entry)}>
                           <Edit2 className="h-4 w-4 text-primary" />
                         </Button>
                       </>

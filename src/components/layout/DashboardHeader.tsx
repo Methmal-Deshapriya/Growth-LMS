@@ -24,7 +24,7 @@ export default function DashboardHeader() {
         <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
         <input
           type="text"
-          placeholder="Search bootcamps or students..."
+          placeholder="Search courses or students..."
           className="w-full h-10 pl-10 pr-4 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground"
         />
       </div>

@@ -1,23 +1,21 @@
 "use client";
 
-import React from "react";
-import { Session } from "../sessionsTypes";
+import type { ClassroomSession } from "../sessionsTypes";
 import SessionItem from "./SessionItem";
 
 interface SessionListProps {
-  sessions: Session[];
+  enrollmentId: string;
+  sessions: ClassroomSession[];
 }
 
-/**
- * SessionList Component
- * 
- * Displays a list of sessions for a bootcamp.
- */
-export default function SessionList({ sessions }: SessionListProps) {
+export default function SessionList({ enrollmentId, sessions }: SessionListProps) {
   if (sessions.length === 0) {
     return (
-      <div className="bg-card rounded-2xl border border-dashed border-border p-12 text-center">
-        <p className="text-muted-foreground">No sessions published yet for this bootcamp.</p>
+      <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
+        <p className="text-muted-foreground">
+          No sessions are available for you yet. New sessions will appear here
+          when they are released.
+        </p>
       </div>
     );
   }
@@ -25,8 +23,9 @@ export default function SessionList({ sessions }: SessionListProps) {
   return (
     <div className="space-y-4">
       {sessions.map((session) => (
-        <SessionItem 
-          key={session.id} 
+        <SessionItem
+          key={session.courseSessionId}
+          enrollmentId={enrollmentId}
           session={session}
         />
       ))}

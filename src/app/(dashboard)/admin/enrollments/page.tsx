@@ -1,32 +1,24 @@
 "use client";
 
-import React from "react";
-import ManualEnrollmentForm from "@/features/enrollments/components/ManualEnrollmentForm";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 /**
  * Admin Enrollments Page
  * 
- * Provides tools for managing student access to bootcamps.
+ * Provides tools for managing student access to courses.
  */
 export default function AdminEnrollmentsPage() {
   return (
-    <div className="max-w-2xl mx-auto pb-20">
+    <div className="max-w-3xl mx-auto pb-20">
       <div className="mb-10">
         <h1 className="text-3xl font-bold text-foreground">Enrollment Operations</h1>
         <p className="text-muted-foreground mt-1">
-          Manually grant students access to professional programs.
+          Paid enrollment is managed inside the exact course batch the learner is joining.
         </p>
       </div>
 
-      <ManualEnrollmentForm />
-      
-      <div className="mt-12 bg-primary/10 border border-primary/20 rounded-2xl p-8">
-        <h4 className="font-bold text-primary mb-2">Pro Tip</h4>
-        <p className="text-primary text-sm leading-relaxed">
-          In version 1, students cannot self-enroll. Once you confirm their payment receipt (via email or message), 
-          use this form to grant them instant access. They will see the course in their &quot;My Courses&quot; dashboard immediately.
-        </p>
-      </div>
+      <div className="rounded-2xl border border-border bg-card p-8"><h2 className="text-xl font-bold">Choose Course → Batch → Roster</h2><p className="mt-2 text-sm leading-relaxed text-muted-foreground">Open a Bootcamp or PreTech course, choose its intake, then search verified students and record their external payment evidence. Free Learning students enroll themselves and do not appear in this paid operation.</p><Button asChild className="mt-6"><Link href="/admin/catalog/courses">Open course catalog</Link></Button></div>
     </div>
   );
 }

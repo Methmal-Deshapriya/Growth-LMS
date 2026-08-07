@@ -1,9 +1,9 @@
-"use client";
+import { ServiceLanding } from "@/components/marketing/public-service/ServiceLanding";
+import { getPublicServiceCatalog } from "@/lib/catalog";
 
-import React from "react";
-import { PublicServicePage } from "@/components/marketing/public-service/PublicServicePage";
-import { pretechServiceConfig } from "@/data/publicServices/pretech";
-
-export default function PretechCoursesPage() {
-  return <PublicServicePage config={pretechServiceConfig} />;
+export const dynamic = "force-dynamic";
+export const metadata = { title: "PreTech Courses | Foundry Academy" };
+export default async function PretechPage() {
+  const catalog = await getPublicServiceCatalog("pretech-courses");
+  return <ServiceLanding service="pretech-courses" categories={catalog?.categories ?? []} />;
 }

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAppSelector } from "@/store/hooks";
 import { selectIsAuthenticated, selectIsAuthResolved } from "../authSelectors";
 
@@ -15,14 +15,19 @@ import { selectIsAuthenticated, selectIsAuthResolved } from "../authSelectors";
  */
 export function useGuestGuard() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const enrollmentCourseId = searchParams.get("enrollCourse");
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAuthResolved = useAppSelector(selectIsAuthResolved);
 
   useEffect(() => {
     if (isAuthResolved && isAuthenticated) {
-      router.replace("/dashboard");
+      const intent = enrollmentCourseId
+        ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.replace(`/dashboard${intent}`);
     }
-  }, [isAuthenticated, isAuthResolved, router]);
+  }, [enrollmentCourseId, isAuthenticated, isAuthResolved, router]);
 
   return { isAuthResolved, isAuthenticated };
 }

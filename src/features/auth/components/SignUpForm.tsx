@@ -4,7 +4,7 @@ import React from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useRegisterMutation } from "../authApi";
 import type { RegisterRequest } from "../authTypes";
 import { Input } from "@/components/ui/input";
@@ -59,6 +59,8 @@ const fieldIconClassName = "absolute left-3 top-3.5 h-4 w-4 text-muted-foregroun
  */
 export default function SignUpForm({ onSignInClick }: { onSignInClick: () => void }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const enrollmentCourseId = searchParams.get("enrollCourse");
   const [registerUser, { isLoading }] = useRegisterMutation();
 
   // 2. Initialize Form
@@ -104,7 +106,10 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
       // Registering does not log the user in — they must verify their
       // email via OTP first, so we redirect explicitly rather than
       // relying on GuestGuard's isAuthenticated-driven redirect.
-      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+      const intent = enrollmentCourseId
+        ? `&enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}${intent}`);
     } catch (error: unknown) {
       // Check if it's a normalized field error from our baseApi
       if (isNormalizedApiError(error) && error.field) {

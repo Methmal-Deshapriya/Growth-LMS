@@ -164,8 +164,8 @@ export default function ProjectDetailsPage() {
                     <BookOpen className="h-4 w-4" />
                   </div>
                   <div>
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Bootcamp</p>
-                    <p className="text-sm font-bold text-foreground">{project.bootcamp?.title}</p>
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase">Course</p>
+                    <p className="text-sm font-bold text-foreground">{project.course?.title}</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

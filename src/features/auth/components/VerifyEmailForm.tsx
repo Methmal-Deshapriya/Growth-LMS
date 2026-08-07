@@ -33,6 +33,7 @@ export default function VerifyEmailForm() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const email = searchParams.get("email");
+  const enrollmentCourseId = searchParams.get("enrollCourse");
 
   const [verifyOtp, { isLoading: isVerifying }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: isResending }] = useResendOtpMutation();
@@ -60,7 +61,10 @@ export default function VerifyEmailForm() {
     try {
       await verifyOtp({ email, code: values.code }).unwrap();
       toast.success("Email verified! Welcome to Foundry Academy.");
-      router.push("/dashboard");
+      const intent = enrollmentCourseId
+        ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.replace(`/dashboard${intent}`);
     } catch (error: unknown) {
       if (isNormalizedApiError(error) && error.field) {
         setError("code", {

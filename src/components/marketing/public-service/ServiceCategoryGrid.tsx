@@ -1,12 +1,31 @@
 import React from "react";
 import Link from "next/link";
-import { ChevronRight, Star } from "lucide-react";
+import { BookOpen, ChevronRight, Star } from "lucide-react";
 import { Reveal, RevealItem } from "@/components/ui/reveal";
 import type { PublicServiceConfig } from "./types";
 
 export function ServiceCategoryGrid({
   categorySection,
 }: Pick<PublicServiceConfig, "categorySection" | "accent">) {
+  if (categorySection.items.length === 0) {
+    return (
+      <section id="categories" className="mb-16 scroll-mt-20 sm:mb-24">
+        <Reveal className="rounded-3xl border border-dashed border-blue-200 bg-white/80 px-6 py-12 text-center shadow-sm sm:px-10 sm:py-16">
+          <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-blue-100 text-blue-600">
+            <BookOpen className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <h2 className="mt-5 font-sans text-xl font-bold text-[#0E1116] sm:text-2xl">
+            Learning categories are coming soon
+          </h2>
+          <p className="mx-auto mt-2 max-w-lg font-alt text-sm leading-relaxed text-[#5B6472] sm:text-base">
+            We&apos;re preparing the first learning categories for this service.
+            Please check back soon for updates.
+          </p>
+        </Reveal>
+      </section>
+    );
+  }
+
   return (
     <section id="categories" className="mb-16 sm:mb-24 scroll-mt-20">
       <Reveal stagger={0.08} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">

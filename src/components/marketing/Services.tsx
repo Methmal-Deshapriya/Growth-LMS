@@ -4,10 +4,10 @@ import { GraduationCap, BookOpen, Users, Target, ChevronRight } from "lucide-rea
 
 const SERVICES = [
   {
-    href: "/it-bootcamps",
+    href: "/bootcamps",
     icon: GraduationCap,
     color: "text-blue-600 bg-blue-100",
-    title: "IT Professional Bootcamps",
+    title: "Bootcamps",
     description: "We design and deliver hands-on bootcamps across today's most in-demand tech fields.",
     tags: ["AI", "Machine Learning", "Software Engineering", "DevOps"],
   },
@@ -20,10 +20,10 @@ const SERVICES = [
     tags: ["Maths", "Physics", "Statistics", "C Programming"],
   },
   {
-    href: "/contributions",
+    href: "/free-learning",
     icon: Users,
     color: "text-orange-600 bg-orange-100",
-    title: "Public Contributions",
+    title: "Free Learning",
     description: "Open foundational sessions for anyone looking to build the basics that every tech career rests on.",
     tags: ["Software Eng. Fundamentals", "Git & GitHub", "General Knowledge", "General English"],
   },

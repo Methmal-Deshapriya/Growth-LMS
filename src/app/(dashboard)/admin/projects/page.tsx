@@ -58,7 +58,7 @@ export default function AdminProjectsPage() {
   const filteredProjects = projects?.filter(p => 
     p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     `${p.user?.firstName ?? ""} ${p.user?.lastName ?? ""}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.bootcamp?.title.toLowerCase().includes(searchTerm.toLowerCase())
+    p.course?.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
   return (
@@ -76,7 +76,7 @@ export default function AdminProjectsPage() {
         <div className="relative">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
           <Input
-            placeholder="Search by title, student, or bootcamp..."
+            placeholder="Search by title, student, or course..."
             className="pl-10 border-border h-12 rounded-xl"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
@@ -101,7 +101,7 @@ export default function AdminProjectsPage() {
               <thead>
                 <tr className="bg-muted/50 border-b border-border">
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Project</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student / Bootcamp</th>
+                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student / Course</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Submitted</th>
                   <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
@@ -126,8 +126,8 @@ export default function AdminProjectsPage() {
                       <div className="font-semibold text-foreground">
                         {project.user?.firstName} {project.user?.lastName}
                       </div>
-                      <div className="text-sm text-foreground line-clamp-1 max-w-[200px]" title={project.bootcamp?.title}>
-                        {project.bootcamp?.title}
+                      <div className="text-sm text-foreground line-clamp-1 max-w-[200px]" title={project.course?.title}>
+                        {project.course?.title}
                       </div>
                     </td>
                     <td className="px-6 py-4">
