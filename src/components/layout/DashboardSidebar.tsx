@@ -15,6 +15,7 @@ import {
   PlusCircle,
   Award,
   FolderCode,
+  Library,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -99,6 +100,13 @@ export default function DashboardSidebar() {
       href: "/admin/enrollments",
       icon: PlusCircle,
       active: pathname.startsWith("/admin/enrollments"),
+      show: canAccessAdminArea(role),
+    },
+    {
+      label: "Session Library",
+      href: "/admin/sessions",
+      icon: Library,
+      active: pathname.startsWith("/admin/sessions"),
       show: canAccessAdminArea(role),
     },
     {

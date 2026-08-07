@@ -1,5 +1,6 @@
 import { baseApi } from "@/store/baseApi";
 import type { LearningServiceType, CourseLevel } from "./catalogTypes";
+import type { MyEnrollment } from "@/features/enrollments/enrollmentsTypes";
 
 export type CatalogStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
 export interface AdminCategory {
@@ -16,6 +17,7 @@ export interface AdminCourse {
   certificateEnabled: boolean; highlights: string[]; skills: string[];
   prerequisites: string[]; thumbnailUrl: string | null; status: CatalogStatus;
   sortOrder: number; sessionCount: number; enrollmentCount: number;
+  batchCount: number;
   category: AdminCategory; createdAt: string; updatedAt: string;
 }
 export type CategoryInput = Pick<AdminCategory, "serviceType" | "slug" | "title" | "description" | "visualKey"> & Partial<Pick<AdminCategory, "audienceLabel" | "badgeLabel" | "sortOrder">>;
@@ -24,7 +26,11 @@ type List<T, K extends string> = Record<K, T[]> & { pagination: { total: number;
 export interface PermanentDeleteResult {
   id: string;
   deletedCourses: number;
-  deletedSessions: number;
+  deletedBatches: number;
+  deletedBatchSessions: number;
+  deletedCourseSessions: number;
+  deletedExclusiveSessions: number;
+  preservedReusableSessions: number;
   deletedEnrollments: number;
   deletedProjects: number;
 }
@@ -48,7 +54,7 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
   archiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Courses", "Categories"] }),
   unarchiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unarchive`, method: "PATCH" }), invalidatesTags: ["Courses", "Categories"] }),
   deleteCoursePermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/courses/${id}`, method: "DELETE" }), invalidatesTags: ["Courses", "Categories", "Sessions", "Enrollments", "Certificates", "Projects"] }),
-  selfEnrollCourse: builder.mutation<unknown, string>({ query: (courseId) => ({ url: `/courses/${courseId}/enroll`, method: "POST" }), invalidatesTags: ["Enrollments"] }),
+  selfEnrollCourse: builder.mutation<MyEnrollment, string>({ query: (courseId) => ({ url: `/courses/${courseId}/enroll`, method: "POST" }), invalidatesTags: ["Enrollments"] }),
 }) });
 
 export const {

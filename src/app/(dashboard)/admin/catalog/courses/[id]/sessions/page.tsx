@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
-import SessionManager from "@/features/sessions/components/admin/SessionManager";
+import CourseCurriculumManager from "@/features/sessions/components/admin/CourseCurriculumManager";
 import { useGetAdminCourseQuery } from "@/features/catalog/catalogApi";
 
 export default function AdminCourseSessionsPage() {
@@ -28,11 +28,11 @@ export default function AdminCourseSessionsPage() {
         <h1 className="mt-4 text-3xl font-bold">{data.title}</h1>
         <p className="text-muted-foreground">
           {isArchived
-            ? "Review the preserved sessions for this archived course."
-            : "Manage the authenticated learning sessions for this course."}
+            ? "Review the preserved curriculum for this archived course."
+            : "Attach Session Library resources and define the course's master order."}
         </p>
       </div>
-      <SessionManager courseId={id} readOnly={isArchived} />
+      <CourseCurriculumManager courseId={id} readOnly={isArchived} />
     </div>
   );
 }

@@ -1,11 +1,12 @@
 import { baseApi } from "@/store/baseApi";
 import type {
-  MyEnrollment,
+  BulkEnrollmentResult,
   ClassRosterEntry,
-  CreateEnrollmentRequest,
-  UpdateEnrollmentRequest,
+  CreatePaidEnrollmentRequest,
   EligibleStudent,
   EligibleStudentsParams,
+  MyEnrollment,
+  UpdateEnrollmentRequest,
 } from "./enrollmentsTypes";
 
 export const enrollmentsApi = baseApi.injectEndpoints({
@@ -18,28 +19,57 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       query: (courseId) => `/enrollments/course/${courseId}`,
       providesTags: ["Enrollments"],
     }),
+    getBatchRoster: builder.query<ClassRosterEntry[], string>({
+      query: (batchId) => `/batches/${batchId}/enrollments`,
+      providesTags: (_result, _error, batchId) => [
+        { type: "Enrollments", id: `BATCH-${batchId}` },
+      ],
+    }),
     getEligibleStudents: builder.query<EligibleStudent[], EligibleStudentsParams>({
-      query: ({ courseId, q, limit = 5 }) => ({
-        url: `/enrollments/course/${courseId}/eligible-students`,
+      query: ({ batchId, q, limit = 10 }) => ({
+        url: `/batches/${batchId}/eligible-students`,
         params: { q, limit },
       }),
-      providesTags: ["Enrollments"],
+      providesTags: (_result, _error, { batchId }) => [
+        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
+      ],
     }),
-    createEnrollment: builder.mutation<MyEnrollment, CreateEnrollmentRequest>({
-      query: (body) => ({
-        url: "/enrollments",
+    createEnrollment: builder.mutation<
+      ClassRosterEntry,
+      { batchId: string; data: CreatePaidEnrollmentRequest }
+    >({
+      query: ({ batchId, data }) => ({
+        url: `/batches/${batchId}/enrollments`,
         method: "POST",
-        body,
-      }),
-      invalidatesTags: ["Enrollments"],
-    }),
-    updateEnrollment: builder.mutation<MyEnrollment, { id: string; data: UpdateEnrollmentRequest }>({
-      query: ({ id, data }) => ({
-        url: `/enrollments/${id}`,
-        method: "PATCH",
         body: data,
       }),
-      invalidatesTags: (result, error, { id }) => [
+      invalidatesTags: (_result, _error, { batchId }) => [
+        { type: "Enrollments", id: `BATCH-${batchId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
+        "Batches",
+      ],
+    }),
+    bulkCreateEnrollments: builder.mutation<
+      BulkEnrollmentResult,
+      { batchId: string; students: CreatePaidEnrollmentRequest[] }
+    >({
+      query: ({ batchId, students }) => ({
+        url: `/batches/${batchId}/enrollments/bulk`,
+        method: "POST",
+        body: { students },
+      }),
+      invalidatesTags: (_result, _error, { batchId }) => [
+        { type: "Enrollments", id: `BATCH-${batchId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
+        "Batches",
+      ],
+    }),
+    updateEnrollment: builder.mutation<
+      ClassRosterEntry,
+      { id: string; data: UpdateEnrollmentRequest }
+    >({
+      query: ({ id, data }) => ({ url: `/enrollments/${id}`, method: "PATCH", body: data }),
+      invalidatesTags: (_result, _error, { id }) => [
         { type: "Enrollments", id },
         "Enrollments",
       ],
@@ -50,7 +80,9 @@ export const enrollmentsApi = baseApi.injectEndpoints({
 export const {
   useGetMyEnrollmentsQuery,
   useGetCourseRosterQuery,
+  useGetBatchRosterQuery,
   useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
+  useBulkCreateEnrollmentsMutation,
   useUpdateEnrollmentMutation,
 } = enrollmentsApi;

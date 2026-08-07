@@ -16,15 +16,18 @@ import { selectIsAuthenticated, selectIsAuthResolved } from "../authSelectors";
 export function useGuestGuard() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const hasEnrollmentIntent = Boolean(searchParams.get("enrollCourse"));
+  const enrollmentCourseId = searchParams.get("enrollCourse");
   const isAuthenticated = useAppSelector(selectIsAuthenticated);
   const isAuthResolved = useAppSelector(selectIsAuthResolved);
 
   useEffect(() => {
-    if (isAuthResolved && isAuthenticated && !hasEnrollmentIntent) {
-      router.replace("/dashboard");
+    if (isAuthResolved && isAuthenticated) {
+      const intent = enrollmentCourseId
+        ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.replace(`/dashboard${intent}`);
     }
-  }, [hasEnrollmentIntent, isAuthenticated, isAuthResolved, router]);
+  }, [enrollmentCourseId, isAuthenticated, isAuthResolved, router]);
 
   return { isAuthResolved, isAuthenticated };
 }

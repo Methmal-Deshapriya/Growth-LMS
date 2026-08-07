@@ -14,6 +14,7 @@ import { isStudent, isSuperAdmin } from "@/lib/access";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { LayoutDashboard } from "lucide-react";
+import EnrollmentIntentHandler from "@/features/enrollments/components/EnrollmentIntentHandler";
 /**
  * Smart Dashboard Page
  *
@@ -25,6 +26,7 @@ export default function DashboardPage() {
 
   return (
     <div className="space-y-10">
+      <EnrollmentIntentHandler />
       {/* 1. Welcome Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>

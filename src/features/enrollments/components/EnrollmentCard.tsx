@@ -1,68 +1,101 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { MyEnrollment } from "../enrollmentsTypes";
-import { Button } from "@/components/ui/button";
-import { ArrowRight, Calendar, BookOpen } from "lucide-react";
 import { format } from "date-fns";
+import { ArrowRight, BookOpen, Calendar, LockKeyhole, Users } from "lucide-react";
+import type { MyEnrollment } from "../enrollmentsTypes";
+import { Button } from "@/components/ui/button";
 
 interface EnrollmentCardProps {
   enrollment: MyEnrollment;
 }
 
-/**
- * EnrollmentCard Component
- *
- * Displays an active course enrollment for a student.
- */
-export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
-  const { course } = enrollment;
+const accessibleBatchStatuses = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
 
-  // Format the enrollment date (April 14, 2026 format)
-  const formattedDate = format(
-    new Date(enrollment.enrolledAt),
-    "MMMM dd, yyyy",
-  );
+function getAccessMessage(enrollment: MyEnrollment) {
+  if (enrollment.status === "CANCELLED") {
+    return "This enrollment was cancelled. Contact support if this is unexpected.";
+  }
+  if (enrollment.source === "ADMIN" && enrollment.paymentStatus !== "COMPLETED") {
+    return "Classroom access opens after an admin confirms the completed payment.";
+  }
+  if (
+    enrollment.batch &&
+    !accessibleBatchStatuses.has(enrollment.batch.status)
+  ) {
+    return "Your classroom opens when this batch becomes active.";
+  }
+  return null;
+}
+
+export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
+  const { course, batch } = enrollment;
+  const accessMessage = getAccessMessage(enrollment);
+  const isAccessible = accessMessage === null;
 
   return (
-    <div className="group bg-card rounded-2xl border border-border shadow-sm hover:shadow-md transition-all duration-300 overflow-hidden">
+    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md">
       <div className="flex flex-col md:flex-row">
-        {/* Visual Side */}
-        <div className="md:w-48 bg-linear-to-br from-indigo-500 to-blue-600 flex items-center justify-center p-6 text-white group-hover:from-indigo-600 group-hover:to-blue-700 transition-colors">
+        <div className="flex items-center justify-center bg-linear-to-br from-indigo-500 to-blue-600 p-6 text-white transition-colors group-hover:from-indigo-600 group-hover:to-blue-700 md:w-48">
           <BookOpen className="h-12 w-12 opacity-30" />
         </div>
 
-        {/* Content Side */}
-        <div className="flex-1 p-6 flex flex-col justify-between">
+        <div className="flex flex-1 flex-col justify-between p-6">
           <div>
-            <div className="flex items-center gap-2 text-xs font-bold text-primary uppercase tracking-widest mb-2">
-              <Calendar className="h-3.5 w-3.5" />
-              Enrolled on {formattedDate}
+            <div className="mb-2 flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-widest text-primary">
+              <span className="flex items-center gap-2">
+                <Calendar className="h-3.5 w-3.5" />
+                Enrolled {format(new Date(enrollment.enrolledAt), "MMMM dd, yyyy")}
+              </span>
+              <span className="rounded-full bg-primary/10 px-2 py-1">
+                {batch ? "Batch learning" : "Self-paced"}
+              </span>
             </div>
 
-            <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+            <h3 className="mb-2 text-xl font-bold text-foreground transition-colors group-hover:text-primary">
               {course.title}
             </h3>
-
-            <p className="text-foreground text-sm line-clamp-2 mb-4">
+            <p className="mb-4 line-clamp-2 text-sm text-foreground">
               {course.summary}
             </p>
+
+            {batch ? (
+              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <span className="flex items-center gap-2 font-medium text-foreground">
+                  <Users className="h-4 w-4" />
+                  {batch.name} ({batch.code})
+                </span>
+                <span>
+                  {format(new Date(batch.startDate), "MMM d, yyyy")} - {format(new Date(batch.expectedEndDate), "MMM d, yyyy")}
+                </span>
+              </div>
+            ) : null}
+
+            {accessMessage ? (
+              <p className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+                <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+                {accessMessage}
+              </p>
+            ) : null}
           </div>
 
           <div className="flex items-center justify-end pt-4">
-            <Button
-              asChild
-              className="bg-gray-900 hover:bg-black text-white rounded-xl px-6"
-            >
-              <Link href={`/my-courses/${course.id}`}>
-                Go to Course
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Link>
-            </Button>
+            {isAccessible ? (
+              <Button asChild className="rounded-xl bg-gray-900 px-6 text-white hover:bg-black">
+                <Link href={`/my-courses/${enrollment.id}`}>
+                  Open Classroom
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            ) : (
+              <Button disabled className="rounded-xl px-6">
+                Classroom Locked
+                <LockKeyhole className="ml-2 h-4 w-4" />
+              </Button>
+            )}
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 }

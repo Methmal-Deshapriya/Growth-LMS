@@ -45,9 +45,13 @@ export default function AuthInitializer({
     } else if (isError) {
       if (
         isNormalizedApiError(error) &&
-        (error.status === 401 || error.status === 403)
+        (error.status === 401 || error.status === 403 || error.status === 404)
       ) {
-        // No session, an expired cookie, or a session that is no longer valid.
+        // No session, an expired cookie, or a session whose user no longer
+        // exists — getMeService intentionally throws a 404 NotFoundError
+        // for the latter case (see auth.service.js), not a 401/403, so it
+        // has to be recognized here too or it gets misread as the API
+        // being unreachable.
         dispatch(clearUser());
       } else {
         // Keep infrastructure failures distinct from a signed-out session so

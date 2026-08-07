@@ -52,7 +52,7 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
   const permanentlyDelete = async (course: AdminCourse) => {
     const confirmation = `DELETE ${course.title}`;
     const entered = window.prompt(
-      `This permanently deletes the course, its ${course.sessionCount} session(s), ${course.enrollmentCount} enrollment(s), progress, certificates, and projects. This cannot be undone.\n\nType "${confirmation}" to continue.`,
+      `This permanently deletes the course relationships, ${course.batchCount} batch(es), ${course.enrollmentCount} enrollment(s), progress, certificates, and projects. Exclusive one-course resources may be deleted; reusable Session Library resources are preserved. This cannot be undone.\n\nType "${confirmation}" to continue.`,
     );
     if (entered === null) return;
     if (entered !== confirmation) {
@@ -113,14 +113,10 @@ export function CourseTable({ courses }: { courses: AdminCourse[] }) {
                     <div className="flex flex-wrap justify-end gap-2">
                       <Button size="sm" variant="outline" asChild>
                         <Link href={`/admin/catalog/courses/${course.id}/sessions`}>
-                          Sessions
+                          Curriculum
                         </Link>
                       </Button>
-                      <Button size="sm" variant="outline" asChild>
-                        <Link href={`/admin/catalog/courses/${course.id}/students`}>
-                          Students
-                        </Link>
-                      </Button>
+                      <Button size="sm" variant="outline" asChild>{course.category.serviceType === "FREE_LEARNING" ? <Link href={`/admin/catalog/courses/${course.id}/students`}>Learners</Link> : <Link href={`/admin/catalog/courses/${course.id}/batches`}>Batches</Link>}</Button>
                       {!isArchived ? (
                         <Button size="sm" variant="outline" asChild>
                           <Link href={`/admin/catalog/courses/${course.id}/edit`}>

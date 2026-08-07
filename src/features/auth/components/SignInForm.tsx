@@ -12,8 +12,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
-import { useSelfEnrollCourseMutation } from "@/features/catalog/catalogApi";
+import { isNormalizedApiError } from "@/lib/api";
 
 // 1. Define Validation Schema (Matches backend logic)
 const loginSchema = z.object({
@@ -41,7 +40,6 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
   const searchParams = useSearchParams();
   const enrollmentCourseId = searchParams.get("enrollCourse");
   const [login, { isLoading }] = useLoginMutation();
-  const [selfEnroll] = useSelfEnrollCourseMutation();
 
   // 2. Initialize Form
   const {
@@ -61,20 +59,18 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data).unwrap();
-      if (enrollmentCourseId) {
-        try {
-          await selfEnroll(enrollmentCourseId).unwrap();
-          toast.success("The free course was added to My Courses.");
-        } catch (enrollmentError) {
-          toast.error(getApiErrorMessage(enrollmentError, "Signed in, but the course could not be added."));
-        }
-      }
       toast.success("Welcome back to Foundry Academy!");
-      router.replace("/dashboard");
+      const intent = enrollmentCourseId
+        ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+        : "";
+      router.replace(`/dashboard${intent}`);
     } catch (error: unknown) {
       if (isNormalizedApiError(error) && error.code === "EMAIL_NOT_VERIFIED") {
         toast.error("Please verify your email before logging in.");
-        router.push(`/verify-email?email=${encodeURIComponent(data.email)}`);
+        const intent = enrollmentCourseId
+          ? `&enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+          : "";
+        router.push(`/verify-email?email=${encodeURIComponent(data.email)}${intent}`);
         return;
       }
       // Check if it's a normalized field error from our baseApi
