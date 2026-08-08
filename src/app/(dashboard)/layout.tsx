@@ -2,6 +2,7 @@ import React from "react";
 import AuthenticatedGuard from "@/features/auth/components/AuthenticatedGuard";
 import DashboardSidebar from "@/components/layout/DashboardSidebar";
 import DashboardHeader from "@/components/layout/DashboardHeader";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 
 export default function DashboardLayout({
   children,
@@ -10,22 +11,15 @@ export default function DashboardLayout({
 }>) {
   return (
     <AuthenticatedGuard>
-      <div className="flex h-dvh gap-3 bg-sidebar p-3 md:gap-4 md:p-4">
-        {/* Sidebar — its own rounded panel, full height */}
+      <SidebarProvider>
         <DashboardSidebar />
-
-        {/* Main content — a separate rounded panel, floating with a gap
-            from the sidebar and the outer edges */}
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden rounded-2xl bg-dashboard-surface">
+        <SidebarInset>
           <DashboardHeader />
-
-          <main className="flex-1 overflow-y-auto p-8">
-            <div className="mx-auto max-w-7xl">
-              {children}
-            </div>
+          <main className="flex-1 overflow-y-auto p-6">
+            {children}
           </main>
-        </div>
-      </div>
+        </SidebarInset>
+      </SidebarProvider>
     </AuthenticatedGuard>
   );
 }

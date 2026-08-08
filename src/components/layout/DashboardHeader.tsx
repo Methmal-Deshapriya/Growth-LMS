@@ -1,36 +1,51 @@
 "use client";
 
 import React from "react";
-import { useAppSelector } from "@/store/hooks";
-import { selectAuthUser } from "@/features/auth/authSelectors";
-import { Bell, Search } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { Bell } from "lucide-react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { Separator } from "@/components/ui/separator";
+
+const PAGE_TITLES: Record<string, string> = {
+  "/dashboard": "Dashboard",
+  "/my-courses": "My Courses",
+  "/certificates": "Certificates",
+  "/projects": "My Projects",
+  "/admin/catalog/courses": "Course Catalog",
+  "/admin/enrollments": "Enrollments",
+  "/admin/sessions": "Session Library",
+  "/admin/certificates": "Manage Certificates",
+  "/admin/projects": "Review Projects",
+  "/admin/users": "Users",
+  "/admin/audit": "Audit Logs",
+};
+
+function getPageTitle(pathname: string) {
+  if (PAGE_TITLES[pathname]) return PAGE_TITLES[pathname];
+  const match = Object.keys(PAGE_TITLES).find((path) => pathname.startsWith(path));
+  return match ? PAGE_TITLES[match] : "Dashboard";
+}
 
 /**
  * DashboardHeader Component
  *
- * Provides global utility actions and search for the dashboard area. Sits
- * inside the same rounded panel as the main content (no separate card
- * background) — just a hairline divider to mark it off from the scroll
- * area below.
+ * Provides global utility actions and search for the dashboard area.
+ * `SidebarTrigger` replaces the old hand-rolled collapse chevron button.
+ * No real page hierarchy exists in this app to justify a multi-level
+ * breadcrumb, so this just shows the current page's title instead.
  */
 export default function DashboardHeader() {
-  const user = useAppSelector(selectAuthUser);
+  const pathname = usePathname();
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center justify-between border-b border-black/5 px-8 dark:border-white/5">
-      {/* Left: Search Bar Placeholder */}
-      <div className="hidden md:flex w-96 relative">
-        <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-        <input
-          type="text"
-          placeholder="Search courses or students..."
-          className="w-full h-10 pl-10 pr-4 rounded-lg bg-muted border-none text-sm focus:ring-2 focus:ring-primary/20 transition-all outline-none text-foreground"
-        />
-      </div>
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center gap-4 border-b border-border px-4 md:px-8">
+      <SidebarTrigger />
+      <Separator orientation="vertical" className="h-6" />
+      <h1 className="text-sm font-medium text-foreground">{getPageTitle(pathname)}</h1>
 
       {/* Right: Actions */}
-      <div className="flex items-center gap-6">
+      <div className="flex items-center gap-6 ml-auto">
         <ThemeToggle />
 
         <button className="relative text-muted-foreground hover:text-foreground transition-colors">
@@ -39,20 +54,6 @@ export default function DashboardHeader() {
             2
           </span>
         </button>
-
-        <div className="flex items-center gap-3 border-l border-border pl-6">
-          <div className="text-right hidden sm:block">
-            <p className="text-sm font-semibold text-foreground leading-tight">
-              {user?.firstName} {user?.lastName}
-            </p>
-            <p className="text-xs text-muted-foreground font-medium">
-              View Profile
-            </p>
-          </div>
-          <div className="h-10 w-10 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold text-sm">
-            {user?.firstName?.charAt(0).toUpperCase() || "U"}
-          </div>
-        </div>
       </div>
     </header>
   );
