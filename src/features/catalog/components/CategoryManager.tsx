@@ -1,10 +1,51 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import {
+  Archive,
+  ArchiveRestore,
+  Eye,
+  EyeOff,
+  MoreHorizontal,
+  Pencil,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+} from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
 import { getApiErrorMessage } from "@/lib/api";
@@ -16,14 +57,23 @@ import {
   useCreateCategoryMutation,
   useDeleteCategoryPermanentlyMutation,
   useGetAdminCategoriesQuery,
+  useGetAdminLearningServiceSummariesQuery,
   usePublishCategoryMutation,
   useUnarchiveCategoryMutation,
   useUnpublishCategoryMutation,
   useUpdateCategoryMutation,
 } from "../catalogApi";
+import type {
+  LearningServiceSlug,
+  LearningServiceType,
+} from "../catalogTypes";
+import { AdminCatalogPageHeader } from "./AdminCatalogPageHeader";
+import { AdminSummaryStrip } from "./AdminSummaryStrip";
+import { CatalogStatusBadge } from "./CatalogStatusBadge";
+import { NavigableTableRow } from "./NavigableTableRow";
 
-const EMPTY: CategoryInput = {
-  serviceType: "BOOTCAMPS",
+const emptyCategory = (serviceType: LearningServiceType): CategoryInput => ({
+  serviceType,
   slug: "",
   title: "",
   description: "",
@@ -31,7 +81,7 @@ const EMPTY: CategoryInput = {
   audienceLabel: "",
   badgeLabel: "",
   sortOrder: 0,
-};
+});
 
 const VISUAL_KEYS = [
   "sparkles",
@@ -53,27 +103,56 @@ const slugify = (value: string) =>
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-|-$/g, "");
 
-export function CategoryManager() {
-  const { data, isLoading } = useGetAdminCategoriesQuery();
+type DestructiveAction = {
+  type: "archive" | "delete";
+  category: AdminCategory;
+};
+
+export function CategoryManager({
+  serviceType,
+  serviceSlug,
+  serviceLabel,
+}: {
+  serviceType: LearningServiceType;
+  serviceSlug: LearningServiceSlug;
+  serviceLabel: string;
+}) {
+  const { data, isLoading, isError, refetch } = useGetAdminCategoriesQuery({
+    serviceType,
+  });
+  const { data: serviceSummaries } =
+    useGetAdminLearningServiceSummariesQuery();
+  const serviceSummary = serviceSummaries?.services.find(
+    (service) => service.serviceType === serviceType,
+  );
+  const categories = data?.categories ?? [];
   const role = useAppSelector(selectAuthRole);
+  const canEdit = hasPermission(role, PERMISSIONS.CATALOG_EDIT_DRAFTS);
   const canPublish = hasPermission(role, PERMISSIONS.CATALOG_PUBLISH);
   const canDelete = hasPermission(
     role,
     PERMISSIONS.CATALOG_DELETE_PERMANENTLY,
   );
-  const [selected, setSelectedState] = useState<AdminCategory | null>(null);
-  const [form, setForm] = useState<CategoryInput>(EMPTY);
+
+  const [selected, setSelected] = useState<AdminCategory | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [form, setForm] = useState<CategoryInput>(() =>
+    emptyCategory(serviceType),
+  );
+  const [destructiveAction, setDestructiveAction] =
+    useState<DestructiveAction | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [createCategory, createState] = useCreateCategoryMutation();
   const [updateCategory, updateState] = useUpdateCategoryMutation();
   const [publishCategory] = usePublishCategoryMutation();
   const [unpublishCategory] = useUnpublishCategoryMutation();
-  const [archiveCategory] = useArchiveCategoryMutation();
+  const [archiveCategory, archiveState] = useArchiveCategoryMutation();
   const [unarchiveCategory] = useUnarchiveCategoryMutation();
-  const [deleteCategoryPermanently] =
+  const [deleteCategoryPermanently, deleteState] =
     useDeleteCategoryPermanentlyMutation();
 
-  const setSelected = (category: AdminCategory | null) => {
-    setSelectedState(category);
+  const openEditor = (category: AdminCategory | null) => {
+    setSelected(category);
     setForm(
       category
         ? {
@@ -86,8 +165,9 @@ export function CategoryManager() {
             badgeLabel: category.badgeLabel,
             sortOrder: category.sortOrder,
           }
-        : EMPTY,
+        : emptyCategory(serviceType),
     );
+    setEditorOpen(true);
   };
 
   const change = (key: keyof CategoryInput, value: string | number) =>
@@ -100,6 +180,7 @@ export function CategoryManager() {
       audienceLabel: form.audienceLabel?.trim() || null,
       badgeLabel: form.badgeLabel?.trim() || null,
     };
+
     try {
       if (selected) {
         await updateCategory({ id: selected.id, body: payload }).unwrap();
@@ -109,7 +190,7 @@ export function CategoryManager() {
       toast.success(
         selected ? "Category updated" : "Category created as a draft",
       );
-      setSelected(null);
+      setEditorOpen(false);
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not save category"));
     }
@@ -117,274 +198,371 @@ export function CategoryManager() {
 
   const lifecycle = async (
     category: AdminCategory,
-    action: "publish" | "unpublish" | "archive" | "unarchive",
+    action: "publish" | "unpublish" | "unarchive",
   ) => {
-    if (
-      action === "archive" &&
-      !window.confirm(
-        `Archive ${category.title} and every course inside it? Existing learners will keep access.`,
-      )
-    ) {
-      return;
-    }
-
     try {
       if (action === "publish") await publishCategory(category.id).unwrap();
-      if (action === "unpublish") await unpublishCategory(category.id).unwrap();
-      if (action === "archive") await archiveCategory(category.id).unwrap();
+      if (action === "unpublish") {
+        await unpublishCategory(category.id).unwrap();
+      }
       if (action === "unarchive") {
         await unarchiveCategory(category.id).unwrap();
       }
       toast.success(
         action === "unarchive"
           ? "Category restored as a draft. Its courses remain archived."
-          : `Category ${action}d`,
+          : `Category ${action}ed`,
       );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Action failed"));
     }
   };
 
-  const permanentlyDelete = async (category: AdminCategory) => {
-    const confirmation = `DELETE ${category.title}`;
-    const entered = window.prompt(
-      `This permanently deletes the category, its ${category.courseCount} course(s), sessions, enrollments, progress, certificates, and projects. This cannot be undone.\n\nType "${confirmation}" to continue.`,
-    );
-    if (entered === null) return;
-    if (entered !== confirmation) {
-      toast.error("Confirmation text did not match. Nothing was deleted.");
-      return;
-    }
+  const confirmDestructiveAction = async () => {
+    if (!destructiveAction) return;
+    const { category, type } = destructiveAction;
 
     try {
-      await deleteCategoryPermanently(category.id).unwrap();
-      toast.success("Category and all dependent records permanently deleted");
+      if (type === "archive") {
+        await archiveCategory(category.id).unwrap();
+        toast.success("Category and its courses archived");
+      } else {
+        await deleteCategoryPermanently(category.id).unwrap();
+        toast.success("Category and dependent records permanently deleted");
+      }
+      setDestructiveAction(null);
+      setDeleteConfirmation("");
     } catch (error) {
-      toast.error(getApiErrorMessage(error, "Permanent deletion failed"));
+      toast.error(
+        getApiErrorMessage(
+          error,
+          type === "archive" ? "Archive failed" : "Permanent deletion failed",
+        ),
+      );
     }
   };
 
+  const publishedCount = categories.filter(
+    (category) => category.status === "PUBLISHED",
+  ).length;
+  const activeCategoryCount = categories.filter(
+    (category) => category.status !== "ARCHIVED",
+  ).length;
+  const courseCount = categories.reduce(
+    (total, category) => total + category.courseCount,
+    0,
+  );
+  const requiredDeleteText = destructiveAction
+    ? `DELETE ${destructiveAction.category.title}`
+    : "";
+
   return (
-    <div className="grid gap-6 xl:grid-cols-[1fr_360px]">
-      <div className="overflow-hidden rounded-2xl border border-border bg-card">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-muted/50 text-xs uppercase text-muted-foreground">
+    <div className="space-y-6">
+      <AdminCatalogPageHeader
+        title={`${serviceLabel} categories`}
+        description={`Create and manage categories that belong only to ${serviceLabel}.`}
+        action={
+          canEdit ? (
+            <Button onClick={() => openEditor(null)}>
+              <Plus className="size-4" /> New category
+            </Button>
+          ) : null
+        }
+      />
+
+      <AdminSummaryStrip
+        items={[
+          { label: "Categories", value: activeCategoryCount, detail: `${categories.length - activeCategoryCount} archived` },
+          { label: "Published", value: publishedCount, detail: `${activeCategoryCount - publishedCount} unpublished` },
+          { label: "Courses", value: courseCount, detail: "Across these categories" },
+          { label: "Active learners", value: serviceSummary?.learners.activeUnique ?? "—", detail: "Unique in this service" },
+        ]}
+      />
+
+      <div className="overflow-hidden rounded-md border bg-card">
+        <Table>
+          <TableHeader className="bg-muted/40">
+            <tr>
+              <TableHead className="px-4">Category</TableHead>
+              <TableHead>Audience</TableHead>
+              <TableHead>Courses</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="pr-4 text-right">Actions</TableHead>
+            </tr>
+          </TableHeader>
+          <TableBody>
+            {isLoading ? (
               <tr>
-                <th className="p-4">Category</th>
-                <th className="p-4">Service</th>
-                <th className="p-4">Courses</th>
-                <th className="p-4">Status</th>
-                <th className="p-4 text-right">Actions</th>
+                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                  Loading categories…
+                </TableCell>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {isLoading ? (
-                <tr>
-                  <td className="p-6" colSpan={5}>
-                    Loading categories…
-                  </td>
-                </tr>
-              ) : (
-                data?.categories.map((category) => {
-                  const isArchived = category.status === "ARCHIVED";
-                  return (
-                    <tr key={category.id}>
-                      <td className="p-4">
-                        <p className="font-semibold">{category.title}</p>
-                        <p className="font-mono text-xs text-muted-foreground">
-                          /{category.slug}
-                        </p>
-                      </td>
-                      <td className="p-4">
-                        {category.serviceType.replaceAll("_", " ")}
-                      </td>
-                      <td className="p-4">{category.courseCount}</td>
-                      <td className="p-4">
-                        <span className="rounded-full bg-muted px-2 py-1 text-xs font-semibold">
-                          {category.status}
-                        </span>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex flex-wrap justify-end gap-2">
+            ) : isError ? (
+              <tr>
+                <TableCell colSpan={5} className="h-32 text-center">
+                  <p className="text-sm text-destructive">Could not load categories.</p>
+                  <Button className="mt-3" size="sm" variant="outline" onClick={() => refetch()}>
+                    Try again
+                  </Button>
+                </TableCell>
+              </tr>
+            ) : categories.length === 0 ? (
+              <tr>
+                <TableCell colSpan={5} className="h-36 text-center text-muted-foreground">
+                  No categories have been created for this service yet.
+                </TableCell>
+              </tr>
+            ) : (
+              categories.map((category) => {
+                const href = `/admin/services/${serviceSlug}/categories/${category.id}/courses`;
+                const isArchived = category.status === "ARCHIVED";
+
+                return (
+                  <NavigableTableRow
+                    key={category.id}
+                    href={href}
+                    label={`Open ${category.title} courses`}
+                  >
+                    <TableCell className="max-w-sm whitespace-normal px-4 py-4">
+                      <p className="font-semibold">{category.title}</p>
+                      <p className="font-mono text-xs text-muted-foreground">/{category.slug}</p>
+                    </TableCell>
+                    <TableCell className="max-w-xs whitespace-normal text-muted-foreground">
+                      {category.audienceLabel || "Not specified"}
+                    </TableCell>
+                    <TableCell className="font-mono tabular-nums">{category.courseCount}</TableCell>
+                    <TableCell><CatalogStatusBadge status={category.status} /></TableCell>
+                    <TableCell className="pr-4 text-right" data-no-row-navigation>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
                           <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => setSelected(category)}
-                            disabled={isArchived}
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Actions for ${category.title}`}
+                            onClick={(event) => event.stopPropagation()}
                           >
-                            Edit
+                            <MoreHorizontal className="size-4" />
                           </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canEdit ? (
+                            <DropdownMenuItem disabled={isArchived} onSelect={() => openEditor(category)}>
+                              <Pencil /> Edit
+                            </DropdownMenuItem>
+                          ) : null}
                           {canPublish && isArchived ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => lifecycle(category, "unarchive")}
-                            >
-                              Unarchive
-                            </Button>
+                            <DropdownMenuItem onSelect={() => lifecycle(category, "unarchive")}>
+                              <ArchiveRestore /> Unarchive
+                            </DropdownMenuItem>
                           ) : null}
                           {canPublish && !isArchived ? (
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() =>
+                            <DropdownMenuItem
+                              onSelect={() =>
                                 lifecycle(
                                   category,
-                                  category.status === "PUBLISHED"
-                                    ? "unpublish"
-                                    : "publish",
+                                  category.status === "PUBLISHED" ? "unpublish" : "publish",
                                 )
                               }
                             >
-                              {category.status === "PUBLISHED"
-                                ? "Unpublish"
-                                : "Publish"}
-                            </Button>
+                              {category.status === "PUBLISHED" ? <EyeOff /> : <Eye />}
+                              {category.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+                            </DropdownMenuItem>
                           ) : null}
                           {canPublish && !isArchived ? (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => lifecycle(category, "archive")}
-                            >
-                              Archive
-                            </Button>
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => setDestructiveAction({ type: "archive", category })}
+                              >
+                                <Archive /> Archive
+                              </DropdownMenuItem>
+                            </>
                           ) : null}
                           {canDelete && isArchived ? (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => permanentlyDelete(category)}
-                            >
-                              Delete permanently
-                            </Button>
+                            <>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={() => {
+                                  setDeleteConfirmation("");
+                                  setDestructiveAction({ type: "delete", category });
+                                }}
+                              >
+                                <Trash2 /> Delete permanently
+                              </DropdownMenuItem>
+                            </>
                           ) : null}
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </NavigableTableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      <form
-        onSubmit={submit}
-        className="space-y-4 rounded-2xl border border-border bg-card p-5"
+      <Dialog
+        open={editorOpen}
+        onOpenChange={(open) => {
+          setEditorOpen(open);
+          if (!open) setSelected(null);
+        }}
       >
-        <div>
-          <h2 className="font-bold">
-            {selected ? "Edit category" : "New category"}
-          </h2>
-          <p className="text-xs text-muted-foreground">
-            Categories are always created as drafts.
-          </p>
-        </div>
-        <div>
-          <Label>Service</Label>
-          <select
-            className="mt-1 h-10 w-full rounded-md border bg-background px-3"
-            value={form.serviceType}
-            onChange={(event) => change("serviceType", event.target.value)}
-            disabled={selected?.status === "PUBLISHED"}
-          >
-            {["BOOTCAMPS", "PRETECH", "FREE_LEARNING"].map((value) => (
-              <option key={value}>{value}</option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <Label>Title</Label>
-          <Input
-            required
-            minLength={2}
-            value={form.title}
-            onChange={(event) => {
-              change("title", event.target.value);
-              if (!selected) change("slug", slugify(event.target.value));
-            }}
-          />
-        </div>
-        <div>
-          <Label>Slug</Label>
-          <Input
-            required
-            pattern="[a-z0-9-]+"
-            value={form.slug}
-            onChange={(event) => change("slug", event.target.value)}
-            disabled={selected?.status === "PUBLISHED"}
-          />
-        </div>
-        <div>
-          <Label>Description</Label>
-          <textarea
-            required
-            minLength={10}
-            className="mt-1 min-h-24 w-full rounded-md border bg-background p-3 text-sm"
-            value={form.description}
-            onChange={(event) => change("description", event.target.value)}
-          />
-        </div>
-        <div className="grid grid-cols-2 gap-3">
-          <div>
-            <Label>Visual key</Label>
-            <select
-              className="mt-1 h-10 w-full rounded-md border bg-background px-2"
-              value={form.visualKey}
-              onChange={(event) => change("visualKey", event.target.value)}
-            >
-              {VISUAL_KEYS.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <Label>Sort order</Label>
-            <Input
-              type="number"
-              min={0}
-              value={form.sortOrder ?? 0}
-              onChange={(event) =>
-                change("sortOrder", Number(event.target.value))
-              }
-            />
-          </div>
-        </div>
-        <div>
-          <Label>Audience label</Label>
-          <Input
-            value={form.audienceLabel ?? ""}
-            onChange={(event) => change("audienceLabel", event.target.value)}
-          />
-        </div>
-        <div>
-          <Label>Badge (optional)</Label>
-          <Input
-            value={form.badgeLabel ?? ""}
-            onChange={(event) => change("badgeLabel", event.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <Button
-            type="submit"
-            disabled={createState.isLoading || updateState.isLoading}
-          >
-            {selected ? "Save changes" : "Create draft"}
-          </Button>
-          {selected ? (
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setSelected(null)}
-            >
-              Cancel
-            </Button>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>{selected ? "Edit category" : "New category"}</DialogTitle>
+            <DialogDescription>
+              {selected
+                ? `Update ${selected.title}. Published category slugs remain locked.`
+                : `Create a new ${serviceLabel} category. It will start unpublished.`}
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={submit} className="space-y-4">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="category-title">Title</Label>
+                <Input
+                  id="category-title"
+                  required
+                  minLength={2}
+                  value={form.title}
+                  onChange={(event) => {
+                    change("title", event.target.value);
+                    if (!selected) change("slug", slugify(event.target.value));
+                  }}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="category-slug">Slug</Label>
+                <Input
+                  id="category-slug"
+                  required
+                  pattern="[a-z0-9-]+"
+                  value={form.slug}
+                  onChange={(event) => change("slug", event.target.value)}
+                  disabled={selected?.status === "PUBLISHED"}
+                />
+              </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="category-description">Description</Label>
+              <textarea
+                id="category-description"
+                required
+                minLength={10}
+                className="min-h-28 w-full rounded-md border bg-background p-3 text-sm"
+                value={form.description}
+                onChange={(event) => change("description", event.target.value)}
+              />
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="category-visual-key">Visual key</Label>
+                <select
+                  id="category-visual-key"
+                  className="h-10 w-full rounded-md border bg-background px-3 text-sm"
+                  value={form.visualKey}
+                  onChange={(event) => change("visualKey", event.target.value)}
+                >
+                  {VISUAL_KEYS.map((value) => <option key={value}>{value}</option>)}
+                </select>
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="category-sort-order">Sort order</Label>
+                <Input
+                  id="category-sort-order"
+                  type="number"
+                  min={0}
+                  value={form.sortOrder ?? 0}
+                  onChange={(event) => change("sortOrder", Number(event.target.value))}
+                />
+              </div>
+            </div>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="category-audience">Audience label</Label>
+                <Input
+                  id="category-audience"
+                  value={form.audienceLabel ?? ""}
+                  onChange={(event) => change("audienceLabel", event.target.value)}
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="category-badge">Badge (optional)</Label>
+                <Input
+                  id="category-badge"
+                  value={form.badgeLabel ?? ""}
+                  onChange={(event) => change("badgeLabel", event.target.value)}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button type="button" variant="outline" onClick={() => setEditorOpen(false)}>
+                Cancel
+              </Button>
+              <Button type="submit" disabled={createState.isLoading || updateState.isLoading}>
+                {selected ? "Save changes" : "Create unpublished category"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      <AlertDialog
+        open={Boolean(destructiveAction)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDestructiveAction(null);
+            setDeleteConfirmation("");
+          }
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {destructiveAction?.type === "delete"
+                ? "Permanently delete category?"
+                : "Archive category?"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {destructiveAction?.type === "delete"
+                ? `This permanently removes ${destructiveAction.category.title}, all child courses, curriculum relationships, enrollments, progress, certificates, and projects. Reusable Session Library resources are preserved when they are used elsewhere.`
+                : `This archives ${destructiveAction?.category.title} and its courses. Existing enrolled learners keep access to their learning records.`}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          {destructiveAction?.type === "delete" ? (
+            <div className="space-y-2">
+              <Label htmlFor="category-delete-confirmation">
+                Type <span className="font-mono">{requiredDeleteText}</span> to confirm
+              </Label>
+              <Input
+                id="category-delete-confirmation"
+                value={deleteConfirmation}
+                onChange={(event) => setDeleteConfirmation(event.target.value)}
+                autoComplete="off"
+              />
+            </div>
           ) : null}
-        </div>
-      </form>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              variant="destructive"
+              disabled={
+                archiveState.isLoading ||
+                deleteState.isLoading ||
+                (destructiveAction?.type === "delete" &&
+                  deleteConfirmation !== requiredDeleteText)
+              }
+              onClick={confirmDestructiveAction}
+            >
+              {destructiveAction?.type === "delete" ? "Delete permanently" : "Archive"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -61,7 +61,7 @@ export function DashboardNavMain() {
 
   const adminItems: NavItem[] = canAccessAdminArea(role)
     ? [
-        { label: "Course Catalog", href: "/admin/catalog/courses", icon: ShieldCheck },
+        { label: "Services", href: "/admin/services", icon: ShieldCheck },
         { label: "Enrollments", href: "/admin/enrollments", icon: PlusCircle },
         { label: "Session Library", href: "/admin/sessions", icon: Library },
         { label: "Manage Certificates", href: "/admin/certificates", icon: Award },

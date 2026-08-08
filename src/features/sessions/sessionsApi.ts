@@ -85,6 +85,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Services",
       ],
     }),
     reorderCourseCurriculum: builder.mutation<
@@ -111,6 +112,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Services",
       ],
     }),
     getEnrollmentProgress: builder.query<EnrollmentProgress, string>({

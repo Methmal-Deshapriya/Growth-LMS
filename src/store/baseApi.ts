@@ -57,6 +57,6 @@ const baseQueryWithGlobalHandling: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithGlobalHandling,
-  tagTypes: ["Auth", "Categories", "Courses", "Curriculum", "Batches", "Enrollments", "Users", "Audit", "Sessions", "Certificates", "Projects"],
+  tagTypes: ["Auth", "Services", "Categories", "Courses", "Curriculum", "Batches", "Enrollments", "Users", "Audit", "Sessions", "Certificates", "Projects"],
   endpoints: () => ({}),
 });

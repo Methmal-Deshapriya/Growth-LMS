@@ -35,29 +35,66 @@ export interface PermanentDeleteResult {
   deletedProjects: number;
 }
 
+export interface AdminLearningServiceSummary {
+  serviceType: LearningServiceType;
+  serviceSlug: "bootcamps" | "pretech-courses" | "free-learning";
+  label: string;
+  description: string;
+  deliveryMode: "COHORT" | "SELF_PACED";
+  enrollmentMode: "ADMIN" | "SELF";
+  categories: {
+    total: number;
+    published: number;
+    draft: number;
+    archived: number;
+  };
+  courses: {
+    total: number;
+    published: number;
+    draft: number;
+    archived: number;
+    withoutSessions: number;
+  };
+  learners: {
+    activeUnique: number;
+    totalUnique: number;
+    activeEnrollments: number;
+  };
+  curriculumAttachmentCount: number;
+  batches: {
+    enrolling: number;
+    active: number;
+    completed: number;
+  } | null;
+  payments: { needsAttention: number } | null;
+  attentionCount: number;
+}
+
 export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
-  getAdminCategories: builder.query<List<AdminCategory, "categories">, void>({ query: () => "/categories?limit=100", providesTags: ["Categories"] }),
+  getAdminLearningServiceSummaries: builder.query<{ services: AdminLearningServiceSummary[] }, void>({ query: () => "/services/summary", providesTags: ["Services"] }),
+  getAdminCategories: builder.query<List<AdminCategory, "categories">, { serviceType?: LearningServiceType } | void>({ query: (params) => ({ url: "/categories", params: { limit: 100, ...(params ?? {}) } }), providesTags: ["Categories"] }),
   getAdminCategory: builder.query<AdminCategory, string>({ query: (id) => `/categories/${id}`, providesTags: ["Categories"] }),
-  createCategory: builder.mutation<AdminCategory, CategoryInput>({ query: (body) => ({ url: "/categories", method: "POST", body }), invalidatesTags: ["Categories"] }),
-  updateCategory: builder.mutation<AdminCategory, { id: string; body: Partial<CategoryInput> }>({ query: ({ id, body }) => ({ url: `/categories/${id}`, method: "PATCH", body }), invalidatesTags: ["Categories", "Courses"] }),
-  publishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Categories"] }),
-  unpublishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Categories", "Courses"] }),
-  archiveCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Categories", "Courses"] }),
-  unarchiveCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/unarchive`, method: "PATCH" }), invalidatesTags: ["Categories", "Courses"] }),
-  deleteCategoryPermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/categories/${id}`, method: "DELETE" }), invalidatesTags: ["Categories", "Courses", "Sessions", "Enrollments", "Certificates", "Projects"] }),
-  getAdminCourses: builder.query<List<AdminCourse, "courses">, void>({ query: () => "/courses?limit=100", providesTags: ["Courses"] }),
+  createCategory: builder.mutation<AdminCategory, CategoryInput>({ query: (body) => ({ url: "/categories", method: "POST", body }), invalidatesTags: ["Services", "Categories"] }),
+  updateCategory: builder.mutation<AdminCategory, { id: string; body: Partial<CategoryInput> }>({ query: ({ id, body }) => ({ url: `/categories/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Categories", "Courses"] }),
+  publishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Categories"] }),
+  unpublishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Services", "Categories", "Courses"] }),
+  archiveCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Services", "Categories", "Courses"] }),
+  unarchiveCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/unarchive`, method: "PATCH" }), invalidatesTags: ["Services", "Categories", "Courses"] }),
+  deleteCategoryPermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/categories/${id}`, method: "DELETE" }), invalidatesTags: ["Services", "Categories", "Courses", "Sessions", "Enrollments", "Certificates", "Projects"] }),
+  getAdminCourses: builder.query<List<AdminCourse, "courses">, { serviceType?: LearningServiceType; categoryId?: string } | void>({ query: (params) => ({ url: "/courses", params: { limit: 100, ...(params ?? {}) } }), providesTags: ["Courses"] }),
   getAdminCourse: builder.query<AdminCourse, string>({ query: (id) => `/courses/${id}`, providesTags: ["Courses"] }),
-  createCourse: builder.mutation<AdminCourse, CourseInput>({ query: (body) => ({ url: "/courses", method: "POST", body }), invalidatesTags: ["Courses", "Categories"] }),
-  updateCourse: builder.mutation<AdminCourse, { id: string; body: Partial<CourseInput> }>({ query: ({ id, body }) => ({ url: `/courses/${id}`, method: "PATCH", body }), invalidatesTags: ["Courses", "Categories"] }),
-  publishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Courses"] }),
-  unpublishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Courses"] }),
-  archiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Courses", "Categories"] }),
-  unarchiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unarchive`, method: "PATCH" }), invalidatesTags: ["Courses", "Categories"] }),
-  deleteCoursePermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/courses/${id}`, method: "DELETE" }), invalidatesTags: ["Courses", "Categories", "Sessions", "Enrollments", "Certificates", "Projects"] }),
-  selfEnrollCourse: builder.mutation<MyEnrollment, string>({ query: (courseId) => ({ url: `/courses/${courseId}/enroll`, method: "POST" }), invalidatesTags: ["Enrollments"] }),
+  createCourse: builder.mutation<AdminCourse, CourseInput>({ query: (body) => ({ url: "/courses", method: "POST", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  updateCourse: builder.mutation<AdminCourse, { id: string; body: Partial<CourseInput> }>({ query: ({ id, body }) => ({ url: `/courses/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  publishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Courses"] }),
+  unpublishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Services", "Courses"] }),
+  archiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  unarchiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unarchive`, method: "PATCH" }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  deleteCoursePermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/courses/${id}`, method: "DELETE" }), invalidatesTags: ["Services", "Courses", "Categories", "Sessions", "Enrollments", "Certificates", "Projects"] }),
+  selfEnrollCourse: builder.mutation<MyEnrollment, string>({ query: (courseId) => ({ url: `/courses/${courseId}/enroll`, method: "POST" }), invalidatesTags: ["Services", "Enrollments"] }),
 }) });
 
 export const {
+  useGetAdminLearningServiceSummariesQuery,
   useGetAdminCategoriesQuery, useGetAdminCategoryQuery, useCreateCategoryMutation,
   useUpdateCategoryMutation, usePublishCategoryMutation, useUnpublishCategoryMutation,
   useArchiveCategoryMutation, useUnarchiveCategoryMutation, useDeleteCategoryPermanentlyMutation,

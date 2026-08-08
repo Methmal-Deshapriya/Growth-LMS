@@ -47,6 +47,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id: `BATCH-${batchId}` },
         { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
         "Batches",
+        "Services",
       ],
     }),
     bulkCreateEnrollments: builder.mutation<
@@ -62,6 +63,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id: `BATCH-${batchId}` },
         { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
         "Batches",
+        "Services",
       ],
     }),
     updateEnrollment: builder.mutation<
@@ -72,6 +74,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Enrollments", id },
         "Enrollments",
+        "Services",
       ],
     }),
   }),

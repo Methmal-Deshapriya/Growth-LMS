@@ -33,11 +33,15 @@ export const batchesApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Batches", id: courseId },
         "Courses",
+        "Services",
       ],
     }),
     updateBatch: builder.mutation<Batch, { batchId: string; data: Partial<BatchInput> }>({
       query: ({ batchId, data }) => ({ url: `/batches/${batchId}`, method: "PATCH", body: data }),
-      invalidatesTags: (_result, _error, { batchId }) => [{ type: "Batches", id: batchId }],
+      invalidatesTags: (_result, _error, { batchId }) => [
+        { type: "Batches", id: batchId },
+        "Services",
+      ],
     }),
     updateBatchStatus: builder.mutation<Batch, { batchId: string; status: BatchStatus }>({
       query: ({ batchId, status }) => ({
@@ -48,6 +52,7 @@ export const batchesApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { batchId }) => [
         { type: "Batches", id: batchId },
         "Batches",
+        "Services",
       ],
     }),
     initializeBatchCurriculum: builder.mutation<
