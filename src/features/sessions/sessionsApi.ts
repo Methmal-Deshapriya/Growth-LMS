@@ -22,9 +22,17 @@ export const sessionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSessionLibrary: builder.query<
       SessionListResponse,
-      { q?: string; status?: SessionStatus; reusePolicy?: SessionReusePolicy } | void
+      {
+        q?: string;
+        status?: SessionStatus;
+        reusePolicy?: SessionReusePolicy;
+        attachableCourseId?: string;
+      } | void
     >({
-      query: (params) => ({ url: "/sessions", params: params || { limit: 100 } }),
+      query: (params) => ({
+        url: "/sessions",
+        params: { limit: 100, ...(params || {}) },
+      }),
       providesTags: (result) => [
         { type: "Sessions", id: "LIBRARY" },
         ...(result?.sessions.map(({ id }) => ({ type: "Sessions" as const, id })) ?? []),
@@ -102,7 +110,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       ],
     }),
     removeCourseSession: builder.mutation<
-      { id: string; action: "REMOVED" | "RETIRED" },
+      { id: string; action: "DETACHED" | "RETIRED" },
       { courseId: string; courseSessionId: string }
     >({
       query: ({ courseId, courseSessionId }) => ({

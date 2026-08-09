@@ -3,6 +3,7 @@
 import type { KeyboardEvent, MouseEvent, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { TableRow } from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 
 const INTERACTIVE_SELECTOR =
   "a,button,input,select,textarea,[role=menuitem],[data-no-row-navigation]";
@@ -10,10 +11,12 @@ const INTERACTIVE_SELECTOR =
 export function NavigableTableRow({
   href,
   label,
+  className,
   children,
 }: {
   href: string;
   label: string;
+  className?: string;
   children: ReactNode;
 }) {
   const router = useRouter();
@@ -37,7 +40,10 @@ export function NavigableTableRow({
     <TableRow
       tabIndex={0}
       aria-label={label}
-      className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+      className={cn(
+        "cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring",
+        className,
+      )}
       onClick={navigateFromClick}
       onKeyDown={navigateFromKeyboard}
       onMouseEnter={() => router.prefetch(href)}

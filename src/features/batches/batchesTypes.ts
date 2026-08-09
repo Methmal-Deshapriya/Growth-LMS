@@ -1,4 +1,5 @@
 import type { CourseSession } from "@/features/sessions/sessionsTypes";
+import type { LearningServiceType } from "@/features/catalog/catalogTypes";
 
 export type BatchStatus =
   | "DRAFT"
@@ -20,7 +21,11 @@ export interface Batch {
   status: BatchStatus;
   sessionCount: number;
   enrollmentCount: number;
-  course: { id: string; title: string; category: { serviceType: string } };
+  course: {
+    id: string;
+    title: string;
+    category: { id: string; title: string; serviceType: LearningServiceType };
+  };
 }
 
 export interface BatchInput {

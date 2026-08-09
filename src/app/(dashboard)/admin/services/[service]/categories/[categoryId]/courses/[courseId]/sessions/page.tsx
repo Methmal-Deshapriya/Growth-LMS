@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { useParams } from "next/navigation";
+import { LibraryBig } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { getAdminCatalogService } from "@/features/catalog/adminCatalogServices";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
+import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
 import { useGetAdminCourseQuery } from "@/features/catalog/catalogApi";
 import CourseCurriculumManager from "@/features/sessions/components/admin/CourseCurriculumManager";
 
@@ -37,12 +41,17 @@ export default function ContextCourseSessionsPage() {
         { label: course.category.title, href: coursesHref },
         { label: course.title },
       ]} />
-      <div>
-        <h1 className="text-3xl font-bold">{course.title} sessions</h1>
-        <p className="text-muted-foreground">
-          Attach existing Session Library resources and manage only this course&apos;s curriculum order.
-        </p>
-      </div>
+      <AdminCatalogPageHeader
+        title={`${course.title} sessions`}
+        description="Attach Session Library resources and manage this course's curriculum order."
+        action={
+          <Button variant="outline" asChild>
+            <Link href="/admin/sessions">
+              <LibraryBig /> Manage session library
+            </Link>
+          </Button>
+        }
+      />
       <CourseCurriculumManager courseId={course.id} readOnly={isArchived} />
     </div>
   );

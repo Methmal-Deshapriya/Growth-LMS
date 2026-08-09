@@ -35,3 +35,6 @@ export function getAdminCatalogService(slug: string) {
   return ADMIN_CATALOG_SERVICES.find((service) => service.slug === slug) ?? null;
 }
 
+export function getAdminCatalogServiceByType(type: LearningServiceType) {
+  return ADMIN_CATALOG_SERVICES.find((service) => service.type === type) ?? null;
+}

@@ -75,7 +75,11 @@ export default function CategoryCoursesPage() {
       />
       <AdminCatalogPageHeader
         title={`${category.title} courses`}
-        description="Create and manage the courses that belong to this category. Select a row to manage its sessions."
+        description={
+          category.serviceType === "FREE_LEARNING"
+            ? "Create and manage the courses that belong to this category. Select a row to manage its sessions."
+            : "Select a course row to manage its sessions, or use its chevron to view and open batches."
+        }
         action={
           <Button
             disabled={category.status === "ARCHIVED"}
