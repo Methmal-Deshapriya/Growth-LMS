@@ -1,17 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   ArrowDown,
   ArrowUp,
+  ChevronRight,
   Link2,
   Loader2,
   MoreHorizontal,
+  RotateCcw,
   Trash2,
 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { SequenceRiskConfirmationDialog } from "@/components/admin/SequenceRiskConfirmationDialog";
+import { BatchStatusBadge } from "@/features/batches/components/BatchStatusBadge";
+import { NavigableTableRow } from "@/features/catalog/components/NavigableTableRow";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,7 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getApiErrorMessage } from "@/lib/api";
+import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
 import {
   useAttachCourseSessionMutation,
   useGetCourseCurriculumQuery,
@@ -36,46 +41,90 @@ import {
   useReorderCourseCurriculumMutation,
 } from "../../sessionsApi";
 
+const retiredDateFormatter = new Intl.DateTimeFormat("en", {
+  dateStyle: "medium",
+});
+
+function batchDeliveryLabel({
+  isReleased,
+  availableAt,
+}: {
+  isReleased: boolean;
+  availableAt: string | null;
+}) {
+  if (!isReleased) return "Withdrawn";
+  if (availableAt && new Date(availableAt) > new Date()) return "Scheduled";
+  return "Released";
+}
+
 export default function CourseCurriculumManager({
   courseId,
+  serviceSlug,
+  categoryId,
   readOnly = false,
 }: {
   courseId: string;
+  serviceSlug: string;
+  categoryId: string;
   readOnly?: boolean;
 }) {
   const [selectedSessionId, setSelectedSessionId] = useState("");
-  const { data, isLoading, isError } = useGetCourseCurriculumQuery({ courseId });
+  const [expandedRetiredIds, setExpandedRetiredIds] = useState<Set<string>>(
+    () => new Set(),
+  );
+  const [reattachingId, setReattachingId] = useState<string | null>(null);
+  const [pendingReorder, setPendingReorder] = useState<{
+    courseSessions: { id: string; orderIndex: number }[];
+    message: string;
+    details?: unknown;
+  } | null>(null);
+  const { data, isLoading, isError } = useGetCourseCurriculumQuery({
+    courseId,
+    includeRetired: true,
+  });
   const {
     data: library,
     isFetching: isLibraryFetching,
     isError: isLibraryError,
-  } = useGetSessionLibraryQuery({
-    status: "READY",
-    attachableCourseId: courseId,
-  }, { skip: readOnly });
+  } = useGetSessionLibraryQuery(
+    {
+      status: "READY",
+      attachableCourseId: courseId,
+    },
+    { skip: readOnly },
+  );
   const [attach, attachState] = useAttachCourseSessionMutation();
   const [reorder, reorderState] = useReorderCourseCurriculumMutation();
   const [remove, removeState] = useRemoveCourseSessionMutation();
-  const attachedIds = useMemo(
+  const activeCurriculum = useMemo(
+    () => data?.curriculum.filter(({ retiredAt }) => !retiredAt) ?? [],
+    [data?.curriculum],
+  );
+  const retiredCurriculum = useMemo(
+    () => data?.curriculum.filter(({ retiredAt }) => Boolean(retiredAt)) ?? [],
+    [data?.curriculum],
+  );
+  const relatedSessionIds = useMemo(
     () => new Set(data?.curriculum.map(({ session }) => session.id) ?? []),
     [data?.curriculum],
   );
   const attachable = useMemo(
-    () => library?.sessions.filter(({ id }) => !attachedIds.has(id)) ?? [],
-    [attachedIds, library?.sessions],
+    () => library?.sessions.filter(({ id }) => !relatedSessionIds.has(id)) ?? [],
+    [library?.sessions, relatedSessionIds],
   );
+
+  const confirmImmediateAttachment = () =>
+    !(
+      data?.delivery.immediateAvailability &&
+      data.delivery.affectedLearnerCount > 0
+    ) ||
+    window.confirm(
+      `This Free Learning course has ${data.delivery.affectedLearnerCount} learner(s). The session becomes available immediately and changes their progress denominator. Continue?`,
+    );
 
   const attachSelected = async () => {
     if (!selectedSessionId) return;
-    if (
-      data?.delivery.immediateAvailability &&
-      data.delivery.affectedLearnerCount > 0 &&
-      !window.confirm(
-        `This Free Learning course has ${data.delivery.affectedLearnerCount} learner(s). The session becomes available immediately and changes their progress denominator. Continue?`,
-      )
-    ) {
-      return;
-    }
+    if (!confirmImmediateAttachment()) return;
 
     try {
       await attach({ courseId, sessionId: selectedSessionId }).unwrap();
@@ -86,21 +135,66 @@ export default function CourseCurriculumManager({
     }
   };
 
-  const move = async (index: number, direction: -1 | 1) => {
-    if (!data) return;
-    const target = index + direction;
-    if (target < 0 || target >= data.curriculum.length) return;
-    const ordered = [...data.curriculum];
-    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+  const reattachRetired = async (sessionId: string) => {
+    if (!confirmImmediateAttachment()) return;
+    setReattachingId(sessionId);
+    try {
+      await attach({ courseId, sessionId }).unwrap();
+      toast.success("Session reattached to the course curriculum");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not reattach session"));
+    } finally {
+      setReattachingId(null);
+    }
+  };
 
+  const toggleRetiredBatches = (courseSessionId: string) => {
+    setExpandedRetiredIds((current) => {
+      const next = new Set(current);
+      if (next.has(courseSessionId)) next.delete(courseSessionId);
+      else next.add(courseSessionId);
+      return next;
+    });
+  };
+
+  const submitReorder = async (
+    courseSessions: { id: string; orderIndex: number }[],
+    acknowledgeSequenceRisk = false,
+  ) => {
     try {
       await reorder({
         courseId,
-        courseSessions: ordered.map(({ id }, orderIndex) => ({ id, orderIndex })),
+        courseSessions,
+        acknowledgeSequenceRisk,
       }).unwrap();
+      setPendingReorder(null);
+      toast.success("Course curriculum reordered");
     } catch (error) {
+      if (
+        isNormalizedApiError(error) &&
+        error.code === "SEQUENCE_RISK_CONFIRMATION_REQUIRED" &&
+        !acknowledgeSequenceRisk
+      ) {
+        setPendingReorder({
+          courseSessions,
+          message: error.message,
+          details: error.details,
+        });
+        return;
+      }
       toast.error(getApiErrorMessage(error, "Could not reorder curriculum"));
     }
+  };
+
+  const move = (index: number, direction: -1 | 1) => {
+    if (!data) return;
+    const target = index + direction;
+    if (target < 0 || target >= activeCurriculum.length) return;
+    const ordered = [...activeCurriculum];
+    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
+    void submitReorder(
+      ordered.map(({ id }, orderIndex) => ({ id, orderIndex })),
+    );
   };
 
   const removeItem = async (courseSessionId: string, title: string) => {
@@ -210,7 +304,7 @@ export default function CourseCurriculumManager({
             </TableRow>
           </TableHeader>
           <TableBody>
-            {data.curriculum.length === 0 ? (
+            {activeCurriculum.length === 0 ? (
               <TableRow>
                 <TableCell
                   colSpan={6}
@@ -221,7 +315,7 @@ export default function CourseCurriculumManager({
                 </TableCell>
               </TableRow>
             ) : (
-              data.curriculum.map((item, index) => (
+              activeCurriculum.map((item, index) => (
                 <TableRow key={item.id}>
                   <TableCell className="px-4 font-mono font-medium tabular-nums">
                     {String(index + 1).padStart(2, "0")}
@@ -277,7 +371,7 @@ export default function CourseCurriculumManager({
                             <ArrowUp /> Move up
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            disabled={index === data.curriculum.length - 1}
+                            disabled={index === activeCurriculum.length - 1}
                             onSelect={() => move(index, 1)}
                           >
                             <ArrowDown /> Move down
@@ -299,6 +393,178 @@ export default function CourseCurriculumManager({
           </TableBody>
         </Table>
       </div>
+
+      {retiredCurriculum.length > 0 ? (
+        <section className="space-y-3">
+          <div>
+            <h2 className="font-sans text-lg font-semibold tracking-tight">
+              Retired sessions
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              Removed from the master curriculum but retained because existing
+              batches or learner history still reference them.
+            </p>
+          </div>
+
+          <div className="overflow-hidden rounded-md border bg-card">
+            <Table>
+              <TableHeader className="bg-muted/40">
+                <TableRow>
+                  <TableHead className="px-4">Session</TableHead>
+                  <TableHead>Retired / delivery</TableHead>
+                  <TableHead>Assignments</TableHead>
+                  <TableHead>Completions</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="pr-4 text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {retiredCurriculum.map((item) => {
+                  const hasBatches = item.usage.batches.length > 0;
+                  const isExpanded = expandedRetiredIds.has(item.id);
+                  const batchBase = `/admin/services/${serviceSlug}/categories/${categoryId}/courses/${courseId}/batches`;
+
+                  return (
+                    <Fragment key={item.id}>
+                      <TableRow
+                        className={
+                          isExpanded
+                            ? "border-primary/40 bg-primary/15 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/25 [&>td:first-child]:shadow-[inset_4px_0_0_var(--color-primary)]"
+                            : "bg-muted/15"
+                        }
+                      >
+                        <TableCell className="max-w-sm whitespace-normal px-4 py-4">
+                          <div className="flex items-start gap-2">
+                            {hasBatches ? (
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon-xs"
+                                className="mt-0.5 shrink-0"
+                                aria-label={`${isExpanded ? "Collapse" : "Expand"} ${item.session.title} batch assignments`}
+                                aria-expanded={isExpanded}
+                                onClick={() => toggleRetiredBatches(item.id)}
+                              >
+                                <ChevronRight
+                                  className={`size-4 transition-transform ${isExpanded ? "rotate-90" : ""}`}
+                                />
+                              </Button>
+                            ) : (
+                              <span className="w-6 shrink-0" aria-hidden="true" />
+                            )}
+                            <div>
+                              <p className="font-semibold">{item.session.title}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {item.session.reusePolicy === "REUSABLE"
+                                  ? "Reusable resource"
+                                  : "One-course resource"}
+                              </p>
+                            </div>
+                          </div>
+                        </TableCell>
+                        <TableCell className="font-mono text-xs tabular-nums">
+                          {item.retiredAt
+                            ? retiredDateFormatter.format(new Date(item.retiredAt))
+                            : "—"}
+                        </TableCell>
+                        <TableCell className="font-mono tabular-nums">
+                          {item.usage.batchCount}
+                        </TableCell>
+                        <TableCell className="font-mono tabular-nums">
+                          {item.usage.completionCount}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant="outline"
+                            className="border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300"
+                          >
+                            Retired
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="pr-4 text-right" data-no-row-navigation>
+                          {readOnly ? (
+                            <span className="text-xs text-muted-foreground">
+                              Read only
+                            </span>
+                          ) : (
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  aria-label={`Actions for retired session ${item.session.title}`}
+                                  disabled={attachState.isLoading}
+                                >
+                                  {reattachingId === item.session.id ? (
+                                    <Loader2 className="animate-spin" />
+                                  ) : (
+                                    <MoreHorizontal />
+                                  )}
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem
+                                  onSelect={() => reattachRetired(item.session.id)}
+                                >
+                                  <RotateCcw /> Reattach to course
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          )}
+                        </TableCell>
+                      </TableRow>
+
+                      {hasBatches && isExpanded
+                        ? item.usage.batches.map((batch) => (
+                            <NavigableTableRow
+                              key={batch.batchSessionId}
+                              href={`${batchBase}/${batch.batchId}`}
+                              label={`Open ${batch.batchName} batch`}
+                              className="bg-muted/20 hover:bg-muted/35"
+                            >
+                              <TableCell className="whitespace-normal py-3 pl-14">
+                                <p className="font-medium">{batch.batchName}</p>
+                                <p className="font-mono text-xs text-muted-foreground">
+                                  {batch.batchCode}
+                                </p>
+                              </TableCell>
+                              <TableCell className="text-xs text-muted-foreground">
+                                {batchDeliveryLabel(batch)}
+                              </TableCell>
+                              <TableCell>—</TableCell>
+                              <TableCell>—</TableCell>
+                              <TableCell>
+                                <BatchStatusBadge status={batch.batchStatus} />
+                              </TableCell>
+                              <TableCell className="pr-4 text-right text-xs text-muted-foreground">
+                                Open batch
+                              </TableCell>
+                            </NavigableTableRow>
+                          ))
+                        : null}
+                    </Fragment>
+                  );
+                })}
+              </TableBody>
+            </Table>
+          </div>
+        </section>
+      ) : null}
+
+      <SequenceRiskConfirmationDialog
+        open={Boolean(pendingReorder)}
+        description={pendingReorder?.message ?? ""}
+        details={pendingReorder?.details}
+        isLoading={reorderState.isLoading}
+        onOpenChange={(open) => {
+          if (!open) setPendingReorder(null);
+        }}
+        onConfirm={() => {
+          if (pendingReorder) {
+            void submitReorder(pendingReorder.courseSessions, true);
+          }
+        }}
+      />
     </div>
   );
 }

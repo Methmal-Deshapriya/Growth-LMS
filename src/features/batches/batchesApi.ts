@@ -22,7 +22,7 @@ export const batchesApi = baseApi.injectEndpoints({
       providesTags: (_result, _error, batchId) => [{ type: "Batches", id: batchId }],
     }),
     createBatch: builder.mutation<
-      { batch: Batch; initializedSessionCount: number },
+      { batch: Batch; curriculumMode: "LIVE_INHERITED" },
       { courseId: string; data: BatchInput }
     >({
       query: ({ courseId, data }) => ({
@@ -55,42 +55,30 @@ export const batchesApi = baseApi.injectEndpoints({
         "Services",
       ],
     }),
-    initializeBatchCurriculum: builder.mutation<
-      { batchId: string; initializedSessionCount: number },
-      string
-    >({
-      query: (batchId) => ({ url: `/batches/${batchId}/initialize-curriculum`, method: "POST" }),
-      invalidatesTags: (_result, _error, batchId) => [
-        { type: "Batches", id: batchId },
-        { type: "Batches", id: `SESSIONS-${batchId}` },
-      ],
-    }),
     getBatchSessions: builder.query<BatchSessionsResponse, string>({
       query: (batchId) => `/batches/${batchId}/sessions`,
       providesTags: (_result, _error, batchId) => [
         { type: "Batches", id: `SESSIONS-${batchId}` },
       ],
     }),
-    upsertBatchSession: builder.mutation<
+    updateBatchSessionDelivery: builder.mutation<
       unknown,
-      { batchId: string; courseSessionId: string; orderIndex?: number; isReleased: boolean; availableAt?: string | null }
+      {
+        batchId: string;
+        courseSessionId: string;
+        mode: "UNRELEASED" | "RELEASED" | "SCHEDULED";
+        availableAt?: string | null;
+        acknowledgeSequenceRisk?: boolean;
+      }
     >({
       query: ({ batchId, courseSessionId, ...body }) => ({
-        url: `/batches/${batchId}/sessions/${courseSessionId}`,
-        method: "PUT",
+        url: `/batches/${batchId}/sessions/${courseSessionId}/delivery`,
+        method: "PATCH",
         body,
       }),
       invalidatesTags: (_result, _error, { batchId }) => [
         { type: "Batches", id: `SESSIONS-${batchId}` },
-      ],
-    }),
-    removeBatchSession: builder.mutation<unknown, { batchId: string; courseSessionId: string }>({
-      query: ({ batchId, courseSessionId }) => ({
-        url: `/batches/${batchId}/sessions/${courseSessionId}`,
-        method: "DELETE",
-      }),
-      invalidatesTags: (_result, _error, { batchId }) => [
-        { type: "Batches", id: `SESSIONS-${batchId}` },
+        { type: "Batches", id: batchId },
       ],
     }),
   }),
@@ -102,8 +90,6 @@ export const {
   useCreateBatchMutation,
   useUpdateBatchMutation,
   useUpdateBatchStatusMutation,
-  useInitializeBatchCurriculumMutation,
   useGetBatchSessionsQuery,
-  useUpsertBatchSessionMutation,
-  useRemoveBatchSessionMutation,
+  useUpdateBatchSessionDeliveryMutation,
 } = batchesApi;

@@ -17,7 +17,6 @@ const EMPTY_BATCH: BatchInput = {
   expectedEndDate: "",
   timezone: "Asia/Colombo",
   capacity: null,
-  initializeCurriculum: true,
 };
 
 export function BatchForm({
@@ -36,10 +35,8 @@ export function BatchForm({
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
     try {
-      const result = await createBatch({ courseId, data: form }).unwrap();
-      toast.success(
-        `Batch created with ${result.initializedSessionCount} hidden session(s)`,
-      );
+      await createBatch({ courseId, data: form }).unwrap();
+      toast.success("Draft batch created with the live course curriculum");
       setForm(EMPTY_BATCH);
       onSuccess?.();
     } catch (error) {
@@ -110,16 +107,9 @@ export function BatchForm({
           }
         />
       </div>
-      <label className="flex items-center gap-2 self-end pb-3 text-sm">
-        <input
-          type="checkbox"
-          checked={form.initializeCurriculum}
-          onChange={(event) =>
-            setForm({ ...form, initializeCurriculum: event.target.checked })
-          }
-        />
-        Copy current curriculum as hidden lessons
-      </label>
+      <p className="self-end pb-3 text-sm text-muted-foreground">
+        The batch always follows this course&apos;s live curriculum and order.
+      </p>
       <div className="flex gap-2 md:col-span-2">
         <Button type="submit" disabled={createState.isLoading}>
           {createState.isLoading ? (

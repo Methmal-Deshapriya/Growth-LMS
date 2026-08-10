@@ -93,20 +93,26 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Batches",
         "Services",
       ],
     }),
     reorderCourseCurriculum: builder.mutation<
-      { success: true },
-      { courseId: string; courseSessions: { id: string; orderIndex: number }[] }
+      { success: true; affectedBatchCount: number; sequenceRiskAcknowledged: boolean },
+      {
+        courseId: string;
+        courseSessions: { id: string; orderIndex: number }[];
+        acknowledgeSequenceRisk?: boolean;
+      }
     >({
-      query: ({ courseId, courseSessions }) => ({
+      query: ({ courseId, courseSessions, acknowledgeSequenceRisk }) => ({
         url: `/courses/${courseId}/curriculum/reorder`,
         method: "PATCH",
-        body: { courseSessions },
+        body: { courseSessions, acknowledgeSequenceRisk },
       }),
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
+        "Batches",
       ],
     }),
     removeCourseSession: builder.mutation<
@@ -120,6 +126,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Batches",
         "Services",
       ],
     }),

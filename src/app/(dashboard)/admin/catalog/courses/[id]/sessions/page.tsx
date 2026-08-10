@@ -5,6 +5,7 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import CourseCurriculumManager from "@/features/sessions/components/admin/CourseCurriculumManager";
 import { useGetAdminCourseQuery } from "@/features/catalog/catalogApi";
+import { getAdminCatalogServiceByType } from "@/features/catalog/adminCatalogServices";
 
 export default function AdminCourseSessionsPage() {
   const { id } = useParams<{ id: string }>();
@@ -18,6 +19,9 @@ export default function AdminCourseSessionsPage() {
 
   const isArchived =
     data.status === "ARCHIVED" || data.category.status === "ARCHIVED";
+  const service = getAdminCatalogServiceByType(data.category.serviceType);
+
+  if (!service) return <p>Course service not found.</p>;
 
   return (
     <div className="space-y-8 pb-20">
@@ -32,7 +36,12 @@ export default function AdminCourseSessionsPage() {
             : "Attach Session Library resources and define the course's master order."}
         </p>
       </div>
-      <CourseCurriculumManager courseId={id} readOnly={isArchived} />
+      <CourseCurriculumManager
+        courseId={id}
+        serviceSlug={service.slug}
+        categoryId={data.categoryId}
+        readOnly={isArchived}
+      />
     </div>
   );
 }

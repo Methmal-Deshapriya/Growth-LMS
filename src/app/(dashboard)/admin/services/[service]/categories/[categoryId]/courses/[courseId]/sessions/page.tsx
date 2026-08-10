@@ -52,7 +52,12 @@ export default function ContextCourseSessionsPage() {
           </Button>
         }
       />
-      <CourseCurriculumManager courseId={course.id} readOnly={isArchived} />
+      <CourseCurriculumManager
+        courseId={course.id}
+        serviceSlug={service.slug}
+        categoryId={categoryId}
+        readOnly={isArchived}
+      />
     </div>
   );
 }

@@ -47,7 +47,25 @@ export interface CourseSession {
   createdAt: string;
   updatedAt: string;
   session: Omit<LibrarySession, "usage">;
-  usage: { batchCount: number; completionCount: number };
+  usage: {
+    batchCount: number;
+    completionCount: number;
+    batches: Array<{
+      batchSessionId: string;
+      batchId: string;
+      batchName: string;
+      batchCode: string;
+      batchStatus:
+        | "DRAFT"
+        | "ENROLLING"
+        | "ACTIVE"
+        | "COMPLETED"
+        | "CANCELLED"
+        | "ARCHIVED";
+      isReleased: boolean;
+      availableAt: string | null;
+    }>;
+  };
 }
 
 export interface CurriculumResponse {

@@ -1,7 +1,7 @@
 "use client";
 
 import BatchDeliveryManager from "./BatchDeliveryManager";
-import { BatchStatusBadge } from "./BatchStatusBadge";
+import { BatchLifecycleControls } from "./BatchLifecycleControls";
 import { useGetBatchQuery } from "../batchesApi";
 import ManualEnrollmentForm from "@/features/enrollments/components/ManualEnrollmentForm";
 import ClassRosterTable from "@/features/enrollments/components/ClassRosterTable";
@@ -69,8 +69,37 @@ export function AdminBatchDetails({
       <AdminCatalogPageHeader
         title={batch.name}
         description={`${batch.course.title} · ${batch.code} · ${batch.enrollmentCount} learners`}
-        action={<BatchStatusBadge status={batch.status} />}
+        action={<BatchLifecycleControls batch={batch} />}
       />
+      {batch.completionReadiness ? (
+        <section className="grid gap-3 md:grid-cols-3">
+          <ReadinessItem
+            label="Curriculum released"
+            value={`${batch.completionReadiness.curriculum.releasedAndAvailable} / ${batch.completionReadiness.curriculum.total}`}
+            ready={batch.completionReadiness.curriculum.ready}
+          />
+          <ReadinessItem
+            label="Enrollments completed"
+            value={`${batch.completionReadiness.enrollments.completed} / ${batch.completionReadiness.enrollments.total}`}
+            ready={batch.completionReadiness.enrollments.ready}
+          />
+          <ReadinessItem
+            label={
+              batch.completionReadiness.certificates.required
+                ? "Certificates issued"
+                : "Certificates"
+            }
+            value={
+              !batch.completionReadiness.certificates.enabled
+                ? "Enable certificates"
+                : batch.completionReadiness.certificates.required
+                ? `${batch.completionReadiness.certificates.issued} / ${batch.completionReadiness.enrollments.total}`
+                : "Not required"
+            }
+            ready={batch.completionReadiness.certificates.ready}
+          />
+        </section>
+      ) : null}
       <BatchDeliveryManager
         batchId={batchId}
         courseId={batch.courseId}
@@ -100,6 +129,34 @@ export function AdminBatchDetails({
           </p>
         )}
       </section>
+    </div>
+  );
+}
+
+function ReadinessItem({
+  label,
+  value,
+  ready,
+}: {
+  label: string;
+  value: string;
+  ready: boolean;
+}) {
+  return (
+    <div className="rounded-md border bg-card p-4">
+      <p className="text-sm text-muted-foreground">{label}</p>
+      <div className="mt-1 flex items-center justify-between gap-3">
+        <p className="font-mono font-semibold tabular-nums">{value}</p>
+        <span
+          className={
+            ready
+              ? "text-xs font-semibold text-emerald-600 dark:text-emerald-400"
+              : "text-xs font-semibold text-amber-600 dark:text-amber-400"
+          }
+        >
+          {ready ? "Ready" : "Pending"}
+        </span>
+      </div>
     </div>
   );
 }

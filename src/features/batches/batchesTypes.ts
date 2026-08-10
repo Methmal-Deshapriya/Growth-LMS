@@ -21,9 +21,11 @@ export interface Batch {
   status: BatchStatus;
   sessionCount: number;
   enrollmentCount: number;
+  completionReadiness?: CompletionReadiness;
   course: {
     id: string;
     title: string;
+    certificateEnabled: boolean;
     category: { id: string; title: string; serviceType: LearningServiceType };
   };
 }
@@ -35,19 +37,31 @@ export interface BatchInput {
   expectedEndDate: string;
   timezone?: string;
   capacity?: number | null;
-  initializeCurriculum?: boolean;
 }
 
 export interface BatchSession {
-  id: string;
+  id: string | null;
   batchId: string;
   courseSessionId: string;
   orderIndex: number;
   isReleased: boolean;
   availableAt: string | null;
-  state: "HIDDEN" | "SCHEDULED" | "AVAILABLE";
+  inherited: boolean;
+  source: "ACTIVE_CURRICULUM" | "RETAINED_HISTORY";
+  state: "UNRELEASED" | "WITHDRAWN" | "SCHEDULED" | "RELEASED";
   completionCount: number;
   courseSession: Omit<CourseSession, "usage">;
+}
+
+export interface CompletionReadiness {
+  curriculum: { total: number; releasedAndAvailable: number; ready: boolean };
+  enrollments: { total: number; completed: number; ready: boolean };
+  certificates: {
+    required: boolean;
+    enabled: boolean;
+    issued: number;
+    ready: boolean;
+  };
 }
 
 export interface BatchSessionsResponse {
@@ -60,4 +74,5 @@ export interface BatchSessionsResponse {
     courseTitle: string;
   };
   sessions: BatchSession[];
+  completionReadiness: CompletionReadiness;
 }
