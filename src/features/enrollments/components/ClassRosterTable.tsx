@@ -51,6 +51,12 @@ const certificateStyles: Record<CertificateStatus, string> = {
 const selectClassName =
   "h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
 
+const enrollmentStatusOptions: Record<EnrollmentStatus, EnrollmentStatus[]> = {
+  ACTIVE: ["ACTIVE", "COMPLETED", "CANCELLED"],
+  COMPLETED: ["COMPLETED"],
+  CANCELLED: ["CANCELLED", "ACTIVE"],
+};
+
 export default function ClassRosterTable({
   entries,
   isLoading,
@@ -177,6 +183,7 @@ export default function ClassRosterTable({
                         className={selectClassName}
                         aria-label={`Enrollment status for ${entry.user?.firstName} ${entry.user?.lastName}`}
                         value={editForm.status}
+                        disabled={entry.status === "COMPLETED"}
                         onChange={(event) =>
                           setEditForm({
                             ...editForm,
@@ -184,9 +191,11 @@ export default function ClassRosterTable({
                           })
                         }
                       >
-                        <option value="ACTIVE">Active</option>
-                        <option value="COMPLETED">Completed</option>
-                        <option value="CANCELLED">Cancelled</option>
+                        {enrollmentStatusOptions[entry.status].map((status) => (
+                          <option key={status} value={status}>
+                            {status.charAt(0) + status.slice(1).toLowerCase()}
+                          </option>
+                        ))}
                       </select>
                     ) : (
                       <Badge variant="outline" className={statusStyles[entry.status]}>

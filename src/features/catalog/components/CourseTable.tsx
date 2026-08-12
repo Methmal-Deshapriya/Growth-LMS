@@ -35,7 +35,12 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
@@ -58,10 +63,12 @@ import {
   useDeleteCoursePermanentlyMutation,
   useLazyGetCourseDeletionImpactQuery,
   usePublishCourseMutation,
+  useSetCourseEnrollmentStatusMutation,
   useUnarchiveCourseMutation,
   useUnpublishCourseMutation,
 } from "../catalogApi";
 import type { LearningServiceSlug } from "../catalogTypes";
+import type { CourseEnrollmentStatus } from "../catalogTypes";
 import { CatalogStatusBadge } from "./CatalogStatusBadge";
 import { CatalogDeletionImpactSummary } from "./CatalogDeletionImpactSummary";
 import { CourseForm } from "./CourseForm";
@@ -79,6 +86,12 @@ const formatPrice = (course: AdminCourse) => {
     currency: course.currency,
     maximumFractionDigits: 0,
   }).format(course.price);
+};
+
+const enrollmentStatusLabel: Record<CourseEnrollmentStatus, string> = {
+  COMING_SOON: "Coming soon",
+  OPEN: "Enrollment open",
+  CLOSED: "Enrollment closed",
 };
 
 export function CourseTable({
@@ -105,6 +118,8 @@ export function CourseTable({
   const [unpublishCourse] = useUnpublishCourseMutation();
   const [archiveCourse, archiveState] = useArchiveCourseMutation();
   const [unarchiveCourse] = useUnarchiveCourseMutation();
+  const [setCourseEnrollmentStatus, enrollmentStatusState] =
+    useSetCourseEnrollmentStatusMutation();
   const [deleteCoursePermanently, deleteState] =
     useDeleteCoursePermanentlyMutation();
   const [getDeletionImpact, deletionImpactState] =
@@ -166,6 +181,19 @@ export function CourseTable({
     ? `DELETE ${destructiveAction.course.title}`
     : "";
 
+  const changeEnrollmentStatus = async (
+    course: AdminCourse,
+    status: CourseEnrollmentStatus,
+  ) => {
+    if (course.enrollmentStatus === status) return;
+    try {
+      await setCourseEnrollmentStatus({ id: course.id, status }).unwrap();
+      toast.success(`Enrollment changed to ${enrollmentStatusLabel[status].toLowerCase()}`);
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not change enrollment availability"));
+    }
+  };
+
   return (
     <>
       <div className="overflow-hidden rounded-md border bg-card">
@@ -211,6 +239,11 @@ export function CourseTable({
                     <TableCell>
                       <p className="font-medium">{formatPrice(course)}</p>
                       <p className="text-xs text-muted-foreground">{course.accessType.toLowerCase()} access</p>
+                      {course.category.serviceType === "FREE_LEARNING" ? (
+                        <p className="mt-1 text-xs font-medium text-blue-600 dark:text-blue-400">
+                          {enrollmentStatusLabel[course.enrollmentStatus]}
+                        </p>
+                      ) : null}
                     </TableCell>
                     <TableCell className="font-mono tabular-nums">{course.sessionCount}</TableCell>
                     <TableCell>
@@ -261,6 +294,36 @@ export function CourseTable({
                             >
                               <ArchiveRestore /> Unarchive
                             </DropdownMenuItem>
+                          ) : null}
+                          {canPublish && !isArchived ? (
+                            course.category.serviceType === "FREE_LEARNING" ? (
+                              <DropdownMenuSub>
+                                <DropdownMenuSubTrigger disabled={enrollmentStatusState.isLoading}>
+                                  Enrollment availability
+                                </DropdownMenuSubTrigger>
+                                <DropdownMenuSubContent>
+                                  <DropdownMenuRadioGroup
+                                    value={course.enrollmentStatus}
+                                    onValueChange={(value) =>
+                                      void changeEnrollmentStatus(
+                                        course,
+                                        value as CourseEnrollmentStatus,
+                                      )
+                                    }
+                                  >
+                                    <DropdownMenuRadioItem value="COMING_SOON">
+                                      Coming soon
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="OPEN">
+                                      Open
+                                    </DropdownMenuRadioItem>
+                                    <DropdownMenuRadioItem value="CLOSED">
+                                      Closed
+                                    </DropdownMenuRadioItem>
+                                  </DropdownMenuRadioGroup>
+                                </DropdownMenuSubContent>
+                              </DropdownMenuSub>
+                            ) : null
                           ) : null}
                           {canPublish && !isArchived ? (
                             <DropdownMenuItem

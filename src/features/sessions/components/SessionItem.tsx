@@ -25,9 +25,14 @@ import { getApiErrorMessage } from "@/lib/api";
 interface SessionItemProps {
   enrollmentId: string;
   session: ClassroomSession;
+  isReadOnly?: boolean;
 }
 
-export default function SessionItem({ enrollmentId, session }: SessionItemProps) {
+export default function SessionItem({
+  enrollmentId,
+  session,
+  isReadOnly = false,
+}: SessionItemProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [complete, { isLoading: isCompleting }] =
     useCompleteClassroomSessionMutation();
@@ -37,6 +42,7 @@ export default function SessionItem({ enrollmentId, session }: SessionItemProps)
 
   const handleToggleComplete = async (event: MouseEvent<HTMLButtonElement>) => {
     event.stopPropagation();
+    if (isReadOnly) return;
     const input = {
       enrollmentId,
       courseSessionId: session.courseSessionId,
@@ -68,9 +74,16 @@ export default function SessionItem({ enrollmentId, session }: SessionItemProps)
         <button
           type="button"
           onClick={handleToggleComplete}
-          disabled={isUpdating}
-          aria-label={session.completed ? "Mark session incomplete" : "Mark session complete"}
-          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary"
+          disabled={isUpdating || isReadOnly}
+          aria-label={
+            isReadOnly
+              ? `Session completion is locked: ${session.completed ? "completed" : "incomplete"}`
+              : session.completed
+                ? "Mark session incomplete"
+                : "Mark session complete"
+          }
+          title={isReadOnly ? "Completed enrollment history is read-only" : undefined}
+          className="shrink-0 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary disabled:cursor-not-allowed disabled:opacity-70"
         >
           {session.completed ? (
             <CheckCircle2 className="h-6 w-6 fill-green-50 text-green-500" />

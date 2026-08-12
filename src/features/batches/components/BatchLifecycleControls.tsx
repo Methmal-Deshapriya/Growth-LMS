@@ -29,7 +29,9 @@ export function BatchLifecycleControls({ batch }: { batch: Batch }) {
   const moveTo = async (status: BatchStatus) => {
     const detail =
       status === "COMPLETED"
-        ? "Completion requires every current session to be released and available, every enrollment to be completed, and an issued certificate for every non-cancelled learner."
+        ? batch.course.certificateEnabled
+          ? "Completion requires every current session to be released and available, every enrollment to be completed, and an issued certificate for every non-cancelled learner."
+          : "Completion requires every current session to be released and available and every non-cancelled enrollment to be completed. This course does not issue certificates."
         : "This changes the operational lifecycle of the batch.";
     if (!window.confirm(`Move this batch to ${status}?\n\n${detail}`)) return;
     try {

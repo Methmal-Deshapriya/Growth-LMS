@@ -1,6 +1,7 @@
 export type LearningServiceSlug = "bootcamps" | "pretech-courses" | "free-learning";
 export type LearningServiceType = "BOOTCAMPS" | "PRETECH" | "FREE_LEARNING";
 export type CourseLevel = "OPEN" | "FOUNDATION" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+export type CourseEnrollmentStatus = "COMING_SOON" | "OPEN" | "CLOSED";
 
 export interface PublicCategory {
   id: string;
@@ -28,6 +29,7 @@ export interface PublicCourseCard {
   durationUnit: string | null;
   durationLabel: string | null;
   accessType: "FREE" | "PAID";
+  enrollmentStatus: CourseEnrollmentStatus;
   price: number;
   currency: string;
   certificateEnabled: boolean;

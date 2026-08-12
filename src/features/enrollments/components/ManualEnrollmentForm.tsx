@@ -25,22 +25,32 @@ export default function ManualEnrollmentForm({
 }) {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search.trim());
+  const [cursor, setCursor] = useState<string>();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [paymentStatus, setPaymentStatus] = useState<Exclude<PaymentStatus, "NOT_REQUIRED">>("COMPLETED");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
-  const { data: students = [], isFetching } = useGetEligibleStudentsQuery({
+  const { data, isFetching, isError, refetch } = useGetEligibleStudentsQuery({
     batchId,
     q: deferredSearch || undefined,
-    limit: 50,
+    limit: 25,
+    cursor,
   });
+  const students = data?.students ?? [];
   const [createEnrollment, createState] = useCreateEnrollmentMutation();
   const [bulkCreate, bulkState] = useBulkCreateEnrollmentsMutation();
 
   const toggle = (id: string) => {
-    setSelectedIds((current) =>
-      current.includes(id) ? current.filter((value) => value !== id) : [...current, id],
-    );
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        return current.filter((value) => value !== id);
+      }
+      if (current.length >= 100) {
+        toast.error("Bulk enrollment supports up to 100 students at a time.");
+        return current;
+      }
+      return [...current, id];
+    });
   };
 
   const submit = async () => {
@@ -75,17 +85,62 @@ export default function ManualEnrollmentForm({
   const submitting = createState.isLoading || bulkState.isLoading;
   return (
     <div className="space-y-5">
-      <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search eligible students" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name or email" className="pl-10" /></div>
+      <div className="relative">
+        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+        <Input
+          aria-label="Search eligible students"
+          value={search}
+          onChange={(event) => {
+            setSearch(event.target.value);
+            setCursor(undefined);
+          }}
+          placeholder="Search name or email"
+          className="pl-10"
+        />
+      </div>
       <div className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-border p-2">
-        {isFetching ? <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Searching…</p> : null}
-        {!isFetching && students.map((student) => (
+        {students.map((student) => (
           <label key={student.id} className="flex cursor-pointer items-center gap-3 rounded-lg p-3 hover:bg-muted/60">
-            <input type="checkbox" checked={selectedIds.includes(student.id)} onChange={() => toggle(student.id)} />
+            <input
+              type="checkbox"
+              checked={selectedIds.includes(student.id)}
+              disabled={!selectedIds.includes(student.id) && selectedIds.length >= 100}
+              onChange={() => toggle(student.id)}
+            />
             <span><span className="block text-sm font-semibold">{student.firstName} {student.lastName}</span><span className="block text-xs text-muted-foreground">{student.email}</span></span>
           </label>
         ))}
-        {!isFetching && students.length === 0 ? <p className="p-4 text-center text-sm text-muted-foreground">No eligible verified students found.</p> : null}
+        {isFetching ? (
+          <p className="flex items-center justify-center gap-2 p-3 text-sm text-muted-foreground" role="status">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {students.length ? "Loading more…" : "Searching…"}
+          </p>
+        ) : null}
+        {!isFetching && isError ? (
+          <div className="space-y-2 p-4 text-center">
+            <p className="text-sm text-destructive">Could not load eligible students.</p>
+            <Button type="button" size="sm" variant="outline" onClick={refetch}>
+              Retry
+            </Button>
+          </div>
+        ) : null}
+        {!isFetching && !isError && students.length === 0 ? <p className="p-4 text-center text-sm text-muted-foreground">No eligible verified students found.</p> : null}
+        {!isFetching && !isError && data?.pagination.hasMore && data.pagination.nextCursor ? (
+          <div className="flex justify-center p-2">
+            <Button
+              type="button"
+              size="sm"
+              variant="outline"
+              onClick={() => setCursor(data.pagination.nextCursor ?? undefined)}
+            >
+              Load more students
+            </Button>
+          </div>
+        ) : null}
       </div>
+      <p className="text-xs text-muted-foreground" aria-live="polite">
+        {selectedIds.length} selected · up to 100 students per enrollment request
+      </p>
       <div className="grid gap-4 md:grid-cols-2">
         <div className="space-y-2"><Label htmlFor="enrollment-payment-status">Payment status</Label><select id="enrollment-payment-status" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value as Exclude<PaymentStatus, "NOT_REQUIRED">)}><option value="COMPLETED">Completed</option><option value="PARTIAL">Partial</option><option value="PENDING">Pending</option></select></div>
         <div className="space-y-2"><Label htmlFor="enrollment-payment-reference">External payment reference</Label><Input id="enrollment-payment-reference" value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Receipt or transfer reference" /></div>

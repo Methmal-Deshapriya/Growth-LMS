@@ -19,8 +19,9 @@ import {
 
 type FormState = Omit<
   CourseInput,
-  "highlights" | "skills" | "prerequisites"
+  "highlights" | "skills" | "prerequisites" | "certificateEnabled"
 > & {
+  certificateEnabled: boolean | null;
   highlights: string;
   skills: string;
   prerequisites: string;
@@ -52,8 +53,7 @@ const empty = (
   durationUnit: null,
   accessType,
   price: 0,
-  currency: "LKR",
-  certificateEnabled: false,
+  certificateEnabled: null,
   highlights: "",
   skills: "",
   prerequisites: "",
@@ -88,10 +88,22 @@ export function CourseForm({
   const [form, setForm] = useState<FormState>(() =>
     initial
       ? {
-          ...initial,
+          categoryId: initial.categoryId,
+          slug: initial.slug,
+          title: initial.title,
+          summary: initial.summary,
+          description: initial.description,
+          level: initial.level,
+          durationValue: initial.durationValue,
+          durationUnit: initial.durationUnit,
+          accessType: initial.accessType,
+          price: initial.price,
+          certificateEnabled: initial.certificateEnabled,
           highlights: fromList(initial.highlights),
           skills: fromList(initial.skills),
           prerequisites: fromList(initial.prerequisites),
+          thumbnailUrl: initial.thumbnailUrl,
+          sortOrder: initial.sortOrder,
         }
       : empty(
           lockedCategory?.id,
@@ -108,8 +120,14 @@ export function CourseForm({
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
+    const certificateEnabled = form.certificateEnabled;
+    if (certificateEnabled == null) {
+      toast.error("Select whether this course issues certificates.");
+      return;
+    }
     const payload: CourseInput = {
       ...form,
+      certificateEnabled,
       price: form.accessType === "FREE" ? 0 : Number(form.price),
       durationValue: form.durationValue ? Number(form.durationValue) : null,
       durationUnit: form.durationValue
@@ -123,7 +141,9 @@ export function CourseForm({
 
     try {
       if (initial) {
-        await updateCourse({ id: initial.id, body: payload }).unwrap();
+        const { certificateEnabled: fixedPolicy, ...mutablePayload } = payload;
+        void fixedPolicy;
+        await updateCourse({ id: initial.id, body: mutablePayload }).unwrap();
       } else {
         await createCourse(payload).unwrap();
       }
@@ -322,16 +342,52 @@ export function CourseForm({
             }
           />
         </div>
-        <label className="flex items-center gap-2 pt-7 text-sm font-medium">
-          <input
-            type="checkbox"
-            checked={form.certificateEnabled ?? false}
-            onChange={(event) =>
-              change("certificateEnabled", event.target.checked)
-            }
-          />
-          Certificate enabled
-        </label>
+        <div>
+          <Label htmlFor="course-certificate-policy">Certificate policy</Label>
+          {initial ? (
+            <div
+              id="course-certificate-policy"
+              className="mt-1 rounded-md border bg-muted/40 px-3 py-2 text-sm"
+            >
+              <p className="font-medium">
+                {initial.certificateEnabled
+                  ? "Certificates are issued"
+                  : "Certificates are not issued"}
+              </p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                This policy was fixed when the course was created and cannot be changed.
+              </p>
+            </div>
+          ) : (
+            <>
+              <select
+                id="course-certificate-policy"
+                required
+                className="mt-1 h-10 w-full rounded-md border bg-background px-3"
+                value={
+                  form.certificateEnabled == null
+                    ? ""
+                    : String(form.certificateEnabled)
+                }
+                onChange={(event) =>
+                  change(
+                    "certificateEnabled",
+                    event.target.value === ""
+                      ? null
+                      : event.target.value === "true",
+                  )
+                }
+              >
+                <option value="">Select certificate policy</option>
+                <option value="true">Certificates are issued</option>
+                <option value="false">Certificates are not issued</option>
+              </select>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Choose carefully. This course-level policy cannot be changed after creation.
+              </p>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="flex gap-3">
@@ -339,6 +395,7 @@ export function CourseForm({
           type="submit"
           disabled={
             !form.categoryId ||
+            form.certificateEnabled == null ||
             createState.isLoading ||
             updateState.isLoading
           }

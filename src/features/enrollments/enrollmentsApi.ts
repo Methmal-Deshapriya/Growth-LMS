@@ -3,7 +3,7 @@ import type {
   BulkEnrollmentResult,
   ClassRosterEntry,
   CreatePaidEnrollmentRequest,
-  EligibleStudent,
+  EligibleStudentsPage,
   EligibleStudentsParams,
   MyEnrollment,
   UpdateEnrollmentRequest,
@@ -25,11 +25,23 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id: `BATCH-${batchId}` },
       ],
     }),
-    getEligibleStudents: builder.query<EligibleStudent[], EligibleStudentsParams>({
-      query: ({ batchId, q, limit = 10 }) => ({
+    getEligibleStudents: builder.query<EligibleStudentsPage, EligibleStudentsParams>({
+      query: ({ batchId, q, limit = 25, cursor }) => ({
         url: `/batches/${batchId}/eligible-students`,
-        params: { q, limit },
+        params: { q, limit, cursor },
       }),
+      serializeQueryArgs: ({ endpointName, queryArgs: { batchId, q } }) =>
+        `${endpointName}:${batchId}:${q ?? ""}`,
+      merge: (currentCache, incoming, { arg }) => {
+        if (!arg.cursor) return incoming;
+        const existingIds = new Set(currentCache.students.map(({ id }) => id));
+        currentCache.students.push(
+          ...incoming.students.filter(({ id }) => !existingIds.has(id)),
+        );
+        currentCache.pagination = incoming.pagination;
+      },
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.cursor !== previousArg?.cursor,
       providesTags: (_result, _error, { batchId }) => [
         { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
       ],

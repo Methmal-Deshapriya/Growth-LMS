@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Users } from "lucide-react";
+import { ArrowLeft, LockKeyhole, Loader2, Users } from "lucide-react";
 import { useGetClassroomQuery } from "@/features/sessions/sessionsApi";
 import SessionList from "@/features/sessions/components/SessionList";
 import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
@@ -46,6 +46,7 @@ export default function LearningPage() {
   }
 
   const { enrollment, sessions, progress } = classroom;
+  const isCompletionHistoryReadOnly = enrollment.status === "COMPLETED";
 
   return (
     <StudentOnlyRoute description="Admins manage sessions, batches, and enrollments from the admin area.">
@@ -88,6 +89,19 @@ export default function LearningPage() {
           </div>
         </div>
 
+        {isCompletionHistoryReadOnly ? (
+          <div
+            role="status"
+            className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-200"
+          >
+            <LockKeyhole className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <p>
+              This enrollment is complete. You can continue viewing its sessions,
+              but your completion history is now read-only.
+            </p>
+          </div>
+        ) : null}
+
         <section className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Your Sessions</h2>
@@ -97,7 +111,11 @@ export default function LearningPage() {
                 : "All active sessions in this course are available immediately."}
             </p>
           </div>
-          <SessionList enrollmentId={enrollment.id} sessions={sessions} />
+          <SessionList
+            enrollmentId={enrollment.id}
+            sessions={sessions}
+            isReadOnly={isCompletionHistoryReadOnly}
+          />
         </section>
       </div>
     </StudentOnlyRoute>

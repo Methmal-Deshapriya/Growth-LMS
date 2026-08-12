@@ -109,14 +109,12 @@ export function AdminBatchDetails({
             label={
               batch.completionReadiness.certificates.required
                 ? "Certificates issued"
-                : "Certificates"
+                : "Certificate requirement"
             }
             value={
-              !batch.completionReadiness.certificates.enabled
-                ? "Enable certificates"
-                : batch.completionReadiness.certificates.required
+              batch.completionReadiness.certificates.required
                 ? `${batch.completionReadiness.certificates.issued} / ${batch.completionReadiness.enrollments.total}`
-                : "Not required"
+                : "Not applicable for this course"
             }
             ready={batch.completionReadiness.certificates.ready}
           />

@@ -64,7 +64,20 @@ export type UpdateEnrollmentRequest = {
   paymentNote?: string | null;
 };
 export type EligibleStudent = Pick<User, "id" | "firstName" | "lastName" | "email">;
-export type EligibleStudentsParams = { batchId: string; q?: string; limit?: number };
+export type EligibleStudentsParams = {
+  batchId: string;
+  q?: string;
+  limit?: number;
+  cursor?: string;
+};
+export interface EligibleStudentsPage {
+  students: EligibleStudent[];
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+}
 
 export interface BulkEnrollmentResult {
   results: Array<{

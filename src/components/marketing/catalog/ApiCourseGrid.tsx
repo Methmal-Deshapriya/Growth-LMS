@@ -8,6 +8,12 @@ import { CatalogIcon } from "./visuals";
 import { CATALOG_GRADIENT_BG } from "./background";
 import { PageSlide } from "./PageSlide";
 
+const enrollmentLabel = {
+  COMING_SOON: "Coming soon",
+  OPEN: "Enrollment open",
+  CLOSED: "Enrollment closed",
+} as const;
+
 export function ApiCourseGrid({ category }: { category: PublicCategoryDetail }) {
   const basePath = `/${category.serviceSlug}`;
   return (
@@ -44,7 +50,7 @@ export function ApiCourseGrid({ category }: { category: PublicCategoryDetail }) 
           <Reveal stagger={0.08} className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
             {category.courses.map((course) => <RevealItem key={course.id}><Link href={`${basePath}/${category.slug}/${course.slug}`} className="group flex flex-col h-full bg-white/80 border border-black/10 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:border-blue-300 transition-all">
               <h2 className="font-sans font-semibold text-lg text-[#0E1116] mb-1.5">{course.title}</h2><p className="font-alt text-sm text-[#5B6472] mb-4">{course.summary}</p>
-              <div className="flex flex-wrap gap-1.5 mb-4"><span className="text-xs text-blue-600 bg-blue-50 rounded-full px-2.5 py-1">{course.levelLabel}</span>{course.durationLabel && <span className="text-xs text-[#5B6472] bg-[#F5F6FA] rounded-full px-2.5 py-1">{course.durationLabel}</span>}<span className="text-xs text-[#5B6472] bg-[#F5F6FA] rounded-full px-2.5 py-1">{course.accessType === "FREE" ? "Free" : "Paid"}</span></div>
+              <div className="flex flex-wrap gap-1.5 mb-4"><span className="text-xs text-blue-600 bg-blue-50 rounded-full px-2.5 py-1">{course.levelLabel}</span>{course.durationLabel && <span className="text-xs text-[#5B6472] bg-[#F5F6FA] rounded-full px-2.5 py-1">{course.durationLabel}</span>}<span className="text-xs text-[#5B6472] bg-[#F5F6FA] rounded-full px-2.5 py-1">{course.accessType === "FREE" ? "Free" : "Paid"}</span>{course.accessType === "FREE" && <span className="rounded-full bg-violet-50 px-2.5 py-1 text-xs font-medium text-violet-700">{enrollmentLabel[course.enrollmentStatus]}</span>}</div>
               <span className="mt-auto pt-3 border-t border-black/5 flex justify-end items-center gap-1 text-sm font-semibold text-blue-600">View course <ChevronRight className="h-4 w-4" /></span>
             </Link></RevealItem>)}
           </Reveal>

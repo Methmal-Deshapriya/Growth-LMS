@@ -1,5 +1,5 @@
 import { baseApi } from "@/store/baseApi";
-import type { LearningServiceType, CourseLevel } from "./catalogTypes";
+import type { LearningServiceType, CourseLevel, CourseEnrollmentStatus } from "./catalogTypes";
 import type { MyEnrollment } from "@/features/enrollments/enrollmentsTypes";
 
 export type CatalogStatus = "DRAFT" | "PUBLISHED" | "ARCHIVED";
@@ -14,6 +14,7 @@ export interface AdminCourse {
   description: string; level: CourseLevel; durationValue: number | null;
   durationUnit: "SESSION" | "DAY" | "WEEK" | "MONTH" | null;
   accessType: "FREE" | "PAID"; price: number; currency: string;
+  enrollmentStatus: CourseEnrollmentStatus;
   certificateEnabled: boolean; highlights: string[]; skills: string[];
   prerequisites: string[]; thumbnailUrl: string | null; status: CatalogStatus;
   sortOrder: number; sessionCount: number; enrollmentCount: number;
@@ -21,7 +22,8 @@ export interface AdminCourse {
   category: AdminCategory; createdAt: string; updatedAt: string;
 }
 export type CategoryInput = Pick<AdminCategory, "serviceType" | "slug" | "title" | "description" | "visualKey"> & Partial<Pick<AdminCategory, "audienceLabel" | "badgeLabel" | "sortOrder">>;
-export type CourseInput = Pick<AdminCourse, "categoryId" | "slug" | "title" | "summary" | "description" | "level" | "accessType" | "price" | "currency"> & Partial<Pick<AdminCourse, "durationValue" | "durationUnit" | "certificateEnabled" | "highlights" | "skills" | "prerequisites" | "thumbnailUrl" | "sortOrder">>;
+export type CourseInput = Pick<AdminCourse, "categoryId" | "slug" | "title" | "summary" | "description" | "level" | "accessType" | "price" | "certificateEnabled"> & Partial<Pick<AdminCourse, "durationValue" | "durationUnit" | "highlights" | "skills" | "prerequisites" | "thumbnailUrl" | "sortOrder">>;
+export type CourseUpdateInput = Partial<Omit<CourseInput, "certificateEnabled">>;
 type List<T, K extends string> = Record<K, T[]> & { pagination: { total: number; limit: number; offset: number } };
 export interface PermanentDeleteResult {
   id: string;
@@ -120,7 +122,8 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
   getAdminCourse: builder.query<AdminCourse, string>({ query: (id) => `/courses/${id}`, providesTags: ["Courses"] }),
   getCourseDeletionImpact: builder.query<CatalogDeletionImpact, string>({ query: (id) => `/courses/${id}/deletion-impact` }),
   createCourse: builder.mutation<AdminCourse, CourseInput>({ query: (body) => ({ url: "/courses", method: "POST", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
-  updateCourse: builder.mutation<AdminCourse, { id: string; body: Partial<CourseInput> }>({ query: ({ id, body }) => ({ url: `/courses/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  updateCourse: builder.mutation<AdminCourse, { id: string; body: CourseUpdateInput }>({ query: ({ id, body }) => ({ url: `/courses/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
+  setCourseEnrollmentStatus: builder.mutation<AdminCourse, { id: string; status: CourseEnrollmentStatus }>({ query: ({ id, status }) => ({ url: `/courses/${id}/enrollment-status`, method: "PATCH", body: { status } }), invalidatesTags: ["Services", "Courses"] }),
   publishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Courses"] }),
   unpublishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Services", "Courses"] }),
   archiveCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Services", "Courses", "Categories"] }),
@@ -136,6 +139,7 @@ export const {
   useArchiveCategoryMutation, useUnarchiveCategoryMutation, useDeleteCategoryPermanentlyMutation,
   useGetAdminCoursesQuery, useGetAdminCourseQuery, useLazyGetCourseDeletionImpactQuery,
   useCreateCourseMutation, useUpdateCourseMutation, usePublishCourseMutation,
+  useSetCourseEnrollmentStatusMutation,
   useUnpublishCourseMutation, useArchiveCourseMutation, useUnarchiveCourseMutation,
   useDeleteCoursePermanentlyMutation, useSelfEnrollCourseMutation,
 } = catalogApi;
