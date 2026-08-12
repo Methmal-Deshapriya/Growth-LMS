@@ -56,12 +56,14 @@ import {
   type AdminCourse,
   useArchiveCourseMutation,
   useDeleteCoursePermanentlyMutation,
+  useLazyGetCourseDeletionImpactQuery,
   usePublishCourseMutation,
   useUnarchiveCourseMutation,
   useUnpublishCourseMutation,
 } from "../catalogApi";
 import type { LearningServiceSlug } from "../catalogTypes";
 import { CatalogStatusBadge } from "./CatalogStatusBadge";
+import { CatalogDeletionImpactSummary } from "./CatalogDeletionImpactSummary";
 import { CourseForm } from "./CourseForm";
 import { NavigableTableRow } from "./NavigableTableRow";
 
@@ -105,6 +107,8 @@ export function CourseTable({
   const [unarchiveCourse] = useUnarchiveCourseMutation();
   const [deleteCoursePermanently, deleteState] =
     useDeleteCoursePermanentlyMutation();
+  const [getDeletionImpact, deletionImpactState] =
+    useLazyGetCourseDeletionImpactQuery();
   const courseBase = `/admin/services/${serviceSlug}/categories/${category.id}/courses`;
 
   const lifecycle = async (
@@ -128,6 +132,7 @@ export function CourseTable({
   const confirmDestructiveAction = async () => {
     if (!destructiveAction) return;
     const { course, type } = destructiveAction;
+    if (type === "delete" && !deletionImpactState.data?.canDelete) return;
 
     try {
       if (type === "archive") {
@@ -135,10 +140,11 @@ export function CourseTable({
         toast.success("Course archived");
       } else {
         await deleteCoursePermanently(course.id).unwrap();
-        toast.success("Course and dependent records permanently deleted");
+        toast.success("Unused course permanently deleted");
       }
       setDestructiveAction(null);
       setDeleteConfirmation("");
+      deletionImpactState.reset();
     } catch (error) {
       toast.error(
         getApiErrorMessage(
@@ -147,6 +153,13 @@ export function CourseTable({
         ),
       );
     }
+  };
+
+  const openPermanentDelete = (course: AdminCourse) => {
+    setDeleteConfirmation("");
+    deletionImpactState.reset();
+    setDestructiveAction({ type: "delete", course });
+    void getDeletionImpact(course.id);
   };
 
   const requiredDeleteText = destructiveAction
@@ -278,10 +291,7 @@ export function CourseTable({
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 variant="destructive"
-                                onSelect={() => {
-                                  setDeleteConfirmation("");
-                                  setDestructiveAction({ type: "delete", course });
-                                }}
+                                onSelect={() => openPermanentDelete(course)}
                               >
                                 <Trash2 /> Delete permanently
                               </DropdownMenuItem>
@@ -330,6 +340,7 @@ export function CourseTable({
           if (!open) {
             setDestructiveAction(null);
             setDeleteConfirmation("");
+            deletionImpactState.reset();
           }
         }}
       >
@@ -342,21 +353,30 @@ export function CourseTable({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {destructiveAction?.type === "delete"
-                ? `This permanently removes ${destructiveAction.course.title}, ${destructiveAction.course.batchCount} batch(es), ${destructiveAction.course.enrollmentCount} enrollment(s), curriculum relationships, progress, certificates, and projects. Reusable Session Library resources remain available.`
+                ? `Permanent deletion is available only for unused archived catalog setup. ${destructiveAction.course.title} will remain archived if any operational batch or learner history exists.`
                 : `This removes ${destructiveAction?.course.title} from active administration and the public catalog. Existing enrolled learners keep their learning access.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {destructiveAction?.type === "delete" ? (
-            <div className="space-y-2">
-              <Label htmlFor="course-delete-confirmation">
-                Type <span className="font-mono">{requiredDeleteText}</span> to confirm
-              </Label>
-              <Input
-                id="course-delete-confirmation"
-                value={deleteConfirmation}
-                onChange={(event) => setDeleteConfirmation(event.target.value)}
-                autoComplete="off"
+            <div className="space-y-3">
+              <CatalogDeletionImpactSummary
+                impact={deletionImpactState.data}
+                isLoading={deletionImpactState.isFetching}
+                error={deletionImpactState.error}
               />
+              {deletionImpactState.data?.canDelete ? (
+                <div className="space-y-2">
+                  <Label htmlFor="course-delete-confirmation">
+                    Type <span className="font-mono">{requiredDeleteText}</span> to confirm
+                  </Label>
+                  <Input
+                    id="course-delete-confirmation"
+                    value={deleteConfirmation}
+                    onChange={(event) => setDeleteConfirmation(event.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
           <AlertDialogFooter>
@@ -367,7 +387,9 @@ export function CourseTable({
                 archiveState.isLoading ||
                 deleteState.isLoading ||
                 (destructiveAction?.type === "delete" &&
-                  deleteConfirmation !== requiredDeleteText)
+                  (deletionImpactState.isFetching ||
+                    !deletionImpactState.data?.canDelete ||
+                    deleteConfirmation !== requiredDeleteText))
               }
               onClick={confirmDestructiveAction}
             >

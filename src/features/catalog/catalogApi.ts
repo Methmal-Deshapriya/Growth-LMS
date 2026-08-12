@@ -32,7 +32,41 @@ export interface PermanentDeleteResult {
   deletedExclusiveSessions: number;
   preservedReusableSessions: number;
   deletedEnrollments: number;
+  deletedCompletions: number;
+  deletedCertificates: number;
   deletedProjects: number;
+}
+
+export interface CatalogDeletionImpact {
+  resourceType: "CATEGORY" | "COURSE";
+  resourceId: string;
+  status: CatalogStatus;
+  canDelete: boolean;
+  summary: {
+    courses: number;
+    unarchivedCourses: number;
+    batches: number;
+    operationalBatches: number;
+    enrollments: number;
+    completions: number;
+    certificates: number;
+    projects: number;
+    curriculumLinks: number;
+    exclusiveSessions: number;
+    reusableSessions: number;
+  };
+  blockers: Array<{
+    code:
+      | "RESOURCE_NOT_ARCHIVED"
+      | "UNARCHIVED_COURSES"
+      | "OPERATIONAL_BATCHES"
+      | "ENROLLMENT_HISTORY"
+      | "COMPLETION_HISTORY"
+      | "CERTIFICATE_HISTORY"
+      | "PROJECT_HISTORY";
+    count: number;
+    message: string;
+  }>;
 }
 
 export interface AdminLearningServiceSummary {
@@ -74,6 +108,7 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
   getAdminLearningServiceSummaries: builder.query<{ services: AdminLearningServiceSummary[] }, void>({ query: () => "/services/summary", providesTags: ["Services"] }),
   getAdminCategories: builder.query<List<AdminCategory, "categories">, { serviceType?: LearningServiceType } | void>({ query: (params) => ({ url: "/categories", params: { limit: 100, ...(params ?? {}) } }), providesTags: ["Categories"] }),
   getAdminCategory: builder.query<AdminCategory, string>({ query: (id) => `/categories/${id}`, providesTags: ["Categories"] }),
+  getCategoryDeletionImpact: builder.query<CatalogDeletionImpact, string>({ query: (id) => `/categories/${id}/deletion-impact` }),
   createCategory: builder.mutation<AdminCategory, CategoryInput>({ query: (body) => ({ url: "/categories", method: "POST", body }), invalidatesTags: ["Services", "Categories"] }),
   updateCategory: builder.mutation<AdminCategory, { id: string; body: Partial<CategoryInput> }>({ query: ({ id, body }) => ({ url: `/categories/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Categories", "Courses"] }),
   publishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Categories"] }),
@@ -83,6 +118,7 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
   deleteCategoryPermanently: builder.mutation<PermanentDeleteResult, string>({ query: (id) => ({ url: `/categories/${id}`, method: "DELETE" }), invalidatesTags: ["Services", "Categories", "Courses", "Sessions", "Enrollments", "Certificates", "Projects"] }),
   getAdminCourses: builder.query<List<AdminCourse, "courses">, { serviceType?: LearningServiceType; categoryId?: string } | void>({ query: (params) => ({ url: "/courses", params: { limit: 100, ...(params ?? {}) } }), providesTags: ["Courses"] }),
   getAdminCourse: builder.query<AdminCourse, string>({ query: (id) => `/courses/${id}`, providesTags: ["Courses"] }),
+  getCourseDeletionImpact: builder.query<CatalogDeletionImpact, string>({ query: (id) => `/courses/${id}/deletion-impact` }),
   createCourse: builder.mutation<AdminCourse, CourseInput>({ query: (body) => ({ url: "/courses", method: "POST", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
   updateCourse: builder.mutation<AdminCourse, { id: string; body: Partial<CourseInput> }>({ query: ({ id, body }) => ({ url: `/courses/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Courses", "Categories"] }),
   publishCourse: builder.mutation<AdminCourse, string>({ query: (id) => ({ url: `/courses/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Courses"] }),
@@ -95,10 +131,10 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
 
 export const {
   useGetAdminLearningServiceSummariesQuery,
-  useGetAdminCategoriesQuery, useGetAdminCategoryQuery, useCreateCategoryMutation,
+  useGetAdminCategoriesQuery, useGetAdminCategoryQuery, useLazyGetCategoryDeletionImpactQuery, useCreateCategoryMutation,
   useUpdateCategoryMutation, usePublishCategoryMutation, useUnpublishCategoryMutation,
   useArchiveCategoryMutation, useUnarchiveCategoryMutation, useDeleteCategoryPermanentlyMutation,
-  useGetAdminCoursesQuery, useGetAdminCourseQuery,
+  useGetAdminCoursesQuery, useGetAdminCourseQuery, useLazyGetCourseDeletionImpactQuery,
   useCreateCourseMutation, useUpdateCourseMutation, usePublishCourseMutation,
   useUnpublishCourseMutation, useArchiveCourseMutation, useUnarchiveCourseMutation,
   useDeleteCoursePermanentlyMutation, useSelfEnrollCourseMutation,

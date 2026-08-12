@@ -58,6 +58,7 @@ import {
   useDeleteCategoryPermanentlyMutation,
   useGetAdminCategoriesQuery,
   useGetAdminLearningServiceSummariesQuery,
+  useLazyGetCategoryDeletionImpactQuery,
   usePublishCategoryMutation,
   useUnarchiveCategoryMutation,
   useUnpublishCategoryMutation,
@@ -69,6 +70,7 @@ import type {
 } from "../catalogTypes";
 import { AdminCatalogPageHeader } from "./AdminCatalogPageHeader";
 import { AdminSummaryStrip } from "./AdminSummaryStrip";
+import { CatalogDeletionImpactSummary } from "./CatalogDeletionImpactSummary";
 import { CatalogStatusBadge } from "./CatalogStatusBadge";
 import { NavigableTableRow } from "./NavigableTableRow";
 
@@ -150,6 +152,8 @@ export function CategoryManager({
   const [unarchiveCategory] = useUnarchiveCategoryMutation();
   const [deleteCategoryPermanently, deleteState] =
     useDeleteCategoryPermanentlyMutation();
+  const [getDeletionImpact, deletionImpactState] =
+    useLazyGetCategoryDeletionImpactQuery();
 
   const openEditor = (category: AdminCategory | null) => {
     setSelected(category);
@@ -221,6 +225,7 @@ export function CategoryManager({
   const confirmDestructiveAction = async () => {
     if (!destructiveAction) return;
     const { category, type } = destructiveAction;
+    if (type === "delete" && !deletionImpactState.data?.canDelete) return;
 
     try {
       if (type === "archive") {
@@ -228,10 +233,11 @@ export function CategoryManager({
         toast.success("Category and its courses archived");
       } else {
         await deleteCategoryPermanently(category.id).unwrap();
-        toast.success("Category and dependent records permanently deleted");
+        toast.success("Unused category permanently deleted");
       }
       setDestructiveAction(null);
       setDeleteConfirmation("");
+      deletionImpactState.reset();
     } catch (error) {
       toast.error(
         getApiErrorMessage(
@@ -240,6 +246,13 @@ export function CategoryManager({
         ),
       );
     }
+  };
+
+  const openPermanentDelete = (category: AdminCategory) => {
+    setDeleteConfirmation("");
+    deletionImpactState.reset();
+    setDestructiveAction({ type: "delete", category });
+    void getDeletionImpact(category.id);
   };
 
   const publishedCount = categories.filter(
@@ -384,10 +397,7 @@ export function CategoryManager({
                               <DropdownMenuSeparator />
                               <DropdownMenuItem
                                 variant="destructive"
-                                onSelect={() => {
-                                  setDeleteConfirmation("");
-                                  setDestructiveAction({ type: "delete", category });
-                                }}
+                                onSelect={() => openPermanentDelete(category)}
                               >
                                 <Trash2 /> Delete permanently
                               </DropdownMenuItem>
@@ -517,6 +527,7 @@ export function CategoryManager({
           if (!open) {
             setDestructiveAction(null);
             setDeleteConfirmation("");
+            deletionImpactState.reset();
           }
         }}
       >
@@ -529,21 +540,30 @@ export function CategoryManager({
             </AlertDialogTitle>
             <AlertDialogDescription>
               {destructiveAction?.type === "delete"
-                ? `This permanently removes ${destructiveAction.category.title}, all child courses, curriculum relationships, enrollments, progress, certificates, and projects. Reusable Session Library resources are preserved when they are used elsewhere.`
+                ? `Permanent deletion is available only for unused archived catalog setup. ${destructiveAction.category.title} will remain archived if any operational batch or learner history exists.`
                 : `This archives ${destructiveAction?.category.title} and its courses. Existing enrolled learners keep access to their learning records.`}
             </AlertDialogDescription>
           </AlertDialogHeader>
           {destructiveAction?.type === "delete" ? (
-            <div className="space-y-2">
-              <Label htmlFor="category-delete-confirmation">
-                Type <span className="font-mono">{requiredDeleteText}</span> to confirm
-              </Label>
-              <Input
-                id="category-delete-confirmation"
-                value={deleteConfirmation}
-                onChange={(event) => setDeleteConfirmation(event.target.value)}
-                autoComplete="off"
+            <div className="space-y-3">
+              <CatalogDeletionImpactSummary
+                impact={deletionImpactState.data}
+                isLoading={deletionImpactState.isFetching}
+                error={deletionImpactState.error}
               />
+              {deletionImpactState.data?.canDelete ? (
+                <div className="space-y-2">
+                  <Label htmlFor="category-delete-confirmation">
+                    Type <span className="font-mono">{requiredDeleteText}</span> to confirm
+                  </Label>
+                  <Input
+                    id="category-delete-confirmation"
+                    value={deleteConfirmation}
+                    onChange={(event) => setDeleteConfirmation(event.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+              ) : null}
             </div>
           ) : null}
           <AlertDialogFooter>
@@ -554,7 +574,9 @@ export function CategoryManager({
                 archiveState.isLoading ||
                 deleteState.isLoading ||
                 (destructiveAction?.type === "delete" &&
-                  deleteConfirmation !== requiredDeleteText)
+                  (deletionImpactState.isFetching ||
+                    !deletionImpactState.data?.canDelete ||
+                    deleteConfirmation !== requiredDeleteText))
               }
               onClick={confirmDestructiveAction}
             >
