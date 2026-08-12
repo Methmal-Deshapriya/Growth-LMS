@@ -8,7 +8,6 @@ import {
   Users,
   ShieldCheck,
   FileText,
-  PlusCircle,
   Award,
   FolderCode,
   Library,
@@ -62,7 +61,6 @@ export function DashboardNavMain() {
   const adminItems: NavItem[] = canAccessAdminArea(role)
     ? [
         { label: "Services", href: "/admin/services", icon: ShieldCheck },
-        { label: "Enrollments", href: "/admin/enrollments", icon: PlusCircle },
         { label: "Session Library", href: "/admin/sessions", icon: Library },
         { label: "Manage Certificates", href: "/admin/certificates", icon: Award },
         { label: "Review Projects", href: "/admin/projects", icon: FolderCode },

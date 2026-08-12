@@ -3,14 +3,7 @@
 import React, { useState } from "react";
 import { useGetAuditLogsQuery } from "@/features/audit/auditApi";
 import AuditLogTable from "@/features/audit/components/AuditLogTable";
-import { 
-  Loader2, 
-  History, 
-  Search, 
-  Filter, 
-  ChevronLeft, 
-  ChevronRight 
-} from "lucide-react";
+import { History, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
 import { canViewAuditLogs } from "@/lib/access";
@@ -99,26 +92,15 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground font-medium">Retrieving system history...</p>
-        </div>
-      ) : isError ? (
-        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Service Error</h2>
-          <p className="text-red-700 dark:text-red-400">
-            We couldn&apos;t load the audit logs. Please try again.
-          </p>
-        </div>
-      ) : data && data.logs.length > 0 ? (
-        <div className="space-y-6">
-          <div className={isFetching ? "opacity-50 pointer-events-none transition-opacity" : ""}>
-            <AuditLogTable logs={data.logs} />
-          </div>
+      <div className="space-y-6">
+        <AuditLogTable
+          logs={data?.logs ?? []}
+          isLoading={isLoading}
+          isError={isError}
+          isFetching={isFetching}
+        />
 
-          {/* Pagination Controls */}
+        {data && data.pagination.total > 0 ? (
           <div className="flex items-center justify-between bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
             <p className="text-sm text-muted-foreground">
               Showing <span className="font-bold text-foreground">{offset + 1}</span> to <span className="font-bold text-foreground">{offset + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
@@ -145,18 +127,8 @@ export default function AdminAuditPage() {
               </Button>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
-            <Search className="h-10 w-10 text-muted-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">No logs found</h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Try adjusting your filters or check back later as system actions are recorded.
-          </p>
-        </div>
-      )}
+        ) : null}
+      </div>
     </div>
   );
 }

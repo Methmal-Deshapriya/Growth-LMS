@@ -14,9 +14,7 @@ const PAGE_TITLES: Record<string, string> = {
   "/my-courses": "My Courses",
   "/certificates": "Certificates",
   "/projects": "My Projects",
-  "/admin/catalog/courses": "Course Catalog",
   "/admin/services": "Services",
-  "/admin/enrollments": "Enrollments",
   "/admin/sessions": "Session Library",
   "/admin/certificates": "Manage Certificates",
   "/admin/projects": "Review Projects",
@@ -84,7 +82,7 @@ export default function DashboardHeader() {
       <div className="flex items-center gap-6 ml-auto">
         <ThemeToggle />
 
-        <button className="relative text-muted-foreground hover:text-foreground transition-colors">
+        <button aria-label="Notifications" className="relative text-muted-foreground hover:text-foreground transition-colors">
           <Bell className="h-5 w-5" />
           <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
             2

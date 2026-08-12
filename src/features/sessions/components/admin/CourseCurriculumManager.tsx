@@ -110,7 +110,10 @@ export default function CourseCurriculumManager({
     [data?.curriculum],
   );
   const attachable = useMemo(
-    () => library?.sessions.filter(({ id }) => !relatedSessionIds.has(id)) ?? [],
+    () =>
+      library?.sessions.filter(
+        ({ id, status }) => status === "READY" && !relatedSessionIds.has(id),
+      ) ?? [],
     [library?.sessions, relatedSessionIds],
   );
 
@@ -518,9 +521,13 @@ export default function CourseCurriculumManager({
                               </DropdownMenuTrigger>
                               <DropdownMenuContent align="end">
                                 <DropdownMenuItem
+                                  disabled={item.session.status !== "READY"}
                                   onSelect={() => reattachRetired(item.session.id)}
                                 >
-                                  <RotateCcw /> Reattach to course
+                                  <RotateCcw />
+                                  {item.session.status === "READY"
+                                    ? "Reattach to course"
+                                    : "Set resource to Ready first"}
                                 </DropdownMenuItem>
                               </DropdownMenuContent>
                             </DropdownMenu>

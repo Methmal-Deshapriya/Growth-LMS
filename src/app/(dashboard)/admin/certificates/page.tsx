@@ -1,151 +1,152 @@
 "use client";
 
-import React, { useState } from "react";
-import { useGetAllCertificatesAdminQuery, useRevokeCertificateMutation } from "@/features/certificates/certificatesApi";
-import { Loader2, ShieldAlert, XCircle, Search, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { ExternalLink, Loader2, Search, XCircle } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useGetAllCertificatesAdminQuery, useRevokeCertificateMutation } from "@/features/certificates/certificatesApi";
 import { getApiErrorMessage } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
-/**
- * Admin Certificates Page
- * 
- * Allows admins to view all issued certificates and revoke them if necessary.
- */
 export default function AdminCertificatesPage() {
-  const { data: certificates, isLoading, isError } = useGetAllCertificatesAdminQuery();
+  const { data: certificates = [], isLoading, isError, isFetching } = useGetAllCertificatesAdminQuery();
   const [revokeCertificate, { isLoading: isRevoking }] = useRevokeCertificateMutation();
-
   const [searchTerm, setSearchTerm] = useState("");
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredCertificates = certificates.filter((certificate) =>
+    certificate.certificateCode.toLowerCase().includes(normalizedSearch) ||
+    certificate.studentName.toLowerCase().includes(normalizedSearch) ||
+    certificate.courseName.toLowerCase().includes(normalizedSearch),
+  );
 
   const handleRevoke = async (id: string, code: string) => {
     const reason = window.prompt(`Please enter a reason for revoking certificate ${code}:`);
-    if (!reason) return;
+    if (!reason?.trim()) return;
 
     try {
-      await revokeCertificate({
-        id,
-        data: { revocationReason: reason },
-      }).unwrap();
+      await revokeCertificate({ id, data: { revocationReason: reason.trim() } }).unwrap();
       toast.success("Certificate revoked successfully");
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to revoke certificate"));
     }
   };
 
-  const filteredCertificates = certificates?.filter(c => 
-    c.certificateCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.courseName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Certificate Management</h1>
-          <p className="text-muted-foreground mt-1">
-            View all issued certificates and manage their validity.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Certificate Management</h1>
+        <p className="mt-1 text-muted-foreground">View issued certificates and manage their validity.</p>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+      <div className="rounded-md border bg-card p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search by code, student name, or course..."
-            className="pl-10 border-border h-12 rounded-xl"
+            aria-label="Search certificates"
+            placeholder="Search by code, student, or course…"
+            className="h-11 pl-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground font-medium">Loading certificates...</p>
-        </div>
-      ) : isError ? (
-        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Error</h2>
-          <p className="text-red-700 dark:text-red-400">Failed to load certificates.</p>
-        </div>
-      ) : filteredCertificates && filteredCertificates.length > 0 ? (
-        <div className="overflow-hidden bg-card rounded-2xl border border-border shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Certificate Code</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Course</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Issued Date</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredCertificates.map((cert) => (
-                  <tr key={cert.id} className="hover:bg-muted/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <span className="font-mono text-sm text-foreground">{cert.certificateCode}</span>
-                    </td>
-                    <td className="px-6 py-4 font-semibold text-foreground">{cert.studentName}</td>
-                    <td className="px-6 py-4 text-sm text-foreground">{cert.courseName}</td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                        cert.status === "ISSUED" ? "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40" : "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/40"
-                      )}>
-                        {cert.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {format(new Date(cert.issuedDate), "MMM dd, yyyy")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button asChild variant="ghost" size="icon" title="View Public Page">
-                          <Link href={`/certificates/verify/${cert.certificateCode}`} target="_blank">
-                            <ExternalLink className="h-4 w-4 text-primary" />
-                          </Link>
+      <div className="overflow-hidden rounded-md border bg-card" aria-busy={isLoading || isFetching}>
+        <Table>
+          <TableCaption className="sr-only">Issued and revoked certificates</TableCaption>
+          <TableHeader className="bg-muted/40">
+            <TableRow>
+              <TableHead className="px-4">Certificate code</TableHead>
+              <TableHead>Student</TableHead>
+              <TableHead>Course</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Issued</TableHead>
+              <TableHead className="pr-4 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className={cn(isFetching && !isLoading && "opacity-60")}>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                  <span role="status" aria-live="polite" className="inline-flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Loading certificates…
+                  </span>
+                </TableCell>
+              </TableRow>
+            ) : isError ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 text-center text-destructive">
+                  <span role="alert">Failed to load certificates. Please try again.</span>
+                </TableCell>
+              </TableRow>
+            ) : filteredCertificates.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-24 whitespace-normal text-center text-muted-foreground">
+                  {normalizedSearch ? "No certificates match your search." : "No certificates have been issued yet."}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredCertificates.map((certificate) => (
+                <TableRow key={certificate.id}>
+                  <TableCell className="px-4 py-4 font-mono">{certificate.certificateCode}</TableCell>
+                  <TableCell className="font-medium">{certificate.studentName}</TableCell>
+                  <TableCell className="max-w-xs whitespace-normal">{certificate.courseName}</TableCell>
+                  <TableCell>
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
+                        certificate.status === "ISSUED"
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          : "border-destructive/20 bg-destructive/10 text-destructive",
+                      )}
+                    >
+                      {certificate.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{format(new Date(certificate.issuedDate), "MMM dd, yyyy")}</TableCell>
+                  <TableCell className="pr-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button asChild variant="ghost" size="icon">
+                        <Link
+                          href={`/certificates/verify/${certificate.certificateCode}`}
+                          target="_blank"
+                          aria-label={`Open public verification for ${certificate.certificateCode}`}
+                        >
+                          <ExternalLink className="size-4 text-primary" aria-hidden="true" />
+                        </Link>
+                      </Button>
+                      {certificate.status === "ISSUED" ? (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          aria-label={`Revoke certificate ${certificate.certificateCode}`}
+                          onClick={() => handleRevoke(certificate.id, certificate.certificateCode)}
+                          disabled={isRevoking}
+                        >
+                          <XCircle className="size-4 text-destructive" aria-hidden="true" />
                         </Button>
-                        {cert.status === "ISSUED" && (
-                          <Button 
-                            variant="ghost" 
-                            size="icon" 
-                            title="Revoke" 
-                            onClick={() => handleRevoke(cert.id, cert.certificateCode)}
-                            disabled={isRevoking}
-                          >
-                            <XCircle className="h-4 w-4 text-red-500 dark:text-red-400" />
-                          </Button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
-            <ShieldAlert className="h-10 w-10 text-muted-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">No certificates found</h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            No certificates match your search or none have been issued yet.
-          </p>
-        </div>
-      )}
+                      ) : null}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 }

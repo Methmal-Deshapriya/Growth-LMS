@@ -45,6 +45,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
@@ -292,39 +293,39 @@ export function CategoryManager({
         ]}
       />
 
-      <div className="overflow-hidden rounded-md border bg-card">
+      <div className="overflow-hidden rounded-md border bg-card" aria-busy={isLoading}>
         <Table>
           <TableHeader className="bg-muted/40">
-            <tr>
+            <TableRow>
               <TableHead className="px-4">Category</TableHead>
               <TableHead>Audience</TableHead>
               <TableHead>Courses</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="pr-4 text-right">Actions</TableHead>
-            </tr>
+            </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                  Loading categories…
+                  <span role="status" aria-live="polite">Loading categories…</span>
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : isError ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={5} className="h-32 text-center">
-                  <p className="text-sm text-destructive">Could not load categories.</p>
+                  <p role="alert" className="text-sm text-destructive">Could not load categories.</p>
                   <Button className="mt-3" size="sm" variant="outline" onClick={() => refetch()}>
                     Try again
                   </Button>
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : categories.length === 0 ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={5} className="h-36 text-center text-muted-foreground">
                   No categories have been created for this service yet.
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : (
               categories.map((category) => {
                 const href = `/admin/services/${serviceSlug}/categories/${category.id}/courses`;

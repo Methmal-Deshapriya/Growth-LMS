@@ -173,9 +173,9 @@ export default function SessionLibraryManager() {
         </form>
       ) : null}
 
-      {isLoading ? <p className="py-12 text-center text-muted-foreground">Loading library…</p> : null}
-      {isError ? <p className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load the Session Library.</p> : null}
-      <div className="grid gap-4">
+      {isLoading ? <p role="status" aria-live="polite" className="py-12 text-center text-muted-foreground">Loading library…</p> : null}
+      {isError ? <p role="alert" className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load the Session Library.</p> : null}
+      <div className="grid gap-4" aria-busy={isLoading}>
         {data?.sessions.map((session) => (
           <article key={session.id} className="rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
