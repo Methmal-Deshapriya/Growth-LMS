@@ -78,7 +78,7 @@ export default function CategoryCoursesPage() {
         description={
           category.serviceType === "FREE_LEARNING"
             ? "Create and manage the courses that belong to this category. Select a row to manage its sessions."
-            : "Select a course row to manage its sessions, or use its chevron to view and open batches."
+            : "Select a course row to manage its batches and curriculum."
         }
         action={
           <Button

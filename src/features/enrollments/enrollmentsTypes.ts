@@ -4,6 +4,7 @@ import type { User } from "@/features/auth/authTypes";
 export type EnrollmentStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
 export type PaymentStatus = "NOT_REQUIRED" | "PENDING" | "PARTIAL" | "COMPLETED";
 export type EnrollmentSource = "ADMIN" | "SELF";
+export type CertificateStatus = "ISSUED" | "REVOKED";
 
 export interface EnrollmentBatchSummary {
   id: string;
@@ -13,6 +14,13 @@ export interface EnrollmentBatchSummary {
   expectedEndDate: string;
   timezone: string;
   status: string;
+}
+
+export interface EnrollmentCertificateSummary {
+  id: string;
+  certificateCode: string;
+  status: CertificateStatus;
+  issuedDate: string;
 }
 
 export interface MyEnrollment {
@@ -30,6 +38,7 @@ export interface MyEnrollment {
   updatedAt: string;
   course: PublicCourseCard;
   batch: EnrollmentBatchSummary | null;
+  certificate: EnrollmentCertificateSummary | null;
 }
 
 

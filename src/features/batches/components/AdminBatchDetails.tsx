@@ -1,5 +1,15 @@
 "use client";
 
+import { useState } from "react";
+import { UserPlus } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import BatchDeliveryManager from "./BatchDeliveryManager";
 import { BatchLifecycleControls } from "./BatchLifecycleControls";
 import { useGetBatchQuery } from "../batchesApi";
@@ -27,11 +37,20 @@ export function AdminBatchDetails({
   const { data: batch, isLoading } = useGetBatchQuery(batchId);
   const { data: roster = [], isLoading: rosterLoading } =
     useGetBatchRosterQuery(batchId);
+  const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
 
   if (isLoading) {
-    return <p className="py-16 text-center text-muted-foreground">Loading batch...</p>;
+    return (
+      <p
+        role="status"
+        aria-live="polite"
+        className="py-16 text-center text-muted-foreground"
+      >
+        Loading batch...
+      </p>
+    );
   }
-  if (!batch) return <p>Batch not found.</p>;
+  if (!batch) return <p role="alert">Batch not found.</p>;
 
   const service = getAdminCatalogServiceByType(batch.course.category.serviceType);
   const hasExpectedContext =
@@ -42,7 +61,10 @@ export function AdminBatchDetails({
 
   if (!service || !hasExpectedContext) {
     return (
-      <p className="rounded-xl bg-destructive/10 p-6 text-destructive">
+      <p
+        role="alert"
+        className="rounded-xl bg-destructive/10 p-6 text-destructive"
+      >
         Batch not found in this course.
       </p>
     );
@@ -106,29 +128,43 @@ export function AdminBatchDetails({
         batchStatus={batch.status}
       />
       <section className="space-y-5">
-        <div>
-          <h2 className="text-xl font-semibold">Batch roster</h2>
-          <p className="text-sm text-muted-foreground">
-            External payment evidence and learner lifecycle are managed per intake.
-          </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h2 className="text-xl font-semibold">Batch roster</h2>
+            <p className="text-sm text-muted-foreground">
+              External payment evidence and learner lifecycle are managed per intake.
+            </p>
+          </div>
+          {acceptsEnrollment ? (
+            <Button size="sm" onClick={() => setEnrollDialogOpen(true)}>
+              <UserPlus className="size-4" /> Add student
+            </Button>
+          ) : null}
         </div>
-        {acceptsEnrollment ? (
-          <ManualEnrollmentForm batchId={batchId} />
-        ) : (
+        {!acceptsEnrollment ? (
           <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
             This batch status does not accept new enrollment.
           </p>
-        )}
-        {rosterLoading ? (
-          <p>Loading roster...</p>
-        ) : roster.length ? (
-          <ClassRosterTable entries={roster} />
-        ) : (
-          <p className="rounded-2xl border border-dashed p-10 text-center text-muted-foreground">
-            No learners enrolled in this batch.
-          </p>
-        )}
+        ) : null}
+        <ClassRosterTable entries={roster} isLoading={rosterLoading} />
       </section>
+
+      <Dialog open={enrollDialogOpen} onOpenChange={setEnrollDialogOpen}>
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Add paid students</DialogTitle>
+            <DialogDescription>
+              Search verified accounts, select one or many, then record the
+              external payment result.
+            </DialogDescription>
+          </DialogHeader>
+          <ManualEnrollmentForm
+            batchId={batchId}
+            onSuccess={() => setEnrollDialogOpen(false)}
+            onCancel={() => setEnrollDialogOpen(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

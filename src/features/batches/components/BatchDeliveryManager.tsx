@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -101,14 +102,22 @@ export default function BatchDeliveryManager({
 
   if (isLoading) {
     return (
-      <p className="py-12 text-center text-muted-foreground">
-        <Loader2 className="mx-auto size-5 animate-spin" />
-      </p>
+      <div
+        role="status"
+        aria-live="polite"
+        className="py-12 text-center text-muted-foreground"
+      >
+        <Loader2 className="mx-auto size-5 animate-spin" aria-hidden="true" />
+        <span className="sr-only">Loading batch delivery…</span>
+      </div>
     );
   }
   if (isError || !data) {
     return (
-      <p className="rounded-md bg-destructive/10 p-6 text-destructive">
+      <p
+        role="alert"
+        className="rounded-md bg-destructive/10 p-6 text-destructive"
+      >
         Could not load batch delivery.
       </p>
     );
@@ -128,6 +137,9 @@ export default function BatchDeliveryManager({
 
       <div className="overflow-hidden rounded-md border bg-card">
         <Table>
+          <TableCaption className="sr-only">
+            Session delivery status for this batch
+          </TableCaption>
           <TableHeader className="bg-muted/40">
             <TableRow>
               <TableHead className="w-20 px-4">Order</TableHead>
@@ -189,6 +201,7 @@ export default function BatchDeliveryManager({
                           <Button
                             size="sm"
                             variant="outline"
+                            aria-label={`Withdraw ${item.courseSession.session.title}`}
                             disabled={updateState.isLoading}
                             onClick={() =>
                               void submitDelivery({
@@ -198,11 +211,12 @@ export default function BatchDeliveryManager({
                               })
                             }
                           >
-                            <EyeOff /> Withdraw
+                            <EyeOff aria-hidden="true" /> Withdraw
                           </Button>
                         ) : (
                           <Button
                             size="sm"
+                            aria-label={`Release ${item.courseSession.session.title} now`}
                             disabled={updateState.isLoading}
                             onClick={() =>
                               void submitDelivery({
@@ -212,12 +226,13 @@ export default function BatchDeliveryManager({
                               })
                             }
                           >
-                            <Eye /> Release now
+                            <Eye aria-hidden="true" /> Release now
                           </Button>
                         )}
                         <Button
                           size="sm"
                           variant="outline"
+                          aria-label={`Schedule ${item.courseSession.session.title}`}
                           disabled={updateState.isLoading}
                           onClick={() => schedule(item.courseSessionId)}
                         >

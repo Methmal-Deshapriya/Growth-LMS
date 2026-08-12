@@ -1,7 +1,7 @@
 "use client";
 
 import { useDeferredValue, useState } from "react";
-import { Loader2, Search, UserPlus } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +14,15 @@ import {
 } from "../enrollmentsApi";
 import type { PaymentStatus } from "../enrollmentsTypes";
 
-export default function ManualEnrollmentForm({ batchId }: { batchId: string }) {
+export default function ManualEnrollmentForm({
+  batchId,
+  onSuccess,
+  onCancel,
+}: {
+  batchId: string;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
   const [search, setSearch] = useState("");
   const deferredSearch = useDeferredValue(search.trim());
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
@@ -58,6 +66,7 @@ export default function ManualEnrollmentForm({ batchId }: { batchId: string }) {
         }
       }
       setSelectedIds([]);
+      onSuccess?.();
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Enrollment failed"));
     }
@@ -65,8 +74,7 @@ export default function ManualEnrollmentForm({ batchId }: { batchId: string }) {
 
   const submitting = createState.isLoading || bulkState.isLoading;
   return (
-    <section className="space-y-5 rounded-2xl border border-border bg-card p-6">
-      <div><h2 className="flex items-center gap-2 text-xl font-bold"><UserPlus className="h-5 w-5 text-primary" />Add paid students</h2><p className="mt-1 text-sm text-muted-foreground">Search verified accounts, select one or many, then record the external payment result.</p></div>
+    <div className="space-y-5">
       <div className="relative"><Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" /><Input aria-label="Search eligible students" value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search name or email" className="pl-10" /></div>
       <div className="max-h-64 space-y-2 overflow-y-auto rounded-xl border border-border p-2">
         {isFetching ? <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground"><Loader2 className="h-4 w-4 animate-spin" />Searching…</p> : null}
@@ -83,7 +91,14 @@ export default function ManualEnrollmentForm({ batchId }: { batchId: string }) {
         <div className="space-y-2"><Label htmlFor="enrollment-payment-reference">External payment reference</Label><Input id="enrollment-payment-reference" value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Receipt or transfer reference" /></div>
       </div>
       <div className="space-y-2"><Label htmlFor="enrollment-payment-note">Internal payment note</Label><textarea id="enrollment-payment-note" className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm" value={note} onChange={(event) => setNote(event.target.value)} /></div>
-      <Button disabled={selectedIds.length === 0 || submitting} onClick={submit}>{submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Enroll {selectedIds.length || "selected"} student{selectedIds.length === 1 ? "" : "s"}</Button>
-    </section>
+      <div className="flex gap-2">
+        <Button disabled={selectedIds.length === 0 || submitting} onClick={submit}>{submitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}Enroll {selectedIds.length || "selected"} student{selectedIds.length === 1 ? "" : "s"}</Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
+    </div>
   );
 }

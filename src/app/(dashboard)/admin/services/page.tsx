@@ -6,9 +6,11 @@ import { Button } from "@/components/ui/button";
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useGetAdminLearningServiceSummariesQuery } from "@/features/catalog/catalogApi";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
@@ -50,32 +52,37 @@ export default function AdminServicesPage() {
 
       <div className="overflow-hidden rounded-md border bg-card">
         <Table>
+          <TableCaption className="sr-only">
+            Learning services summary
+          </TableCaption>
           <TableHeader className="bg-muted/40">
-            <tr>
+            <TableRow>
               <TableHead className="px-4">Service</TableHead>
               <TableHead>Categories</TableHead>
               <TableHead>Courses</TableHead>
               <TableHead>Active learners</TableHead>
               <TableHead>Delivery</TableHead>
               <TableHead className="pr-4 text-right">Attention</TableHead>
-            </tr>
+            </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={6} className="h-32 px-4 text-center text-muted-foreground">
-                  Loading service summaries…
+                  <span role="status" aria-live="polite">
+                    Loading service summaries…
+                  </span>
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : isError ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={6} className="h-32 px-4 text-center">
-                  <p className="text-sm text-destructive">Could not load service summaries.</p>
+                  <p role="alert" className="text-sm text-destructive">Could not load service summaries.</p>
                   <Button className="mt-3" size="sm" variant="outline" onClick={() => refetch()}>
                     Try again
                   </Button>
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : (
               services.map((service) => {
                 const activeCategoryCount =

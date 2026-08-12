@@ -1,11 +1,10 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import {
   Archive,
   ArchiveRestore,
-  ChevronRight,
   Eye,
   EyeOff,
   MoreHorizontal,
@@ -50,8 +49,6 @@ import {
 } from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
-import { BatchForm } from "@/features/batches/components/BatchForm";
-import { CourseBatchRows } from "@/features/batches/components/CourseBatchRows";
 import { getApiErrorMessage } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import {
@@ -94,16 +91,11 @@ export function CourseTable({
   const role = useAppSelector(selectAuthRole);
   const canEdit = hasPermission(role, PERMISSIONS.CATALOG_EDIT_DRAFTS);
   const canPublish = hasPermission(role, PERMISSIONS.CATALOG_PUBLISH);
-  const canManageBatches = hasPermission(role, PERMISSIONS.BATCHES_MANAGE);
   const canDelete = hasPermission(
     role,
     PERMISSIONS.CATALOG_DELETE_PERMANENTLY,
   );
   const [selectedCourse, setSelectedCourse] = useState<AdminCourse | null>(null);
-  const [batchCourse, setBatchCourse] = useState<AdminCourse | null>(null);
-  const [expandedCourseIds, setExpandedCourseIds] = useState<Set<string>>(
-    () => new Set(),
-  );
   const [destructiveAction, setDestructiveAction] =
     useState<DestructiveAction | null>(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
@@ -114,15 +106,6 @@ export function CourseTable({
   const [deleteCoursePermanently, deleteState] =
     useDeleteCoursePermanentlyMutation();
   const courseBase = `/admin/services/${serviceSlug}/categories/${category.id}/courses`;
-
-  const toggleCourseBatches = (courseId: string) => {
-    setExpandedCourseIds((current) => {
-      const next = new Set(current);
-      if (next.has(courseId)) next.delete(courseId);
-      else next.add(courseId);
-      return next;
-    });
-  };
 
   const lifecycle = async (
     course: AdminCourse,
@@ -200,155 +183,114 @@ export function CourseTable({
                 const parentIsArchived =
                   course.category.status === "ARCHIVED";
                 const sessionHref = `${courseBase}/${course.id}/sessions`;
-                const hasBatchHierarchy =
-                  course.category.serviceType !== "FREE_LEARNING";
-                const isExpanded = expandedCourseIds.has(course.id);
 
                 return (
-                  <Fragment key={course.id}>
-                    <NavigableTableRow
-                      href={sessionHref}
-                      label={`Open ${course.title} sessions`}
-                      className={
-                        isExpanded
-                          ? "border-primary/40 bg-primary/15 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/25 [&>td:first-child]:shadow-[inset_4px_0_0_var(--color-primary)]"
-                          : undefined
-                      }
-                    >
-                      <TableCell className="max-w-sm whitespace-normal px-4 py-4">
-                        <div className="flex items-start gap-2">
-                          {hasBatchHierarchy ? (
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="icon-xs"
-                              className="mt-0.5 shrink-0"
-                              aria-label={`${isExpanded ? "Collapse" : "Expand"} ${course.title} batches`}
-                              aria-expanded={isExpanded}
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                toggleCourseBatches(course.id);
-                              }}
+                  <NavigableTableRow
+                    key={course.id}
+                    href={sessionHref}
+                    label={`Open ${course.title} sessions`}
+                  >
+                    <TableCell className="max-w-sm whitespace-normal px-4 py-4">
+                      <p className="font-semibold">{course.title}</p>
+                      <p className="font-mono text-xs text-muted-foreground">/{course.slug}</p>
+                    </TableCell>
+                    <TableCell className="capitalize">{course.level.toLowerCase()}</TableCell>
+                    <TableCell>
+                      <p className="font-medium">{formatPrice(course)}</p>
+                      <p className="text-xs text-muted-foreground">{course.accessType.toLowerCase()} access</p>
+                    </TableCell>
+                    <TableCell className="font-mono tabular-nums">{course.sessionCount}</TableCell>
+                    <TableCell>
+                      {course.category.serviceType === "FREE_LEARNING" ? (
+                        <>
+                          <p className="font-mono font-medium tabular-nums">{course.enrollmentCount}</p>
+                          <p className="text-xs text-muted-foreground">enrollments</p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="font-mono font-medium tabular-nums">
+                            {course.batchCount} / {course.enrollmentCount}
+                          </p>
+                          <p className="text-xs text-muted-foreground">batches / enrollments</p>
+                        </>
+                      )}
+                    </TableCell>
+                    <TableCell><CatalogStatusBadge status={course.status} /></TableCell>
+                    <TableCell className="pr-4 text-right" data-no-row-navigation>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Actions for ${course.title}`}
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {canEdit ? (
+                            <DropdownMenuItem disabled={isArchived} onSelect={() => setSelectedCourse(course)}>
+                              <Pencil /> Edit
+                            </DropdownMenuItem>
+                          ) : null}
+                          {course.category.serviceType === "FREE_LEARNING" ? (
+                            <DropdownMenuItem asChild>
+                              <Link href={`${courseBase}/${course.id}/learners`}>
+                                <UserRound /> Learners
+                              </Link>
+                            </DropdownMenuItem>
+                          ) : null}
+                          {canPublish && course.status === "ARCHIVED" ? (
+                            <DropdownMenuItem
+                              disabled={parentIsArchived}
+                              onSelect={() => lifecycle(course, "unarchive")}
                             >
-                              <ChevronRight
-                                className={`size-4 transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                              />
-                            </Button>
-                          ) : (
-                            <span className="w-6 shrink-0" aria-hidden="true" />
-                          )}
-                          <div>
-                            <p className="font-semibold">{course.title}</p>
-                            <p className="font-mono text-xs text-muted-foreground">/{course.slug}</p>
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell className="capitalize">{course.level.toLowerCase()}</TableCell>
-                      <TableCell>
-                        <p className="font-medium">{formatPrice(course)}</p>
-                        <p className="text-xs text-muted-foreground">{course.accessType.toLowerCase()} access</p>
-                      </TableCell>
-                      <TableCell className="font-mono tabular-nums">{course.sessionCount}</TableCell>
-                      <TableCell>
-                        {course.category.serviceType === "FREE_LEARNING" ? (
-                          <>
-                            <p className="font-mono font-medium tabular-nums">{course.enrollmentCount}</p>
-                            <p className="text-xs text-muted-foreground">enrollments</p>
-                          </>
-                        ) : (
-                          <>
-                            <p className="font-mono font-medium tabular-nums">
-                              {course.batchCount} / {course.enrollmentCount}
-                            </p>
-                            <p className="text-xs text-muted-foreground">batches / enrollments</p>
-                          </>
-                        )}
-                      </TableCell>
-                      <TableCell><CatalogStatusBadge status={course.status} /></TableCell>
-                      <TableCell className="pr-4 text-right" data-no-row-navigation>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              aria-label={`Actions for ${course.title}`}
-                              onClick={(event) => event.stopPropagation()}
+                              <ArchiveRestore /> Unarchive
+                            </DropdownMenuItem>
+                          ) : null}
+                          {canPublish && !isArchived ? (
+                            <DropdownMenuItem
+                              onSelect={() =>
+                                lifecycle(
+                                  course,
+                                  course.status === "PUBLISHED" ? "unpublish" : "publish",
+                                )
+                              }
                             >
-                              <MoreHorizontal className="size-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            {canEdit ? (
-                              <DropdownMenuItem disabled={isArchived} onSelect={() => setSelectedCourse(course)}>
-                                <Pencil /> Edit
-                              </DropdownMenuItem>
-                            ) : null}
-                            {course.category.serviceType === "FREE_LEARNING" ? (
-                              <DropdownMenuItem asChild>
-                                <Link href={`${courseBase}/${course.id}/learners`}>
-                                  <UserRound /> Learners
-                                </Link>
-                              </DropdownMenuItem>
-                            ) : null}
-                            {canPublish && course.status === "ARCHIVED" ? (
+                              {course.status === "PUBLISHED" ? <EyeOff /> : <Eye />}
+                              {course.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+                            </DropdownMenuItem>
+                          ) : null}
+                          {canPublish && !isArchived ? (
+                            <>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                disabled={parentIsArchived}
-                                onSelect={() => lifecycle(course, "unarchive")}
+                                variant="destructive"
+                                onSelect={() => setDestructiveAction({ type: "archive", course })}
                               >
-                                <ArchiveRestore /> Unarchive
+                                <Archive /> Archive
                               </DropdownMenuItem>
-                            ) : null}
-                            {canPublish && !isArchived ? (
+                            </>
+                          ) : null}
+                          {canDelete && course.status === "ARCHIVED" ? (
+                            <>
+                              <DropdownMenuSeparator />
                               <DropdownMenuItem
-                                onSelect={() =>
-                                  lifecycle(
-                                    course,
-                                    course.status === "PUBLISHED" ? "unpublish" : "publish",
-                                  )
-                                }
+                                variant="destructive"
+                                onSelect={() => {
+                                  setDeleteConfirmation("");
+                                  setDestructiveAction({ type: "delete", course });
+                                }}
                               >
-                                {course.status === "PUBLISHED" ? <EyeOff /> : <Eye />}
-                                {course.status === "PUBLISHED" ? "Unpublish" : "Publish"}
+                                <Trash2 /> Delete permanently
                               </DropdownMenuItem>
-                            ) : null}
-                            {canPublish && !isArchived ? (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  onSelect={() => setDestructiveAction({ type: "archive", course })}
-                                >
-                                  <Archive /> Archive
-                                </DropdownMenuItem>
-                              </>
-                            ) : null}
-                            {canDelete && course.status === "ARCHIVED" ? (
-                              <>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  variant="destructive"
-                                  onSelect={() => {
-                                    setDeleteConfirmation("");
-                                    setDestructiveAction({ type: "delete", course });
-                                  }}
-                                >
-                                  <Trash2 /> Delete permanently
-                                </DropdownMenuItem>
-                              </>
-                            ) : null}
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </NavigableTableRow>
-                    {hasBatchHierarchy && isExpanded ? (
-                      <CourseBatchRows
-                        course={course}
-                        serviceSlug={serviceSlug}
-                        canCreate={canManageBatches && !isArchived}
-                        onCreate={() => setBatchCourse(course)}
-                      />
-                    ) : null}
-                  </Fragment>
+                            </>
+                          ) : null}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </NavigableTableRow>
                 );
               })
             )}
@@ -377,30 +319,6 @@ export function CourseTable({
               embedded
               onSuccess={() => setSelectedCourse(null)}
               onCancel={() => setSelectedCourse(null)}
-            />
-          ) : null}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog
-        open={Boolean(batchCourse)}
-        onOpenChange={(open) => {
-          if (!open) setBatchCourse(null);
-        }}
-      >
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl">
-          <DialogHeader>
-            <DialogTitle>New batch</DialogTitle>
-            <DialogDescription>
-              Create a paid intake for {batchCourse?.title}. It will start as a draft.
-            </DialogDescription>
-          </DialogHeader>
-          {batchCourse ? (
-            <BatchForm
-              key={batchCourse.id}
-              courseId={batchCourse.id}
-              onSuccess={() => setBatchCourse(null)}
-              onCancel={() => setBatchCourse(null)}
             />
           ) : null}
         </DialogContent>

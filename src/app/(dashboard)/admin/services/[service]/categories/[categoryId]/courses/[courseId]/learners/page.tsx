@@ -15,9 +15,9 @@ export default function ContextCourseLearnersPage() {
   }>();
   const service = getAdminCatalogService(serviceSlug);
   const { data: course, isLoading: courseLoading } = useGetAdminCourseQuery(courseId);
-  const { data: roster, isLoading, isError } = useGetCourseRosterQuery(courseId);
+  const { data: roster = [], isLoading: rosterLoading, isError } = useGetCourseRosterQuery(courseId);
 
-  if (courseLoading || isLoading) return <p className="py-16 text-center">Loading learners...</p>;
+  if (courseLoading) return <p className="py-16 text-center">Loading learners...</p>;
   if (
     !service ||
     !course ||
@@ -44,11 +44,9 @@ export default function ContextCourseLearnersPage() {
         <p className="text-muted-foreground">Students enrolled in {course.title}.</p>
       </div>
       {isError ? (
-        <p className="text-destructive">Could not load the roster.</p>
-      ) : roster?.length ? (
-        <ClassRosterTable entries={roster} />
+        <p role="alert" className="text-destructive">Could not load the roster.</p>
       ) : (
-        <p className="rounded-2xl border border-dashed p-12 text-center text-muted-foreground">No students are enrolled yet.</p>
+        <ClassRosterTable entries={roster} isLoading={rosterLoading} />
       )}
     </div>
   );

@@ -41,8 +41,8 @@ export default function BatchManager({ courseId, readOnly }: { courseId: string;
   return <div className="space-y-6">
     <div className="flex items-center justify-between"><div><h2 className="text-xl font-bold">Paid course batches</h2><p className="text-sm text-muted-foreground">Each intake has its own roster and lesson releases.</p></div>{!readOnly ? <Button onClick={() => setShowForm((value) => !value)}><Plus className="mr-2 h-4 w-4" />New batch</Button> : null}</div>
     {showForm ? <div className="rounded-2xl border border-border bg-card p-6"><BatchForm courseId={courseId} onSuccess={() => setShowForm(false)} onCancel={() => setShowForm(false)} /></div> : null}
-    {isLoading ? <p className="py-12 text-center text-muted-foreground">Loading batches…</p> : null}
-    {isError ? <p className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load batches.</p> : null}
+    {isLoading ? <p role="status" aria-live="polite" className="py-12 text-center text-muted-foreground">Loading batches…</p> : null}
+    {isError ? <p role="alert" className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load batches.</p> : null}
     <div className="grid gap-4 md:grid-cols-2">
       {data?.batches.map((batch) => {
         const service = getAdminCatalogServiceByType(batch.course.category.serviceType);

@@ -27,6 +27,7 @@ import {
 import {
   Table,
   TableBody,
+  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
@@ -217,14 +218,21 @@ export default function CourseCurriculumManager({
 
   if (isLoading) {
     return (
-      <p className="py-16 text-center text-muted-foreground">
+      <p
+        role="status"
+        aria-live="polite"
+        className="py-16 text-center text-muted-foreground"
+      >
         Loading curriculum…
       </p>
     );
   }
   if (isError || !data) {
     return (
-      <p className="rounded-md bg-destructive/10 p-6 text-destructive">
+      <p
+        role="alert"
+        className="rounded-md bg-destructive/10 p-6 text-destructive"
+      >
         Could not load the curriculum.
       </p>
     );
@@ -259,40 +267,43 @@ export default function CourseCurriculumManager({
         </p>
       ) : null}
 
-      <div className="overflow-hidden rounded-md border bg-card">
-        {!readOnly ? (
-          <div className="flex flex-col gap-3 border-b bg-muted/15 p-4 md:flex-row md:items-end">
-            <label className="min-w-0 flex-1 space-y-2 text-sm font-medium">
-              Attach a session
-              <select
-                className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
-                value={selectedSessionId}
-                disabled={isLibraryFetching || isLibraryError || attachable.length === 0}
-                onChange={(event) => setSelectedSessionId(event.target.value)}
-              >
-                <option value="">{pickerPlaceholder}</option>
-                {attachable.map((session) => (
-                  <option key={session.id} value={session.id}>
-                    {session.title} · {session.reusePolicy === "REUSABLE" ? "Reusable" : "One course"}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <Button
-              disabled={!selectedSessionId || attachState.isLoading}
-              onClick={attachSelected}
+      {!readOnly ? (
+        <div className="flex flex-wrap items-end gap-3">
+          <label className="w-72 max-w-full space-y-2 text-sm font-medium">
+            Attach a session
+            <select
+              className="mt-2 h-10 w-full rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50"
+              value={selectedSessionId}
+              disabled={isLibraryFetching || isLibraryError || attachable.length === 0}
+              onChange={(event) => setSelectedSessionId(event.target.value)}
             >
-              {attachState.isLoading ? (
-                <Loader2 className="animate-spin" />
-              ) : (
-                <Link2 />
-              )}
-              Attach session
-            </Button>
-          </div>
-        ) : null}
+              <option value="">{pickerPlaceholder}</option>
+              {attachable.map((session) => (
+                <option key={session.id} value={session.id}>
+                  {session.title} · {session.reusePolicy === "REUSABLE" ? "Reusable" : "One course"}
+                </option>
+              ))}
+            </select>
+          </label>
+          <Button
+            disabled={!selectedSessionId || attachState.isLoading}
+            onClick={attachSelected}
+          >
+            {attachState.isLoading ? (
+              <Loader2 className="animate-spin" />
+            ) : (
+              <Link2 />
+            )}
+            Attach session
+          </Button>
+        </div>
+      ) : null}
 
+      <div className="overflow-hidden rounded-md border bg-card">
         <Table>
+          <TableCaption className="sr-only">
+            Course curriculum sessions in delivery order
+          </TableCaption>
           <TableHeader className="bg-muted/40">
             <TableRow>
               <TableHead className="w-20 px-4">Order</TableHead>
@@ -408,6 +419,9 @@ export default function CourseCurriculumManager({
 
           <div className="overflow-hidden rounded-md border bg-card">
             <Table>
+              <TableCaption className="sr-only">
+                Retired course sessions and their batch assignments
+              </TableCaption>
               <TableHeader className="bg-muted/40">
                 <TableRow>
                   <TableHead className="px-4">Session</TableHead>
