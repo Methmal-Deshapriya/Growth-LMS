@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { getAdminCatalogService } from "@/features/catalog/adminCatalogServices";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { useGetAdminCourseQuery } from "@/features/catalog/catalogApi";
 import ClassRosterTable from "@/features/enrollments/components/ClassRosterTable";
 import { useGetCourseRosterQuery } from "@/features/enrollments/enrollmentsApi";
+import { CursorPagination } from "@/components/ui/cursor-pagination";
 
 export default function ContextCourseLearnersPage() {
   const { service: serviceSlug, categoryId, courseId } = useParams<{
@@ -15,7 +17,20 @@ export default function ContextCourseLearnersPage() {
   }>();
   const service = getAdminCatalogService(serviceSlug);
   const { data: course, isLoading: courseLoading } = useGetAdminCourseQuery(courseId);
-  const { data: roster = [], isLoading: rosterLoading, isError } = useGetCourseRosterQuery(courseId);
+  const [rosterCursors, setRosterCursors] = useState<(string | undefined)[]>([
+    undefined,
+  ]);
+  const rosterPage = rosterCursors.length - 1;
+  const {
+    data: rosterData,
+    isLoading: rosterLoading,
+    isFetching: rosterFetching,
+    isError,
+  } = useGetCourseRosterQuery({
+    courseId,
+    cursor: rosterCursors[rosterPage],
+    limit: 50,
+  });
 
   if (courseLoading) return <p className="py-16 text-center">Loading learners...</p>;
   if (
@@ -46,8 +61,29 @@ export default function ContextCourseLearnersPage() {
       {isError ? (
         <p role="alert" className="text-destructive">Could not load the roster.</p>
       ) : (
-        <ClassRosterTable entries={roster} isLoading={rosterLoading} />
+        <ClassRosterTable
+          entries={rosterData?.enrollments ?? []}
+          isLoading={rosterLoading}
+          deliveryMode="SELF_PACED"
+          certificateEnabled={course.certificateEnabled}
+        />
       )}
+      {!isError ? (
+        <CursorPagination
+          page={rosterPage}
+          hasMore={rosterData?.pagination.hasMore ?? false}
+          isFetching={rosterFetching}
+          onPrevious={() =>
+            setRosterCursors((current) => current.slice(0, -1))
+          }
+          onNext={() => {
+            const nextCursor = rosterData?.pagination.nextCursor;
+            if (nextCursor) {
+              setRosterCursors((current) => [...current, nextCursor]);
+            }
+          }}
+        />
+      ) : null}
     </div>
   );
 }

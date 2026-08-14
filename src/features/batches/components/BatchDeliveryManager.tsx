@@ -7,6 +7,16 @@ import { SequenceRiskConfirmationDialog } from "@/components/admin/SequenceRiskC
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
   Table,
   TableBody,
   TableCaption,
@@ -42,10 +52,11 @@ const stateStyles = {
 export default function BatchDeliveryManager({
   batchId,
   batchStatus,
+  timezone,
 }: {
   batchId: string;
-  courseId: string;
   batchStatus: string;
+  timezone: string;
 }) {
   const { data, isLoading, isError } = useGetBatchSessionsQuery(batchId);
   const [updateDelivery, updateState] = useUpdateBatchSessionDeliveryMutation();
@@ -54,6 +65,11 @@ export default function BatchDeliveryManager({
     message: string;
     details?: unknown;
   } | null>(null);
+  const [scheduleTarget, setScheduleTarget] = useState<{
+    courseSessionId: string;
+    title: string;
+  } | null>(null);
+  const [scheduleValue, setScheduleValue] = useState("");
 
   const submitDelivery = async (
     input: DeliveryInput,
@@ -82,22 +98,21 @@ export default function BatchDeliveryManager({
     }
   };
 
-  const schedule = (courseSessionId: string) => {
-    const local = window.prompt(
-      "Release date/time (for example 2026-08-08T18:00)",
-    );
-    if (!local) return;
-    const date = new Date(local);
-    if (Number.isNaN(date.getTime()) || date <= new Date()) {
+  const schedule = () => {
+    if (!scheduleTarget || !scheduleValue) return;
+    const date = zonedDateTimeToDate(scheduleValue, timezone);
+    if (!date || date <= new Date()) {
       toast.error("Choose a valid future date and time");
       return;
     }
     void submitDelivery({
       batchId,
-      courseSessionId,
+      courseSessionId: scheduleTarget.courseSessionId,
       mode: "SCHEDULED",
       availableAt: date.toISOString(),
     });
+    setScheduleTarget(null);
+    setScheduleValue("");
   };
 
   if (isLoading) {
@@ -186,7 +201,10 @@ export default function BatchDeliveryManager({
                   </TableCell>
                   <TableCell className="text-sm text-muted-foreground">
                     {item.availableAt
-                      ? new Date(item.availableAt).toLocaleString()
+                      ? new Date(item.availableAt).toLocaleString(undefined, {
+                          timeZone: timezone,
+                          timeZoneName: "short",
+                        })
                       : item.state === "RELEASED"
                         ? "Available now"
                         : "Not learner-visible"}
@@ -234,7 +252,12 @@ export default function BatchDeliveryManager({
                           variant="outline"
                           aria-label={`Schedule ${item.courseSession.session.title}`}
                           disabled={updateState.isLoading}
-                          onClick={() => schedule(item.courseSessionId)}
+                          onClick={() =>
+                            setScheduleTarget({
+                              courseSessionId: item.courseSessionId,
+                              title: item.courseSession.session.title,
+                            })
+                          }
                         >
                           Schedule
                         </Button>
@@ -266,6 +289,98 @@ export default function BatchDeliveryManager({
           if (pendingRisk) void submitDelivery(pendingRisk.input, true);
         }}
       />
+      <Dialog
+        open={Boolean(scheduleTarget)}
+        onOpenChange={(open) => {
+          if (!open) {
+            setScheduleTarget(null);
+            setScheduleValue("");
+          }
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Schedule session release</DialogTitle>
+            <DialogDescription>
+              Choose when {scheduleTarget?.title} becomes available. The value
+              is interpreted in the batch timezone: {timezone}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="batch-session-release-at">Release date and time</Label>
+            <Input
+              id="batch-session-release-at"
+              type="datetime-local"
+              value={scheduleValue}
+              onChange={(event) => setScheduleValue(event.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setScheduleTarget(null)}
+            >
+              Cancel
+            </Button>
+            <Button
+              type="button"
+              disabled={!scheduleValue || updateState.isLoading}
+              onClick={schedule}
+            >
+              Schedule release
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </section>
   );
+}
+
+function zonedDateTimeToDate(value: string, timeZone: string): Date | null {
+  const match = value.match(
+    /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/,
+  );
+  if (!match) return null;
+  const [, year, month, day, hour, minute, second = "0"] = match;
+  const requestedUtc = Date.UTC(
+    Number(year),
+    Number(month) - 1,
+    Number(day),
+    Number(hour),
+    Number(minute),
+    Number(second),
+  );
+
+  const offsetAt = (instant: number) => {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+      timeZone,
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(new Date(instant));
+    const values = Object.fromEntries(parts.map(({ type, value: part }) => [type, part]));
+    const representedUtc = Date.UTC(
+      Number(values.year),
+      Number(values.month) - 1,
+      Number(values.day),
+      Number(values.hour),
+      Number(values.minute),
+      Number(values.second),
+    );
+    return representedUtc - instant;
+  };
+
+  try {
+    let instant = requestedUtc - offsetAt(requestedUtc);
+    instant = requestedUtc - offsetAt(instant);
+    const date = new Date(instant);
+    return Number.isNaN(date.getTime()) ? null : date;
+  } catch {
+    return null;
+  }
 }

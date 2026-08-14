@@ -79,6 +79,22 @@ export interface EligibleStudentsPage {
   };
 }
 
+export interface RosterPage {
+  enrollments: ClassRosterEntry[];
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+}
+
+export type RosterParams = {
+  q?: string;
+  status?: EnrollmentStatus;
+  limit?: number;
+  cursor?: string;
+};
+
 export interface BulkEnrollmentResult {
   results: Array<{
     userId: string;

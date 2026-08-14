@@ -119,8 +119,12 @@ export default function SessionLibraryManager() {
 
   const restore = async (session: LibrarySession) => {
     try {
-      await unarchiveSession(session.id).unwrap();
-      toast.success("Session restored as a draft");
+      const restored = await unarchiveSession(session.id).unwrap();
+      toast.success(
+        restored.status === "READY"
+          ? "Used session restored and kept ready"
+          : "Unused session restored as a draft",
+      );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not restore session"));
     }

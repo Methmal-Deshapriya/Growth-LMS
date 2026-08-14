@@ -51,6 +51,7 @@ import {
   TableCell,
   TableHead,
   TableHeader,
+  TableRow,
 } from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthRole } from "@/features/auth/authSelectors";
@@ -199,7 +200,7 @@ export function CourseTable({
       <div className="overflow-hidden rounded-md border bg-card">
         <Table>
           <TableHeader className="bg-muted/40">
-            <tr>
+            <TableRow>
               <TableHead className="px-4">Course</TableHead>
               <TableHead>Level</TableHead>
               <TableHead>Access</TableHead>
@@ -207,15 +208,15 @@ export function CourseTable({
               <TableHead>Delivery</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="pr-4 text-right">Actions</TableHead>
-            </tr>
+            </TableRow>
           </TableHeader>
           <TableBody>
             {courses.length === 0 ? (
-              <tr>
+              <TableRow>
                 <TableCell colSpan={7} className="h-36 text-center text-muted-foreground">
                   No courses have been created in this category yet.
                 </TableCell>
-              </tr>
+              </TableRow>
             ) : (
               courses.map((course) => {
                 const isArchived =

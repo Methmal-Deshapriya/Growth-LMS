@@ -141,8 +141,13 @@ export function CourseForm({
 
     try {
       if (initial) {
-        const { certificateEnabled: fixedPolicy, ...mutablePayload } = payload;
+        const {
+          certificateEnabled: fixedPolicy,
+          categoryId: fixedCategory,
+          ...mutablePayload
+        } = payload;
         void fixedPolicy;
+        void fixedCategory;
         await updateCourse({ id: initial.id, body: mutablePayload }).unwrap();
       } else {
         await createCourse(payload).unwrap();
@@ -172,7 +177,7 @@ export function CourseForm({
             className="mt-1 h-10 w-full rounded-md border bg-background px-3"
             value={form.categoryId}
             onChange={(event) => change("categoryId", event.target.value)}
-            disabled={Boolean(lockedCategory) || initial?.status === "PUBLISHED"}
+            disabled={Boolean(lockedCategory) || Boolean(initial)}
           >
             {categories.map((category) => (
               <option key={category.id} value={category.id}>

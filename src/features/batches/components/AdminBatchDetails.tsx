@@ -20,6 +20,7 @@ import { getAdminCatalogServiceByType } from "@/features/catalog/adminCatalogSer
 import type { LearningServiceSlug } from "@/features/catalog/catalogTypes";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
+import { CursorPagination } from "@/components/ui/cursor-pagination";
 
 interface BatchRouteContext {
   serviceSlug: LearningServiceSlug;
@@ -35,8 +36,16 @@ export function AdminBatchDetails({
   expectedContext?: BatchRouteContext;
 }) {
   const { data: batch, isLoading } = useGetBatchQuery(batchId);
-  const { data: roster = [], isLoading: rosterLoading } =
-    useGetBatchRosterQuery(batchId);
+  const [rosterCursors, setRosterCursors] = useState<(string | undefined)[]>([
+    undefined,
+  ]);
+  const rosterPage = rosterCursors.length - 1;
+  const { data: rosterData, isLoading: rosterLoading, isFetching: rosterFetching } =
+    useGetBatchRosterQuery({
+      batchId,
+      cursor: rosterCursors[rosterPage],
+      limit: 50,
+    });
   const [enrollDialogOpen, setEnrollDialogOpen] = useState(false);
 
   if (isLoading) {
@@ -122,8 +131,8 @@ export function AdminBatchDetails({
       ) : null}
       <BatchDeliveryManager
         batchId={batchId}
-        courseId={batch.courseId}
         batchStatus={batch.status}
+        timezone={batch.timezone}
       />
       <section className="space-y-5">
         <div className="flex items-start justify-between gap-3">
@@ -144,7 +153,26 @@ export function AdminBatchDetails({
             This batch status does not accept new enrollment.
           </p>
         ) : null}
-        <ClassRosterTable entries={roster} isLoading={rosterLoading} />
+        <ClassRosterTable
+          entries={rosterData?.enrollments ?? []}
+          isLoading={rosterLoading}
+          deliveryMode="COHORT"
+          certificateEnabled={batch.course.certificateEnabled}
+        />
+        <CursorPagination
+          page={rosterPage}
+          hasMore={rosterData?.pagination.hasMore ?? false}
+          isFetching={rosterFetching}
+          onPrevious={() =>
+            setRosterCursors((current) => current.slice(0, -1))
+          }
+          onNext={() => {
+            const nextCursor = rosterData?.pagination.nextCursor;
+            if (nextCursor) {
+              setRosterCursors((current) => [...current, nextCursor]);
+            }
+          }}
+        />
       </section>
 
       <Dialog open={enrollDialogOpen} onOpenChange={setEnrollDialogOpen}>

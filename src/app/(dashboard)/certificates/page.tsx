@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useGetMyCertificatesQuery } from "@/features/certificates/certificatesApi";
-import { Loader2, Award, Download, ExternalLink, Calendar, ShieldCheck } from "lucide-react";
+import { Loader2, Award, ExternalLink, Calendar, ShieldCheck, ShieldX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -22,17 +22,17 @@ export default function MyCertificatesPage() {
         <div>
           <h1 className="text-3xl font-bold text-foreground">My Certificates</h1>
           <p className="text-muted-foreground mt-1">
-            View and download your official course completion certificates.
+            View and verify your official course completion certificates.
           </p>
         </div>
 
         {isLoading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
+          <div role="status" aria-live="polite" className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" aria-hidden="true" />
             <p className="text-muted-foreground font-medium">Loading your achievements...</p>
           </div>
         ) : isError ? (
-          <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
+          <div role="alert" className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
             <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Something went wrong</h2>
             <p className="text-red-700 dark:text-red-400">Failed to load certificates. Please try again.</p>
           </div>
@@ -45,9 +45,19 @@ export default function MyCertificatesPage() {
                     <div className="h-12 w-12 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
                       <Award className="h-7 w-7" />
                     </div>
-                    <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 text-xs font-bold uppercase tracking-wider">
-                      <ShieldCheck className="h-3.5 w-3.5" />
-                      Verified
+                    <div
+                      className={
+                        cert.status === "ISSUED"
+                          ? "flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                          : "flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                      }
+                    >
+                      {cert.status === "ISSUED" ? (
+                        <ShieldCheck className="h-3.5 w-3.5" aria-hidden="true" />
+                      ) : (
+                        <ShieldX className="h-3.5 w-3.5" aria-hidden="true" />
+                      )}
+                      {cert.status === "ISSUED" ? "Valid" : "Revoked"}
                     </div>
                   </div>
 
@@ -79,10 +89,6 @@ export default function MyCertificatesPage() {
                         <ExternalLink className="h-4 w-4 mr-2" />
                         Verify
                       </Link>
-                    </Button>
-                    <Button size="sm" className="bg-gray-900 hover:bg-black text-white rounded-lg">
-                      <Download className="h-4 w-4 mr-2" />
-                      Download
                     </Button>
                   </div>
                 </div>

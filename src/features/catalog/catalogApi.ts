@@ -22,8 +22,9 @@ export interface AdminCourse {
   category: AdminCategory; createdAt: string; updatedAt: string;
 }
 export type CategoryInput = Pick<AdminCategory, "serviceType" | "slug" | "title" | "description" | "visualKey"> & Partial<Pick<AdminCategory, "audienceLabel" | "badgeLabel" | "sortOrder">>;
+export type CategoryUpdateInput = Partial<Omit<CategoryInput, "serviceType">>;
 export type CourseInput = Pick<AdminCourse, "categoryId" | "slug" | "title" | "summary" | "description" | "level" | "accessType" | "price" | "certificateEnabled"> & Partial<Pick<AdminCourse, "durationValue" | "durationUnit" | "highlights" | "skills" | "prerequisites" | "thumbnailUrl" | "sortOrder">>;
-export type CourseUpdateInput = Partial<Omit<CourseInput, "certificateEnabled">>;
+export type CourseUpdateInput = Partial<Omit<CourseInput, "certificateEnabled" | "categoryId">>;
 type List<T, K extends string> = Record<K, T[]> & { pagination: { total: number; limit: number; offset: number } };
 export interface PermanentDeleteResult {
   id: string;
@@ -112,7 +113,7 @@ export const catalogApi = baseApi.injectEndpoints({ endpoints: (builder) => ({
   getAdminCategory: builder.query<AdminCategory, string>({ query: (id) => `/categories/${id}`, providesTags: ["Categories"] }),
   getCategoryDeletionImpact: builder.query<CatalogDeletionImpact, string>({ query: (id) => `/categories/${id}/deletion-impact` }),
   createCategory: builder.mutation<AdminCategory, CategoryInput>({ query: (body) => ({ url: "/categories", method: "POST", body }), invalidatesTags: ["Services", "Categories"] }),
-  updateCategory: builder.mutation<AdminCategory, { id: string; body: Partial<CategoryInput> }>({ query: ({ id, body }) => ({ url: `/categories/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Categories", "Courses"] }),
+  updateCategory: builder.mutation<AdminCategory, { id: string; body: CategoryUpdateInput }>({ query: ({ id, body }) => ({ url: `/categories/${id}`, method: "PATCH", body }), invalidatesTags: ["Services", "Categories", "Courses"] }),
   publishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/publish`, method: "PATCH" }), invalidatesTags: ["Services", "Categories"] }),
   unpublishCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/unpublish`, method: "PATCH" }), invalidatesTags: ["Services", "Categories", "Courses"] }),
   archiveCategory: builder.mutation<AdminCategory, string>({ query: (id) => ({ url: `/categories/${id}/archive`, method: "PATCH" }), invalidatesTags: ["Services", "Categories", "Courses"] }),

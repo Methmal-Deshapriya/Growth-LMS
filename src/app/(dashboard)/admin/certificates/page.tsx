@@ -19,18 +19,21 @@ import {
 import { useGetAllCertificatesAdminQuery, useRevokeCertificateMutation } from "@/features/certificates/certificatesApi";
 import { getApiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { CursorPagination } from "@/components/ui/cursor-pagination";
 
 export default function AdminCertificatesPage() {
-  const { data: certificates = [], isLoading, isError, isFetching } = useGetAllCertificatesAdminQuery();
-  const [revokeCertificate, { isLoading: isRevoking }] = useRevokeCertificateMutation();
   const [searchTerm, setSearchTerm] = useState("");
-
-  const normalizedSearch = searchTerm.trim().toLowerCase();
-  const filteredCertificates = certificates.filter((certificate) =>
-    certificate.certificateCode.toLowerCase().includes(normalizedSearch) ||
-    certificate.studentName.toLowerCase().includes(normalizedSearch) ||
-    certificate.courseName.toLowerCase().includes(normalizedSearch),
-  );
+  const [cursors, setCursors] = useState<(string | undefined)[]>([undefined]);
+  const page = cursors.length - 1;
+  const normalizedSearch = searchTerm.trim();
+  const { data, isLoading, isError, isFetching } =
+    useGetAllCertificatesAdminQuery({
+      q: normalizedSearch,
+      cursor: cursors[page],
+      limit: 50,
+    });
+  const [revokeCertificate, { isLoading: isRevoking }] = useRevokeCertificateMutation();
+  const certificates = data?.certificates ?? [];
 
   const handleRevoke = async (id: string, code: string) => {
     const reason = window.prompt(`Please enter a reason for revoking certificate ${code}:`);
@@ -59,7 +62,10 @@ export default function AdminCertificatesPage() {
             placeholder="Search by code, student, or course…"
             className="h-11 pl-10"
             value={searchTerm}
-            onChange={(event) => setSearchTerm(event.target.value)}
+            onChange={(event) => {
+              setSearchTerm(event.target.value);
+              setCursors([undefined]);
+            }}
           />
         </div>
       </div>
@@ -92,14 +98,14 @@ export default function AdminCertificatesPage() {
                   <span role="alert">Failed to load certificates. Please try again.</span>
                 </TableCell>
               </TableRow>
-            ) : filteredCertificates.length === 0 ? (
+            ) : certificates.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={6} className="h-24 whitespace-normal text-center text-muted-foreground">
                   {normalizedSearch ? "No certificates match your search." : "No certificates have been issued yet."}
                 </TableCell>
               </TableRow>
             ) : (
-              filteredCertificates.map((certificate) => (
+              certificates.map((certificate) => (
                 <TableRow key={certificate.id}>
                   <TableCell className="px-4 py-4 font-mono">{certificate.certificateCode}</TableCell>
                   <TableCell className="font-medium">{certificate.studentName}</TableCell>
@@ -147,6 +153,16 @@ export default function AdminCertificatesPage() {
           </TableBody>
         </Table>
       </div>
+      <CursorPagination
+        page={page}
+        hasMore={data?.pagination.hasMore ?? false}
+        isFetching={isFetching}
+        onPrevious={() => setCursors((current) => current.slice(0, -1))}
+        onNext={() => {
+          const nextCursor = data?.pagination.nextCursor;
+          if (nextCursor) setCursors((current) => [...current, nextCursor]);
+        }}
+      />
     </div>
   );
 }

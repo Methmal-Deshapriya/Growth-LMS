@@ -13,12 +13,15 @@ const AUTH_ONLY_PATHS = [
   "/verify-email",
 ];
 const PUBLIC_MARKETING_PATHS = ["/", "/bootcamps", "/pretech-courses", "/free-learning", "/consultations"];
+const PUBLIC_CERTIFICATE_PREFIX = "/certificates/verify/";
 
 export function proxy(req: NextRequest) {
   const token = req.cookies.get("token")?.value;
   const { pathname } = req.nextUrl;
 
-  const isProtected = PROTECTED_PATHS.some((p) => pathname.startsWith(p));
+  const isPublicCertificate = pathname.startsWith(PUBLIC_CERTIFICATE_PREFIX);
+  const isProtected =
+    !isPublicCertificate && PROTECTED_PATHS.some((p) => pathname.startsWith(p));
   const isAuthOnly = AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p));
   const isMarketing = PUBLIC_MARKETING_PATHS.some((path) =>
     path === "/" ? pathname === "/" : pathname.startsWith(path)

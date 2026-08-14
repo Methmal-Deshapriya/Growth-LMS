@@ -60,9 +60,13 @@ const enrollmentStatusOptions: Record<EnrollmentStatus, EnrollmentStatus[]> = {
 export default function ClassRosterTable({
   entries,
   isLoading,
+  deliveryMode,
+  certificateEnabled,
 }: {
   entries: ClassRosterEntry[];
   isLoading?: boolean;
+  deliveryMode: "COHORT" | "SELF_PACED";
+  certificateEnabled: boolean;
 }) {
   const [updateEnrollment, { isLoading: isUpdating }] = useUpdateEnrollmentMutation();
   const [issueCertificate, { isLoading: isIssuing }] = useIssueCertificateMutation();
@@ -92,13 +96,17 @@ export default function ClassRosterTable({
 
   const handleSave = async (id: string) => {
     try {
+      const data =
+        deliveryMode === "SELF_PACED"
+          ? { status: editForm.status }
+          : {
+              ...editForm,
+              externalPaymentReference: editForm.externalPaymentReference.trim() || null,
+              paymentNote: editForm.paymentNote.trim() || null,
+            };
       await updateEnrollment({
         id,
-        data: {
-          ...editForm,
-          externalPaymentReference: editForm.externalPaymentReference.trim() || null,
-          paymentNote: editForm.paymentNote.trim() || null,
-        },
+        data,
       }).unwrap();
       toast.success("Enrollment updated successfully");
       setEditingId(null);
@@ -124,7 +132,9 @@ export default function ClassRosterTable({
     <div className="overflow-hidden rounded-md border bg-card">
       <Table>
         <TableCaption className="sr-only">
-          Enrolled students in this batch
+          {deliveryMode === "COHORT"
+            ? "Enrolled students in this batch"
+            : "Students enrolled in this Free Learning course"}
         </TableCaption>
         <TableHeader className="bg-muted/40">
           <TableRow>
@@ -191,7 +201,10 @@ export default function ClassRosterTable({
                           })
                         }
                       >
-                        {enrollmentStatusOptions[entry.status].map((status) => (
+                        {(deliveryMode === "SELF_PACED" && entry.status === "CANCELLED"
+                          ? ["CANCELLED" as EnrollmentStatus]
+                          : enrollmentStatusOptions[entry.status]
+                        ).map((status) => (
                           <option key={status} value={status}>
                             {status.charAt(0) + status.slice(1).toLowerCase()}
                           </option>
@@ -205,11 +218,16 @@ export default function ClassRosterTable({
                   </TableCell>
 
                   <TableCell>
-                    {isEditing ? (
+                    {deliveryMode === "SELF_PACED" ? (
+                      <Badge variant="outline" className={paymentStyles.NOT_REQUIRED}>
+                        Not applicable
+                      </Badge>
+                    ) : isEditing ? (
                       <select
                         className={selectClassName}
                         aria-label={`Payment status for ${entry.user?.firstName} ${entry.user?.lastName}`}
                         value={editForm.paymentStatus}
+                        disabled={entry.status === "COMPLETED"}
                         onChange={(event) =>
                           setEditForm({
                             ...editForm,
@@ -233,11 +251,14 @@ export default function ClassRosterTable({
                   </TableCell>
 
                   <TableCell>
-                    {isEditing ? (
+                    {deliveryMode === "SELF_PACED" ? (
+                      <span className="text-xs text-muted-foreground">Not applicable</span>
+                    ) : isEditing ? (
                       <div className="min-w-52 space-y-2">
                         <Input
                           aria-label="External payment reference"
                           value={editForm.externalPaymentReference}
+                          disabled={entry.status === "COMPLETED"}
                           onChange={(event) =>
                             setEditForm({
                               ...editForm,
@@ -249,6 +270,7 @@ export default function ClassRosterTable({
                         <Input
                           aria-label="Internal payment note"
                           value={editForm.paymentNote}
+                          disabled={entry.status === "COMPLETED"}
                           onChange={(event) =>
                             setEditForm({ ...editForm, paymentNote: event.target.value })
                           }
@@ -312,7 +334,9 @@ export default function ClassRosterTable({
                         </>
                       ) : (
                         <>
-                          {entry.status === "COMPLETED" ? (
+                          {entry.status === "COMPLETED" &&
+                          certificateEnabled &&
+                          !entry.certificate ? (
                             <Button
                               aria-label={`Issue certificate for ${entry.user?.firstName} ${entry.user?.lastName}`}
                               variant="ghost"

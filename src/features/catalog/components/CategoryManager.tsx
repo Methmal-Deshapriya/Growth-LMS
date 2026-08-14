@@ -188,7 +188,9 @@ export function CategoryManager({
 
     try {
       if (selected) {
-        await updateCategory({ id: selected.id, body: payload }).unwrap();
+        const { serviceType: fixedService, ...mutablePayload } = payload;
+        void fixedService;
+        await updateCategory({ id: selected.id, body: mutablePayload }).unwrap();
       } else {
         await createCategory(payload).unwrap();
       }

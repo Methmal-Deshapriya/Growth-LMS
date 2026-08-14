@@ -39,3 +39,19 @@ export type IssueCertificateRequest = {
 export type RevokeCertificateRequest = {
   revocationReason: string;
 };
+
+export type CertificateAdminPage = {
+  certificates: Certificate[];
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+};
+
+export type CertificateAdminParams = {
+  q?: string;
+  status?: CertificateStatus;
+  limit?: number;
+  cursor?: string;
+};

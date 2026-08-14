@@ -6,6 +6,8 @@ import type {
   EligibleStudentsPage,
   EligibleStudentsParams,
   MyEnrollment,
+  RosterPage,
+  RosterParams,
   UpdateEnrollmentRequest,
 } from "./enrollmentsTypes";
 
@@ -15,13 +17,19 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       query: () => "/enrollments/my",
       providesTags: ["Enrollments"],
     }),
-    getCourseRoster: builder.query<ClassRosterEntry[], string>({
-      query: (courseId) => `/enrollments/course/${courseId}`,
+    getCourseRoster: builder.query<RosterPage, { courseId: string } & RosterParams>({
+      query: ({ courseId, ...params }) => ({
+        url: `/enrollments/course/${courseId}`,
+        params,
+      }),
       providesTags: ["Enrollments"],
     }),
-    getBatchRoster: builder.query<ClassRosterEntry[], string>({
-      query: (batchId) => `/batches/${batchId}/enrollments`,
-      providesTags: (_result, _error, batchId) => [
+    getBatchRoster: builder.query<RosterPage, { batchId: string } & RosterParams>({
+      query: ({ batchId, ...params }) => ({
+        url: `/batches/${batchId}/enrollments`,
+        params,
+      }),
+      providesTags: (_result, _error, { batchId }) => [
         { type: "Enrollments", id: `BATCH-${batchId}` },
       ],
     }),
