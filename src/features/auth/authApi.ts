@@ -8,6 +8,8 @@ import type {
   ResetPasswordRequest,
   VerifyOtpRequest,
   ResendOtpRequest,
+  LoginResult,
+  VerifyLoginChallengeRequest,
 } from "./authTypes";
 import { setUser, clearUser } from "./authSlice";
 
@@ -25,7 +27,7 @@ export const authApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["Auth"],
     }),
-    login: builder.mutation<User, LoginRequest>({
+    login: builder.mutation<LoginResult, LoginRequest>({
       query: (body) => ({
         url: "/auth/login",
         method: "POST",
@@ -34,9 +36,25 @@ export const authApi = baseApi.injectEndpoints({
       async onQueryStarted(arg, { dispatch, queryFulfilled }) {
         try {
           const { data } = await queryFulfilled;
-          dispatch(setUser(data));
+          if (!("requiresMfa" in data)) dispatch(setUser(data));
         } catch {
           // Error is handled by normalized error middleware and components
+        }
+      },
+      invalidatesTags: ["Auth"],
+    }),
+    verifyLoginChallenge: builder.mutation<User, VerifyLoginChallengeRequest>({
+      query: (body) => ({
+        url: "/auth/verify-login-challenge",
+        method: "POST",
+        body,
+      }),
+      async onQueryStarted(arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setUser(data));
+        } catch {
+          // Error is rendered by the verification form.
         }
       },
       invalidatesTags: ["Auth"],
@@ -116,6 +134,7 @@ export const {
   useGetMeQuery,
   useUpdateProfileMutation,
   useLoginMutation,
+  useVerifyLoginChallengeMutation,
   useRegisterMutation,
   useLogoutMutation,
   useForgotPasswordMutation,

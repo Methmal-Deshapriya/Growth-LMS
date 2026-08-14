@@ -11,6 +11,7 @@ const AUTH_ONLY_PATHS = [
   "/forgot-password",
   "/reset-password",
   "/verify-email",
+  "/verify-login",
 ];
 const PUBLIC_MARKETING_PATHS = ["/", "/bootcamps", "/pretech-courses", "/free-learning", "/consultations"];
 const PUBLIC_CERTIFICATE_PREFIX = "/certificates/verify/";
@@ -48,6 +49,7 @@ export const config = {
     "/forgot-password",
     "/reset-password",
     "/verify-email",
+    "/verify-login",
     "/",
     "/bootcamps/:path*",
     "/pretech-courses/:path*",

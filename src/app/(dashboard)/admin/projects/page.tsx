@@ -28,7 +28,10 @@ const statusStyles: Record<ProjectStatus, string> = {
 };
 
 export default function AdminProjectsPage() {
-  const { data: projects = [], isLoading, isError, isFetching } = useGetAllProjectsAdminQuery();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([undefined]);
+  const cursor = cursorHistory.at(-1);
+  const { data, isLoading, isError, isFetching } = useGetAllProjectsAdminQuery({ cursor });
+  const projects = data?.projects ?? [];
   const [reviewProject, { isLoading: isReviewing }] = useReviewProjectMutation();
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -163,6 +166,22 @@ export default function AdminProjectsPage() {
             )}
           </TableBody>
         </Table>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          disabled={cursorHistory.length === 1 || isFetching}
+          onClick={() => setCursorHistory((history) => history.slice(0, -1))}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          disabled={!data?.nextCursor || isFetching}
+          onClick={() => data?.nextCursor && setCursorHistory((history) => [...history, data.nextCursor ?? undefined])}
+        >
+          Next
+        </Button>
       </div>
     </div>
   );

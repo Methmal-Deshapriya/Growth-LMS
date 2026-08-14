@@ -21,6 +21,19 @@ export type LoginRequest = {
   password: string;
 };
 
+export type LoginChallenge = {
+  requiresMfa: true;
+  challengeId: string;
+  expiresAt: string;
+};
+
+export type LoginResult = User | LoginChallenge;
+
+export type VerifyLoginChallengeRequest = {
+  challengeId: string;
+  code: string;
+};
+
 export type RegisterRequest = {
   firstName: string;
   lastName: string;

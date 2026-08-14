@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useGetMyProjectsQuery } from "@/features/projects/projectsApi";
 import { Loader2, FolderCode, Plus, Github, Globe, MessageSquare, Clock, CheckCircle2, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -16,7 +16,10 @@ import { projectImageLoader } from "@/lib/projectImage";
  * Displays student project submissions and their status.
  */
 export default function MyProjectsPage() {
-  const { data: projects, isLoading, isError } = useGetMyProjectsQuery();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([undefined]);
+  const cursor = cursorHistory.at(-1);
+  const { data, isLoading, isError, isFetching } = useGetMyProjectsQuery({ cursor });
+  const projects = data?.projects;
 
   const getStatusStyles = (status: string) => {
     switch (status) {
@@ -69,7 +72,8 @@ export default function MyProjectsPage() {
             <p className="text-red-700 dark:text-red-400">Failed to load projects. Please try again.</p>
           </div>
         ) : projects && projects.length > 0 ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {projects.map((project) => (
               <div key={project.id} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col group">
                 {/* Image Preview Placeholder / Thumbnail */}
@@ -161,6 +165,23 @@ export default function MyProjectsPage() {
                 </div>
               </div>
             ))}
+            </div>
+            <div className="flex justify-end gap-2">
+            <Button
+              variant="outline"
+              disabled={cursorHistory.length === 1 || isFetching}
+              onClick={() => setCursorHistory((history) => history.slice(0, -1))}
+            >
+              Previous
+            </Button>
+            <Button
+              variant="outline"
+              disabled={!data?.nextCursor || isFetching}
+              onClick={() => data?.nextCursor && setCursorHistory((history) => [...history, data.nextCursor ?? undefined])}
+            >
+              Next
+            </Button>
+            </div>
           </div>
         ) : (
           <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
