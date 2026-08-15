@@ -11,10 +11,6 @@ import { toNormalizedApiError, type NormalizedApiError, type ApiSuccess } from "
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: "include",
-  prepareHeaders: (headers) => {
-    headers.set("Content-Type", "application/json");
-    return headers;
-  },
 });
 
 /**

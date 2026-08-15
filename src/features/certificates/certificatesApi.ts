@@ -6,6 +6,8 @@ import type {
   RevokeCertificateRequest,
   CertificateAdminPage,
   CertificateAdminParams,
+  CertificateHistoryParams,
+  MyCertificatesPage,
 } from "./certificatesTypes";
 
 export const certificatesApi = baseApi.injectEndpoints({
@@ -16,11 +18,11 @@ export const certificatesApi = baseApi.injectEndpoints({
     }),
 
     // Student: Get my certificates
-    getMyCertificates: builder.query<Certificate[], void>({
-      query: () => "certificates/my",
+    getMyCertificates: builder.query<MyCertificatesPage, CertificateHistoryParams | void>({
+      query: (params) => ({ url: "certificates/my", params: params ?? {} }),
       providesTags: (result) => [
         { type: "Certificates", id: "MY" },
-        ...(result ? result.map((c) => ({ type: "Certificates" as const, id: c.id })) : []),
+        ...(result ? result.certificates.map((c) => ({ type: "Certificates" as const, id: c.id })) : []),
       ],
     }),
 

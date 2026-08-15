@@ -107,8 +107,14 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
         alStream: values.alStream,
       };
 
-      await registerUser(payload).unwrap();
-      toast.success("Account created! Check your email for a verification code.");
+      const createdUser = await registerUser(payload).unwrap();
+      if (createdUser.verificationEmailSent === false) {
+        toast.warning(
+          "Your account was created, but email delivery failed. Use Resend code on the verification page.",
+        );
+      } else {
+        toast.success("Account created! Check your email for a verification code.");
+      }
       // Registering does not log the user in — they must verify their
       // email via OTP first, so we redirect explicitly rather than
       // relying on GuestGuard's isAuthenticated-driven redirect.

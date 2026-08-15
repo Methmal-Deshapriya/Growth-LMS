@@ -32,4 +32,13 @@ describe("dashboard proxy boundaries", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("x-middleware-next")).toBe("1");
   });
+
+  it("does not trust a cookie enough to redirect public recovery routes", () => {
+    for (const path of ["/", "/verify-email", "/reset-password?token=abc"]) {
+      const response = proxy(request(path, "expired-or-invalid-token"));
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("location")).toBeNull();
+    }
+  });
 });

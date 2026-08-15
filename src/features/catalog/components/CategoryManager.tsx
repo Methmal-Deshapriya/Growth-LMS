@@ -48,7 +48,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { getApiErrorMessage } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import {
@@ -129,11 +129,11 @@ export function CategoryManager({
     (service) => service.serviceType === serviceType,
   );
   const categories = data?.categories ?? [];
-  const role = useAppSelector(selectAuthRole);
-  const canEdit = hasPermission(role, PERMISSIONS.CATALOG_EDIT_DRAFTS);
-  const canPublish = hasPermission(role, PERMISSIONS.CATALOG_PUBLISH);
+  const user = useAppSelector(selectAuthUser);
+  const canEdit = hasPermission(user, PERMISSIONS.CATALOG_EDIT_DRAFTS);
+  const canPublish = hasPermission(user, PERMISSIONS.CATALOG_PUBLISH);
   const canDelete = hasPermission(
-    role,
+    user,
     PERMISSIONS.CATALOG_DELETE_PERMANENTLY,
   );
 

@@ -7,13 +7,6 @@ const PROTECTED_PATHS = [
   "/projects",
   "/certificates",
 ];
-const AUTH_ONLY_PATHS = [
-  "/forgot-password",
-  "/reset-password",
-  "/verify-email",
-  "/verify-login",
-];
-const PUBLIC_MARKETING_PATHS = ["/", "/bootcamps", "/pretech-courses", "/free-learning", "/consultations"];
 const PUBLIC_CERTIFICATE_PREFIX = "/certificates/verify/";
 
 export function proxy(req: NextRequest) {
@@ -23,19 +16,13 @@ export function proxy(req: NextRequest) {
   const isPublicCertificate = pathname.startsWith(PUBLIC_CERTIFICATE_PREFIX);
   const isProtected =
     !isPublicCertificate && PROTECTED_PATHS.some((p) => pathname.startsWith(p));
-  const isAuthOnly = AUTH_ONLY_PATHS.some((p) => pathname.startsWith(p));
-  const isMarketing = PUBLIC_MARKETING_PATHS.some((path) =>
-    path === "/" ? pathname === "/" : pathname.startsWith(path)
-  );
-
   if (isProtected && !token) {
     return NextResponse.redirect(new URL("/?slide=auth", req.url));
   }
 
-  if ((isAuthOnly || isMarketing) && token) {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
+  // A cookie is only evidence that a browser has a token, not that the token
+  // is valid. Public and recovery routes must stay reachable so a stale
+  // HttpOnly cookie cannot create a redirect loop.
   return NextResponse.next();
 }
 

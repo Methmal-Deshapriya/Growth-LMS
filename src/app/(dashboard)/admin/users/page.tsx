@@ -5,7 +5,7 @@ import { useGetUsersQuery } from "@/features/users/usersApi";
 import UserTable from "@/features/users/components/UserTable";
 import { Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { canManageUsers, canViewUsers } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 import { ROLES, type Role } from "@/lib/constants";
@@ -16,7 +16,7 @@ import { ROLES, type Role } from "@/lib/constants";
  * Allows admins to view users and super admins to manage roles.
  */
 export default function AdminUsersPage() {
-  const role = useAppSelector(selectAuthRole);
+  const user = useAppSelector(selectAuthUser);
   const [limit] = useState(10);
   const [offset, setOffset] = useState(0);
   const [selectedRole, setSelectedRole] = useState<Role | "">("");
@@ -27,7 +27,7 @@ export default function AdminUsersPage() {
   });
 
   // --- Security Check (Double protection) ---
-  if (!canViewUsers(role)) {
+  if (!canViewUsers(user)) {
     return (
       <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
         <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
@@ -70,7 +70,7 @@ export default function AdminUsersPage() {
       <div className="space-y-6">
         <UserTable
           users={data?.users ?? []}
-          canManageRoles={canManageUsers(role)}
+          canManageRoles={canManageUsers(user)}
           isLoading={isLoading}
           isError={isError}
           isFetching={isFetching}

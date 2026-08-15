@@ -12,7 +12,7 @@ export function ContactCTAButton({
   const handleClick = () => {
     const phone = "94723622112";
     const url = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-    window.open(url, "_blank");
+    window.open(url, "_blank", "noopener,noreferrer");
   };
 
   return (

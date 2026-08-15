@@ -55,3 +55,14 @@ export type CertificateAdminParams = {
   limit?: number;
   cursor?: string;
 };
+
+export type MyCertificatesPage = {
+  certificates: Certificate[];
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+};
+
+export type CertificateHistoryParams = { limit?: number; cursor?: string };

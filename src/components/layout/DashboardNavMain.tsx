@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import {
   isStudent,
   canAccessAdminArea,
@@ -45,7 +45,8 @@ interface NavItem {
  */
 export function DashboardNavMain() {
   const pathname = usePathname();
-  const role = useAppSelector(selectAuthRole);
+  const user = useAppSelector(selectAuthUser);
+  const role = user?.role ?? null;
 
   const overviewItems: NavItem[] = [
     { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -58,7 +59,7 @@ export function DashboardNavMain() {
       : []),
   ];
 
-  const adminItems: NavItem[] = canAccessAdminArea(role)
+  const adminItems: NavItem[] = canAccessAdminArea(user)
     ? [
         { label: "Services", href: "/admin/services", icon: ShieldCheck },
         { label: "Session Library", href: "/admin/sessions", icon: Library },
@@ -68,8 +69,8 @@ export function DashboardNavMain() {
     : [];
 
   const superAdminItems: NavItem[] = [
-    ...(canViewUsers(role) ? [{ label: "Users", href: "/admin/users", icon: Users }] : []),
-    ...(canViewAuditLogs(role) ? [{ label: "Audit Logs", href: "/admin/audit", icon: FileText }] : []),
+    ...(canViewUsers(user) ? [{ label: "Users", href: "/admin/users", icon: Users }] : []),
+    ...(canViewAuditLogs(user) ? [{ label: "Audit Logs", href: "/admin/audit", icon: FileText }] : []),
   ];
 
   const isItemActive = (href: string) =>

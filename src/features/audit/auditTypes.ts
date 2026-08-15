@@ -16,8 +16,8 @@ export type AuditLog = {
 export type AuditPagination = {
   total: number;
   limit: number;
-  offset: number;
   hasMore: boolean;
+  nextCursor: string | null;
 };
 
 export type AuditLogsResponse = {
@@ -33,5 +33,5 @@ export type AuditLogsParams = {
   from?: string;
   to?: string;
   limit?: number;
-  offset?: number;
+  cursor?: string;
 };

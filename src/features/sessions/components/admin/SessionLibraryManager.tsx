@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { getApiErrorMessage } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import { useAppSelector } from "@/store/hooks";
@@ -48,8 +48,8 @@ function clean(form: CreateSessionRequest): CreateSessionRequest {
 }
 
 export default function SessionLibraryManager() {
-  const role = useAppSelector(selectAuthRole);
-  const canDelete = hasPermission(role, PERMISSIONS.SESSIONS_DELETE_PERMANENTLY);
+  const user = useAppSelector(selectAuthUser);
+  const canDelete = hasPermission(user, PERMISSIONS.SESSIONS_DELETE_PERMANENTLY);
   const [q, setQ] = useState("");
   const [form, setForm] = useState<CreateSessionRequest>(emptyForm);
   const [editing, setEditing] = useState<LibrarySession | null>(null);

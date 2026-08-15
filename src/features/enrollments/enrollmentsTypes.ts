@@ -41,6 +41,17 @@ export interface MyEnrollment {
   certificate: EnrollmentCertificateSummary | null;
 }
 
+export type SelfHistoryParams = { limit?: number; cursor?: string };
+
+export interface MyEnrollmentsPage {
+  enrollments: MyEnrollment[];
+  pagination: {
+    limit: number;
+    hasMore: boolean;
+    nextCursor: string | null;
+  };
+}
+
 
 export interface ClassRosterEntry extends MyEnrollment {
   user: User;

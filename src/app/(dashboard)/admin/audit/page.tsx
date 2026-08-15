@@ -5,7 +5,7 @@ import { useGetAuditLogsQuery } from "@/features/audit/auditApi";
 import AuditLogTable from "@/features/audit/components/AuditLogTable";
 import { History, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { canViewAuditLogs } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 
@@ -15,22 +15,23 @@ import { Button } from "@/components/ui/button";
  * Provides a high-fidelity dashboard for Super Admins to monitor system activity.
  */
 export default function AdminAuditPage() {
-  const role = useAppSelector(selectAuthRole);
+  const user = useAppSelector(selectAuthUser);
   
   // State for filters and pagination
   const [limit] = useState(50);
-  const [offset, setOffset] = useState(0);
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([]);
   const [action, setAction] = useState("");
 
   // Fetch logs with current filters
   const { data, isLoading, isError, isFetching } = useGetAuditLogsQuery({
     limit,
-    offset,
+    cursor,
     action: action || undefined,
   });
 
   // --- Security Check ---
-  if (!canViewAuditLogs(role)) {
+  if (!canViewAuditLogs(user)) {
     return (
       <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
         <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
@@ -42,15 +43,16 @@ export default function AdminAuditPage() {
   }
 
   const handleNext = () => {
-    if (data?.pagination.hasMore) {
-      setOffset(offset + limit);
+    if (data?.pagination.hasMore && data.pagination.nextCursor) {
+      setCursorHistory((history) => [...history, cursor]);
+      setCursor(data.pagination.nextCursor);
     }
   };
 
   const handlePrev = () => {
-    if (offset > 0) {
-      setOffset(Math.max(0, offset - limit));
-    }
+    if (cursorHistory.length === 0) return;
+    setCursor(cursorHistory.at(-1));
+    setCursorHistory((history) => history.slice(0, -1));
   };
 
   return (
@@ -76,7 +78,8 @@ export default function AdminAuditPage() {
               value={action}
               onChange={(e) => {
                 setAction(e.target.value);
-                setOffset(0); // Reset to first page on filter change
+                setCursor(undefined);
+                setCursorHistory([]);
               }}
             >
               <option value="">All Actions</option>
@@ -103,7 +106,7 @@ export default function AdminAuditPage() {
         {data && data.pagination.total > 0 ? (
           <div className="flex items-center justify-between bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
             <p className="text-sm text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{offset + 1}</span> to <span className="font-bold text-foreground">{offset + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
+              Showing <span className="font-bold text-foreground">{cursorHistory.length * limit + 1}</span> to <span className="font-bold text-foreground">{cursorHistory.length * limit + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
             </p>
             
             <div className="flex items-center gap-2">
@@ -111,7 +114,7 @@ export default function AdminAuditPage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handlePrev} 
-                disabled={offset === 0 || isFetching}
+                disabled={cursorHistory.length === 0 || isFetching}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous

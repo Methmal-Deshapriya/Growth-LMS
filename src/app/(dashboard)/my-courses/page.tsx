@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useGetMyEnrollmentsQuery } from "@/features/enrollments/enrollmentsApi";
 import EnrollmentCard from "@/features/enrollments/components/EnrollmentCard";
-import { Loader2, BookOpen } from "lucide-react";
+import { Loader2, BookOpen, ChevronLeft, ChevronRight } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
@@ -14,7 +14,13 @@ import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
  * Displays all courses the current student is enrolled in.
  */
 export default function MyCoursesPage() {
-  const { data: enrollments, isLoading, isError } = useGetMyEnrollmentsQuery();
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [history, setHistory] = useState<Array<string | undefined>>([]);
+  const { data, isLoading, isError, isFetching } = useGetMyEnrollmentsQuery({
+    limit: 20,
+    cursor,
+  });
+  const enrollments = data?.enrollments ?? [];
 
   return (
     <StudentOnlyRoute description="Admins use the catalog and enrollment tools instead of the student classroom.">
@@ -42,11 +48,35 @@ export default function MyCoursesPage() {
               We couldn&apos;t load your courses. Please try refreshing the page.
             </p>
           </div>
-        ) : enrollments && enrollments.length > 0 ? (
-          <div className="grid grid-cols-1 gap-6">
-            {enrollments.map((enrollment) => (
-              <EnrollmentCard key={enrollment.id} enrollment={enrollment} />
-            ))}
+        ) : enrollments.length > 0 ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 gap-6">
+              {enrollments.map((enrollment) => (
+                <EnrollmentCard key={enrollment.id} enrollment={enrollment} />
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                disabled={history.length === 0 || isFetching}
+                onClick={() => {
+                  setCursor(history.at(-1));
+                  setHistory((items) => items.slice(0, -1));
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!data?.pagination.hasMore || !data.pagination.nextCursor || isFetching}
+                onClick={() => {
+                  setHistory((items) => [...items, cursor]);
+                  setCursor(data?.pagination.nextCursor ?? undefined);
+                }}
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">

@@ -1,8 +1,8 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useGetMyCertificatesQuery } from "@/features/certificates/certificatesApi";
-import { Loader2, Award, ExternalLink, Calendar, ShieldCheck, ShieldX } from "lucide-react";
+import { Loader2, Award, ExternalLink, Calendar, ShieldCheck, ShieldX, ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import Link from "next/link";
@@ -14,7 +14,13 @@ import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
  * Displays all certificates earned by the student.
  */
 export default function MyCertificatesPage() {
-  const { data: certificates, isLoading, isError } = useGetMyCertificatesQuery();
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [history, setHistory] = useState<Array<string | undefined>>([]);
+  const { data, isLoading, isError, isFetching } = useGetMyCertificatesQuery({
+    limit: 20,
+    cursor,
+  });
+  const certificates = data?.certificates ?? [];
 
   return (
     <StudentOnlyRoute description="Admins no longer need the student certificate page. Use the admin certificate management screen for issued records.">
@@ -36,9 +42,10 @@ export default function MyCertificatesPage() {
             <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Something went wrong</h2>
             <p className="text-red-700 dark:text-red-400">Failed to load certificates. Please try again.</p>
           </div>
-        ) : certificates && certificates.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {certificates.map((cert) => (
+        ) : certificates.length > 0 ? (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {certificates.map((cert) => (
               <div key={cert.id} className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden flex flex-col">
                 <div className="p-6 flex-1 space-y-4">
                   <div className="flex items-start justify-between">
@@ -93,7 +100,30 @@ export default function MyCertificatesPage() {
                   </div>
                 </div>
               </div>
-            ))}
+              ))}
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                disabled={history.length === 0 || isFetching}
+                onClick={() => {
+                  setCursor(history.at(-1));
+                  setHistory((items) => items.slice(0, -1));
+                }}
+              >
+                <ChevronLeft className="h-4 w-4" /> Previous
+              </Button>
+              <Button
+                variant="outline"
+                disabled={!data?.pagination.hasMore || !data.pagination.nextCursor || isFetching}
+                onClick={() => {
+                  setHistory((items) => [...items, cursor]);
+                  setCursor(data?.pagination.nextCursor ?? undefined);
+                }}
+              >
+                Next <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         ) : (
           <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">

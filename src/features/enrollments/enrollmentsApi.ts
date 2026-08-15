@@ -5,16 +5,17 @@ import type {
   CreatePaidEnrollmentRequest,
   EligibleStudentsPage,
   EligibleStudentsParams,
-  MyEnrollment,
+  MyEnrollmentsPage,
   RosterPage,
   RosterParams,
   UpdateEnrollmentRequest,
+  SelfHistoryParams,
 } from "./enrollmentsTypes";
 
 export const enrollmentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getMyEnrollments: builder.query<MyEnrollment[], void>({
-      query: () => "/enrollments/my",
+    getMyEnrollments: builder.query<MyEnrollmentsPage, SelfHistoryParams | void>({
+      query: (params) => ({ url: "/enrollments/my", params: params ?? {} }),
       providesTags: ["Enrollments"],
     }),
     getCourseRoster: builder.query<RosterPage, { courseId: string } & RosterParams>({

@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/table";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { NavigableTableRow } from "@/features/catalog/components/NavigableTableRow";
 import type { LearningServiceSlug } from "@/features/catalog/catalogTypes";
 import { useGetCourseBatchesQuery } from "../batchesApi";
@@ -41,8 +41,8 @@ export function CourseBatchesTable({
   categoryId: string;
   readOnly: boolean;
 }) {
-  const role = useAppSelector(selectAuthRole);
-  const canCreate = hasPermission(role, PERMISSIONS.BATCHES_MANAGE) && !readOnly;
+  const user = useAppSelector(selectAuthUser);
+  const canCreate = hasPermission(user, PERMISSIONS.BATCHES_MANAGE) && !readOnly;
   const [createOpen, setCreateOpen] = useState(false);
   const { data, isLoading, isError } = useGetCourseBatchesQuery(courseId);
   const batchBase = `/admin/services/${serviceSlug}/categories/${categoryId}/courses/${courseId}/batches`;
