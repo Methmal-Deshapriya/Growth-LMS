@@ -128,7 +128,7 @@ export default function ResetPasswordForm() {
             />
           </div>
           {errors.newPassword && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.newPassword.message}</p>
+            <p className="text-xs font-medium text-red-500">{errors.newPassword.message}</p>
           )}
         </div>
 
@@ -148,7 +148,7 @@ export default function ResetPasswordForm() {
             />
           </div>
           {errors.confirmPassword && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.confirmPassword.message}</p>
+            <p className="text-xs font-medium text-red-500">{errors.confirmPassword.message}</p>
           )}
         </div>
 

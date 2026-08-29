@@ -55,7 +55,7 @@ export default function PublicCertificateVerificationPage({
             role="status"
             className={
               isIssued
-                ? "flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700 dark:text-emerald-300"
+                ? "flex items-center gap-3 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-4 text-emerald-700"
                 : "flex items-center gap-3 rounded-lg border border-destructive/30 bg-destructive/10 p-4 text-destructive"
             }
           >

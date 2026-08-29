@@ -29,9 +29,9 @@ export default function AdminUsersPage() {
   // --- Security Check (Double protection) ---
   if (!canViewUsers(user)) {
     return (
-      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
-        <p className="text-red-700 dark:text-red-400">
+      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 mb-2">Access Restricted</h2>
+        <p className="text-red-700">
           You do not have permission to view platform users.
         </p>
       </div>

@@ -26,26 +26,26 @@ import type {
 } from "../enrollmentsTypes";
 
 const statusStyles: Record<EnrollmentStatus, string> = {
-  ACTIVE: "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  ACTIVE: "border-sky-500/20 bg-sky-500/10 text-sky-700",
   COMPLETED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
   CANCELLED:
-    "border-destructive/20 bg-destructive/10 text-destructive dark:text-red-300",
+    "border-destructive/20 bg-destructive/10 text-destructive",
 };
 
 const paymentStyles: Record<PaymentStatus, string> = {
   NOT_REQUIRED: "border-muted-foreground/20 bg-muted text-muted-foreground",
-  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
-  PARTIAL: "border-sky-500/20 bg-sky-500/10 text-sky-700 dark:text-sky-300",
+  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700",
+  PARTIAL: "border-sky-500/20 bg-sky-500/10 text-sky-700",
   COMPLETED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
 };
 
 const certificateStyles: Record<CertificateStatus, string> = {
   ISSUED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
   REVOKED:
-    "border-destructive/20 bg-destructive/10 text-destructive dark:text-red-300",
+    "border-destructive/20 bg-destructive/10 text-destructive",
 };
 
 const selectClassName =
@@ -319,7 +319,7 @@ export default function ClassRosterTable({
                             {isUpdating ? (
                               <Loader2 className="size-4 animate-spin" aria-hidden="true" />
                             ) : (
-                              <Check className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                              <Check className="size-4 text-emerald-600" aria-hidden="true" />
                             )}
                           </Button>
                           <Button
@@ -344,7 +344,7 @@ export default function ClassRosterTable({
                               onClick={() => handleIssueCertificate(entry.id)}
                               disabled={isIssuing}
                             >
-                              <Award className="size-4 text-violet-600 dark:text-violet-400" aria-hidden="true" />
+                              <Award className="size-4 text-violet-600" aria-hidden="true" />
                             </Button>
                           ) : null}
                           <Button

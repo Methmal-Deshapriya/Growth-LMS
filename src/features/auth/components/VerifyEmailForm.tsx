@@ -140,7 +140,7 @@ export default function VerifyEmailForm() {
             )}
           />
           {errors.code && (
-            <p className="text-center text-xs font-medium text-red-500 dark:text-red-400">
+            <p className="text-center text-xs font-medium text-red-500">
               {errors.code.message}
             </p>
           )}

@@ -1,8 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
 
-@custom-variant dark (&:is(.dark *));
-
 @theme inline {
   --color-background: var(--background);
   --font-poppins: "Poppins", "Poppins Fallback", ui-sans-serif, system-ui, sans-serif;
@@ -87,47 +85,15 @@
   --sidebar-ring: var(--color-blue-600);
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: var(--color-blue-500);
-  --primary-foreground: var(--color-white);
-  --ember: var(--color-orange-500);
-  --ember-soft: color-mix(in oklch, var(--color-orange-500) 16%, transparent);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: var(--color-blue-500);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  /* Sidebar — genuinely neutral/black now, theme-aware for the first time
-     (previously absent here entirely, which is why dark mode stayed navy). */
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-white);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: var(--color-blue-500);
-}
-
 @layer base {
   * {
     @apply border-border outline-ring/50;
+  }
+  html {
+    /* This app is light-only. Without this, a visitor with OS-level dark
+       mode enabled still gets dark browser-native chrome (autofill fields,
+       scrollbars, form controls) layered on top of our light UI. */
+    color-scheme: light;
   }
   body {
     @apply bg-background text-foreground;

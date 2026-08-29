@@ -40,11 +40,11 @@ export default function MyCoursesPage() {
             <p className="font-medium text-muted-foreground">Loading your classroom...</p>
           </div>
         ) : isError ? (
-          <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-            <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">
+          <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">
               Something went wrong
             </h2>
-            <p className="text-red-700 dark:text-red-400">
+            <p className="text-red-700">
               We couldn&apos;t load your courses. Please try refreshing the page.
             </p>
           </div>

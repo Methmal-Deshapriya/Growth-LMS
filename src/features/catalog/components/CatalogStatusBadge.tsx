@@ -9,10 +9,10 @@ const STATUS_LABELS: Record<CatalogStatus, string> = {
 
 const STATUS_CLASSES: Record<CatalogStatus, string> = {
   PUBLISHED:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
   DRAFT: "border-border bg-muted text-muted-foreground",
   ARCHIVED:
-    "border-destructive/20 bg-destructive/10 text-destructive dark:text-red-300",
+    "border-destructive/20 bg-destructive/10 text-destructive",
 };
 
 export function CatalogStatusBadge({ status }: { status: CatalogStatus }) {

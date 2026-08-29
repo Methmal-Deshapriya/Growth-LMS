@@ -33,8 +33,8 @@ export default function EditProjectPage() {
 
   if (isError || !project) {
     return (
-      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Project not found</h2>
+      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 mb-2">Project not found</h2>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/projects">Back to Projects</Link>
         </Button>
@@ -44,12 +44,12 @@ export default function EditProjectPage() {
 
   if (project.status !== "PENDING") {
     return (
-      <div className="bg-amber-50 dark:bg-amber-950/40 border border-amber-100 dark:border-amber-900/40 rounded-2xl p-12 text-center">
+      <div className="bg-amber-50 border border-amber-100 rounded-2xl p-12 text-center">
         <div className="h-16 w-16 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <AlertTriangle className="h-8 w-8 text-amber-600 dark:text-amber-400" />
+          <AlertTriangle className="h-8 w-8 text-amber-600" />
         </div>
         <h2 className="text-2xl font-bold text-amber-900 mb-2">Editing Restricted</h2>
-        <p className="text-amber-700 dark:text-amber-400 mb-6">
+        <p className="text-amber-700 mb-6">
           This project has already been {project.status.toLowerCase()} and can no longer be edited.
         </p>
         <Button asChild variant="outline">

@@ -123,7 +123,7 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
             />
           </div>
           {errors.email && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
+            <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
           )}
         </div>
 
@@ -151,7 +151,7 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
             />
           </div>
           {errors.password && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.password.message}</p>
+            <p className="text-xs font-medium text-red-500">{errors.password.message}</p>
           )}
         </div>
 

@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono, Inter, Poppins } from "next/font/google";
+import { Toaster } from "sonner";
 import "./globals.css";
 import StoreProvider from "@/store/StoreProvider";
 import AuthInitializer from "@/features/auth/components/AuthInitializer";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemedToaster } from "@/components/ThemedToaster";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -115,16 +114,13 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} ${inter.variable} ${poppins.variable}`}
     >
       <body className="font-sans antialiased">
-        <ThemeProvider>
-          <StoreProvider>
-            <AuthInitializer>{children}</AuthInitializer>
-          </StoreProvider>
-          <ThemedToaster />
-        </ThemeProvider>
+        <StoreProvider>
+          <AuthInitializer>{children}</AuthInitializer>
+        </StoreProvider>
+        <Toaster richColors position="top-right" theme="light" />
       </body>
     </html>
   );

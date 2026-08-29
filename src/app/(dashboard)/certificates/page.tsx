@@ -38,9 +38,9 @@ export default function MyCertificatesPage() {
             <p className="text-muted-foreground font-medium">Loading your achievements...</p>
           </div>
         ) : isError ? (
-          <div role="alert" className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-            <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Something went wrong</h2>
-            <p className="text-red-700 dark:text-red-400">Failed to load certificates. Please try again.</p>
+          <div role="alert" className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
+            <h2 className="text-2xl font-bold text-red-900 mb-2">Something went wrong</h2>
+            <p className="text-red-700">Failed to load certificates. Please try again.</p>
           </div>
         ) : certificates.length > 0 ? (
           <div className="space-y-6">
@@ -55,8 +55,8 @@ export default function MyCertificatesPage() {
                     <div
                       className={
                         cert.status === "ISSUED"
-                          ? "flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-green-700 dark:bg-green-950/40 dark:text-green-400"
-                          : "flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-700 dark:bg-red-950/40 dark:text-red-400"
+                          ? "flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-green-700"
+                          : "flex items-center gap-1.5 rounded-full bg-red-50 px-3 py-1 text-xs font-bold uppercase tracking-wider text-red-700"
                       }
                     >
                       {cert.status === "ISSUED" ? (

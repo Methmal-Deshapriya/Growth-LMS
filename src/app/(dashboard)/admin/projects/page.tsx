@@ -22,9 +22,9 @@ import { getApiErrorMessage } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
 const statusStyles: Record<ProjectStatus, string> = {
-  APPROVED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  APPROVED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
   REJECTED: "border-destructive/20 bg-destructive/10 text-destructive",
-  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700",
 };
 
 export default function AdminProjectsPage() {
@@ -148,7 +148,7 @@ export default function AdminProjectsPage() {
                         onClick={() => handleReview(project.id, "APPROVED")}
                         disabled={isReviewing || project.status === "APPROVED"}
                       >
-                        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                        <CheckCircle2 className="size-4 text-emerald-600" aria-hidden="true" />
                       </Button>
                       <Button
                         variant="ghost"

@@ -169,7 +169,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.firstName && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.firstName.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.firstName.message}</p>
             )}
           </div>
 
@@ -189,7 +189,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.lastName && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.lastName.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.lastName.message}</p>
             )}
           </div>
 
@@ -209,7 +209,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.phone && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.phone.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.phone.message}</p>
             )}
           </div>
 
@@ -231,7 +231,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               )}
             />
             {errors.dateOfBirth && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">
+              <p className="text-xs font-medium text-red-500">
                 {errors.dateOfBirth.message}
               </p>
             )}
@@ -258,7 +258,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               )}
             />
             {errors.district && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.district.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.district.message}</p>
             )}
           </div>
 
@@ -283,7 +283,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               )}
             />
             {errors.alStream && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.alStream.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.alStream.message}</p>
             )}
           </div>
 
@@ -303,7 +303,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.address && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.address.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.address.message}</p>
             )}
           </div>
 
@@ -323,7 +323,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.email && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
             )}
           </div>
 
@@ -343,7 +343,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.password && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.password.message}</p>
+              <p className="text-xs font-medium text-red-500">{errors.password.message}</p>
             )}
           </div>
 
@@ -363,7 +363,7 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
               />
             </div>
             {errors.confirmPassword && (
-              <p className="text-xs font-medium text-red-500 dark:text-red-400">
+              <p className="text-xs font-medium text-red-500">
                 {errors.confirmPassword.message}
               </p>
             )}

@@ -23,11 +23,11 @@ export default function ProjectDetailsPage() {
   const getStatusStyles = (status: string) => {
     switch (status) {
       case "APPROVED":
-        return "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40";
+        return "bg-green-50 text-green-700 border-green-100";
       case "REJECTED":
-        return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/40";
+        return "bg-red-50 text-red-700 border-red-100";
       default:
-        return "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40";
+        return "bg-amber-50 text-amber-700 border-amber-100";
     }
   };
 
@@ -42,8 +42,8 @@ export default function ProjectDetailsPage() {
 
   if (isError || !project) {
     return (
-      <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-        <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Project not found</h2>
+      <div className="bg-red-50 border border-red-100 rounded-2xl p-12 text-center">
+        <h2 className="text-2xl font-bold text-red-900 mb-2">Project not found</h2>
         <Button asChild variant="outline" className="mt-4">
           <Link href="/projects">Back to Projects</Link>
         </Button>

@@ -115,7 +115,7 @@ export default function AdminCertificatesPage() {
                       className={cn(
                         "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
                         certificate.status === "ISSUED"
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
                           : "border-destructive/20 bg-destructive/10 text-destructive",
                       )}
                     >

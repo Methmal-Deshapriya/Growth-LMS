@@ -3,7 +3,6 @@
 import React from "react";
 import { usePathname } from "next/navigation";
 import { Bell } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { useDashboardHeader } from "@/components/layout/DashboardHeaderContext";
@@ -80,8 +79,6 @@ export default function DashboardHeader() {
 
       {/* Right: Actions */}
       <div className="flex items-center gap-6 ml-auto">
-        <ThemeToggle />
-
         <button aria-label="Notifications" className="relative text-muted-foreground hover:text-foreground transition-colors">
           <Bell className="h-5 w-5" />
           <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">

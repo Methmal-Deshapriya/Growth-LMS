@@ -112,7 +112,7 @@ export default function ForgotPasswordForm() {
             />
           </div>
           {errors.email && (
-            <p className="text-xs font-medium text-red-500 dark:text-red-400">{errors.email.message}</p>
+            <p className="text-xs font-medium text-red-500">{errors.email.message}</p>
           )}
           {notRegistered && (
             <p className="text-xs text-muted-foreground">

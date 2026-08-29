@@ -15,6 +15,7 @@ export interface SessionContent {
   quizUrl?: string | null;
   feedbackUrl?: string | null;
   durationMinutes?: number | null;
+  tags?: string[];
 }
 
 export interface SessionUsageCourse {
@@ -23,6 +24,11 @@ export interface SessionUsageCourse {
   courseTitle: string;
   courseCode: string;
   courseGroupId: string;
+  courseGroupTitle: string;
+  categoryId: string;
+  categoryTitle: string;
+  serviceSlug: string;
+  serviceTitle: string;
   orderIndex: number | null;
   retiredAt: string | null;
   deliveryStatus: CourseSessionDeliveryStatus;
@@ -31,6 +37,7 @@ export interface SessionUsageCourse {
 export interface LibrarySession extends SessionContent {
   id: string;
   status: SessionStatus;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
   usage: {
@@ -39,6 +46,11 @@ export interface LibrarySession extends SessionContent {
     courseGroupCount: number;
     courses: SessionUsageCourse[];
   };
+}
+
+export interface BulkArchiveSessionsResult {
+  results: Array<{ id: string; status: "ARCHIVED" | "FAILED"; error?: string }>;
+  summary: { requested: number; archived: number; failed: number };
 }
 
 export type CreateSessionRequest = SessionContent & { status?: "DRAFT" | "READY" };

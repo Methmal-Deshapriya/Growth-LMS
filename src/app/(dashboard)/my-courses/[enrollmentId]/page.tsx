@@ -25,11 +25,11 @@ export default function LearningPage() {
 
   if (error || !classroom) {
     return (
-      <div className="rounded-2xl border border-red-100 bg-red-50 p-12 text-center dark:border-red-900/40 dark:bg-red-950/40">
-        <h2 className="mb-2 text-2xl font-bold text-red-900 dark:text-red-300">
+      <div className="rounded-2xl border border-red-100 bg-red-50 p-12 text-center">
+        <h2 className="mb-2 text-2xl font-bold text-red-900">
           Classroom unavailable
         </h2>
-        <p className="mb-6 text-red-700 dark:text-red-400">
+        <p className="mb-6 text-red-700">
           {getApiErrorMessage(
             error,
             "We could not load this classroom. Check your enrollment and try again.",
@@ -92,7 +92,7 @@ export default function LearningPage() {
         {isCompletionHistoryReadOnly ? (
           <div
             role="status"
-            className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-200"
+            className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-800"
           >
             <LockKeyhole className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
             <p>

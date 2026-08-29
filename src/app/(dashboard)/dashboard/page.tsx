@@ -67,7 +67,7 @@ export default function DashboardPage() {
 
         {/* --- Card 2 --- */}
         <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex items-center gap-5">
-          <div className="h-12 w-12 rounded-xl bg-green-50 dark:bg-green-950/40 flex items-center justify-center text-green-600 dark:text-green-400">
+          <div className="h-12 w-12 rounded-xl bg-green-50 flex items-center justify-center text-green-600">
             <TrendingUp className="h-6 w-6" />
           </div>
           <div>
@@ -83,7 +83,7 @@ export default function DashboardPage() {
         {/* --- Card 3 (Role Specific) --- */}
         {isSuperAdmin(role) ? (
           <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex items-center gap-5">
-            <div className="h-12 w-12 rounded-xl bg-purple-50 dark:bg-purple-950/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
+            <div className="h-12 w-12 rounded-xl bg-purple-50 flex items-center justify-center text-purple-600">
               <ShieldCheck className="h-6 w-6" />
             </div>
             <div>
@@ -95,7 +95,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="bg-card p-6 rounded-2xl border border-border shadow-sm flex items-center gap-5">
-            <div className="h-12 w-12 rounded-xl bg-orange-50 dark:bg-orange-950/40 flex items-center justify-center text-orange-600 dark:text-orange-400">
+            <div className="h-12 w-12 rounded-xl bg-orange-50 flex items-center justify-center text-orange-600">
               <GraduationCap className="h-6 w-6" />
             </div>
             <div>

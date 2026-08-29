@@ -85,11 +85,11 @@ export default function AuditLogTable({
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
                       log.action.includes("CREATED")
-                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                        ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
                         : log.action.includes("DELETED")
                           ? "border-destructive/20 bg-destructive/10 text-destructive"
                           : log.action.includes("PROMOTED")
-                            ? "border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300"
+                            ? "border-purple-500/20 bg-purple-500/10 text-purple-700"
                             : "border-primary/20 bg-primary/10 text-primary",
                     )}
                   >

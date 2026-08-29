@@ -76,7 +76,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
             ) : null}
 
             {accessMessage ? (
-              <p className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800 dark:bg-amber-950/40 dark:text-amber-300">
+              <p className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
                 <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
                 {accessMessage}
               </p>

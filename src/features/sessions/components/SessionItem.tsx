@@ -159,10 +159,10 @@ export default function SessionItem({
 }
 
 const tones = {
-  red: "border-red-100 bg-red-50 text-red-700 hover:bg-red-100 dark:border-red-900/40 dark:bg-red-950/40 dark:text-red-400",
+  red: "border-red-100 bg-red-50 text-red-700 hover:bg-red-100",
   blue: "border-primary/20 bg-primary/10 text-primary hover:bg-blue-100",
-  amber: "border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-100 dark:border-amber-900/40 dark:bg-amber-950/40 dark:text-amber-400",
-  purple: "border-purple-100 bg-purple-50 text-purple-700 hover:bg-purple-100 dark:border-purple-900/40 dark:bg-purple-950/40 dark:text-purple-400",
+  amber: "border-amber-100 bg-amber-50 text-amber-700 hover:bg-amber-100",
+  purple: "border-purple-100 bg-purple-50 text-purple-700 hover:bg-purple-100",
 } as const;
 
 function ResourceLink({

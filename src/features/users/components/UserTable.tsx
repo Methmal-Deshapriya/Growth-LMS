@@ -111,7 +111,7 @@ export default function UserTable({
                         className={cn(
                           "flex size-10 shrink-0 items-center justify-center rounded-full",
                           user.role === "SUPER_ADMIN"
-                            ? "bg-purple-500/10 text-purple-600 dark:text-purple-400"
+                            ? "bg-purple-500/10 text-purple-600"
                             : user.role === "ADMIN"
                               ? "bg-primary/10 text-primary"
                               : "bg-muted text-muted-foreground",
@@ -133,7 +133,7 @@ export default function UserTable({
                       className={cn(
                         "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
                         user.role === "SUPER_ADMIN"
-                          ? "border-purple-500/20 bg-purple-500/10 text-purple-700 dark:text-purple-300"
+                          ? "border-purple-500/20 bg-purple-500/10 text-purple-700"
                           : user.role === "ADMIN"
                             ? "border-primary/20 bg-primary/10 text-primary"
                             : "border-border bg-muted text-muted-foreground",

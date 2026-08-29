@@ -1,5 +1,6 @@
 import { baseApi } from "@/store/baseApi";
 import type {
+  BulkArchiveSessionsResult,
   CourseSessionDeliveryStatus,
   CourseSession,
   CreateSessionRequest,
@@ -25,12 +26,15 @@ export const sessionsApi = baseApi.injectEndpoints({
       {
         q?: string;
         status?: SessionStatus;
+        tag?: string;
         attachableCourseId?: string;
+        limit?: number;
+        offset?: number;
       } | void
     >({
       query: (params) => ({
         url: "/sessions",
-        params: { limit: 100, ...(params || {}) },
+        params: { limit: 20, ...(params || {}) },
       }),
       providesTags: (result) => [
         { type: "Sessions", id: "LIBRARY" },
@@ -69,6 +73,14 @@ export const sessionsApi = baseApi.injectEndpoints({
     }),
     deleteSession: builder.mutation<{ id: string }, string>({
       query: (id) => ({ url: `/sessions/${id}`, method: "DELETE" }),
+      invalidatesTags: [{ type: "Sessions", id: "LIBRARY" }],
+    }),
+    duplicateSession: builder.mutation<LibrarySession, string>({
+      query: (id) => ({ url: `/sessions/${id}/duplicate`, method: "POST" }),
+      invalidatesTags: [{ type: "Sessions", id: "LIBRARY" }],
+    }),
+    bulkArchiveSessions: builder.mutation<BulkArchiveSessionsResult, string[]>({
+      query: (ids) => ({ url: "/sessions/bulk-archive", method: "POST", body: { ids } }),
       invalidatesTags: [{ type: "Sessions", id: "LIBRARY" }],
     }),
     getCourseCurriculum: builder.query<CurriculumResponse, { courseId: string; includeRetired?: boolean }>({
@@ -209,6 +221,8 @@ export const {
   useArchiveSessionMutation,
   useUnarchiveSessionMutation,
   useDeleteSessionMutation,
+  useDuplicateSessionMutation,
+  useBulkArchiveSessionsMutation,
   useGetCourseCurriculumQuery,
   useAttachCourseSessionMutation,
   useReorderCourseCurriculumMutation,
