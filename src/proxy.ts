@@ -38,9 +38,6 @@ export const config = {
     "/verify-email",
     "/verify-login",
     "/",
-    "/bootcamps/:path*",
-    "/pretech-courses/:path*",
-    "/free-learning/:path*",
     "/consultations",
   ],
 };

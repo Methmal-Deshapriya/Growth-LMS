@@ -1,12 +1,28 @@
-export type LearningServiceSlug = "bootcamps" | "pretech-courses" | "free-learning";
-export type LearningServiceType = "BOOTCAMPS" | "PRETECH" | "FREE_LEARNING";
-export type CourseLevel = "OPEN" | "FOUNDATION" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
-export type CourseEnrollmentStatus = "COMING_SOON" | "OPEN" | "CLOSED";
+export type LearningServiceSlug = string;
+export type LearningServiceType = string;
+export type CourseLevel =
+  "OPEN" | "FOUNDATION" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+
+export interface PublicLearningService {
+  id: string;
+  key: string;
+  slug: string;
+  title: string;
+  description: string;
+  accessType: "FREE" | "PAID";
+  courseMode: "SEASONAL" | "EVERGREEN";
+  enrollmentMode: "ADMIN" | "SELF";
+  paymentRequirement: "REQUIRED" | "NOT_REQUIRED";
+  sortOrder: number;
+  categoryCount: number;
+}
 
 export interface PublicCategory {
   id: string;
+  serviceId: string;
   serviceType: LearningServiceType;
   serviceSlug: LearningServiceSlug;
+  serviceTitle: string;
   slug: string;
   title: string;
   description: string;
@@ -29,7 +45,7 @@ export interface PublicCourseCard {
   durationUnit: string | null;
   durationLabel: string | null;
   accessType: "FREE" | "PAID";
-  enrollmentStatus: CourseEnrollmentStatus;
+  instanceKind: "SEASONAL" | "EVERGREEN";
   price: number;
   currency: string;
   certificateEnabled: boolean;
@@ -49,6 +65,7 @@ export interface PublicCourseDetail extends PublicCourseCard {
 }
 
 export interface PublicServiceCatalog {
+  serviceId: string;
   serviceType: LearningServiceType;
   serviceSlug: LearningServiceSlug;
   categoryCount: number;

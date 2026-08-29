@@ -20,27 +20,20 @@ export const enrollmentsApi = baseApi.injectEndpoints({
     }),
     getCourseRoster: builder.query<RosterPage, { courseId: string } & RosterParams>({
       query: ({ courseId, ...params }) => ({
-        url: `/enrollments/course/${courseId}`,
+        url: `/courses/${courseId}/enrollments`,
         params,
       }),
-      providesTags: ["Enrollments"],
-    }),
-    getBatchRoster: builder.query<RosterPage, { batchId: string } & RosterParams>({
-      query: ({ batchId, ...params }) => ({
-        url: `/batches/${batchId}/enrollments`,
-        params,
-      }),
-      providesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
+      providesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
       ],
     }),
     getEligibleStudents: builder.query<EligibleStudentsPage, EligibleStudentsParams>({
-      query: ({ batchId, q, limit = 25, cursor }) => ({
-        url: `/batches/${batchId}/eligible-students`,
+      query: ({ courseId, q, limit = 25, cursor }) => ({
+        url: `/courses/${courseId}/eligible-students`,
         params: { q, limit, cursor },
       }),
-      serializeQueryArgs: ({ endpointName, queryArgs: { batchId, q } }) =>
-        `${endpointName}:${batchId}:${q ?? ""}`,
+      serializeQueryArgs: ({ endpointName, queryArgs: { courseId, q } }) =>
+        `${endpointName}:${courseId}:${q ?? ""}`,
       merge: (currentCache, incoming, { arg }) => {
         if (!arg.cursor) return incoming;
         const existingIds = new Set(currentCache.students.map(({ id }) => id));
@@ -51,39 +44,39 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       },
       forceRefetch: ({ currentArg, previousArg }) =>
         currentArg?.cursor !== previousArg?.cursor,
-      providesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
+      providesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
       ],
     }),
     createEnrollment: builder.mutation<
       ClassRosterEntry,
-      { batchId: string; data: CreatePaidEnrollmentRequest }
+      { courseId: string; data: CreatePaidEnrollmentRequest }
     >({
-      query: ({ batchId, data }) => ({
-        url: `/batches/${batchId}/enrollments`,
+      query: ({ courseId, data }) => ({
+        url: `/courses/${courseId}/enrollments`,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
-        "Batches",
+      invalidatesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
+        "Courses",
         "Services",
       ],
     }),
     bulkCreateEnrollments: builder.mutation<
       BulkEnrollmentResult,
-      { batchId: string; students: CreatePaidEnrollmentRequest[] }
+      { courseId: string; students: CreatePaidEnrollmentRequest[] }
     >({
-      query: ({ batchId, students }) => ({
-        url: `/batches/${batchId}/enrollments/bulk`,
+      query: ({ courseId, students }) => ({
+        url: `/courses/${courseId}/enrollments/bulk`,
         method: "POST",
         body: { students },
       }),
-      invalidatesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
-        "Batches",
+      invalidatesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
+        "Courses",
         "Services",
       ],
     }),
@@ -104,7 +97,6 @@ export const enrollmentsApi = baseApi.injectEndpoints({
 export const {
   useGetMyEnrollmentsQuery,
   useGetCourseRosterQuery,
-  useGetBatchRosterQuery,
   useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
   useBulkCreateEnrollmentsMutation,

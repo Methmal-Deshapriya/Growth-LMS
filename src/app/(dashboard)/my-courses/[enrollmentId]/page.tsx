@@ -49,7 +49,7 @@ export default function LearningPage() {
   const isCompletionHistoryReadOnly = enrollment.status === "COMPLETED";
 
   return (
-    <StudentOnlyRoute description="Admins manage sessions, batches, and enrollments from the admin area.">
+    <StudentOnlyRoute description="Admins manage course delivery and enrollments from the admin area.">
       <div className="space-y-8 pb-20">
         <div className="flex items-center gap-4">
           <Link
@@ -64,10 +64,10 @@ export default function LearningPage() {
               {enrollment.course.title}
             </h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              {enrollment.batch ? (
+              {enrollment.course.instanceKind === "SEASONAL" ? (
                 <>
                   <Users className="h-4 w-4" />
-                  {enrollment.batch.name} ({enrollment.batch.code})
+                  {enrollment.course.intakeKey} ({enrollment.course.code})
                 </>
               ) : (
                 "Self-paced Free Learning"
@@ -106,9 +106,7 @@ export default function LearningPage() {
           <div>
             <h2 className="text-xl font-bold text-foreground">Your Sessions</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {enrollment.deliveryMode === "COHORT"
-                ? "Sessions appear here as they are released to your batch."
-                : "All active sessions in this course are available immediately."}
+              Sessions appear here as they are released and become available for your course.
             </p>
           </div>
           <SessionList

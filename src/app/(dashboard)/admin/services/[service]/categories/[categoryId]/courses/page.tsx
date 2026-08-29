@@ -11,15 +11,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { getAdminCatalogService } from "@/features/catalog/adminCatalogServices";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
 import { AdminSummaryStrip } from "@/features/catalog/components/AdminSummaryStrip";
-import { CourseForm } from "@/features/catalog/components/CourseForm";
+import { CourseGroupForm } from "@/features/catalog/components/CourseGroupForm";
 import { CourseTable } from "@/features/catalog/components/CourseTable";
 import {
   useGetAdminCategoryQuery,
-  useGetAdminCoursesQuery,
+  useGetCourseGroupsQuery,
 } from "@/features/catalog/catalogApi";
 
 export default function CategoryCoursesPage() {
@@ -28,46 +27,41 @@ export default function CategoryCoursesPage() {
     service: string;
     categoryId: string;
   }>();
-  const service = getAdminCatalogService(serviceSlug);
   const { data: category, isLoading: categoryLoading } =
     useGetAdminCategoryQuery(categoryId);
-  const { data: courses, isLoading: coursesLoading, isError } =
-    useGetAdminCoursesQuery({ categoryId });
+  const {
+    data,
+    isLoading: groupsLoading,
+    isError,
+  } = useGetCourseGroupsQuery({ categoryId, includeArchived: true });
 
-  if (categoryLoading || coursesLoading) {
-    return <p className="py-16 text-center text-muted-foreground">Loading courses...</p>;
-  }
-  if (!service || !category || category.serviceType !== service.type) {
-    return <p className="rounded-xl bg-destructive/10 p-6 text-destructive">Category not found in this service.</p>;
-  }
+  if (categoryLoading || groupsLoading)
+    return (
+      <p
+        role="status"
+        aria-live="polite"
+        className="py-16 text-center text-muted-foreground"
+      >
+        Loading courses…
+      </p>
+    );
+  if (!category || category.service.slug !== serviceSlug)
+    return (
+      <p className="rounded-xl bg-destructive/10 p-6 text-destructive">
+        Category not found in this service.
+      </p>
+    );
+  const service = category.service;
 
-  const courseList = courses?.courses ?? [];
-  const activeCourseCount = courseList.filter(
-    (course) => course.status !== "ARCHIVED",
-  ).length;
-  const publishedCount = courseList.filter(
-    (course) => course.status === "PUBLISHED",
-  ).length;
-  const sessionCount = courseList.reduce(
-    (total, course) => total + course.sessionCount,
-    0,
-  );
-  const enrollmentCount = courseList.reduce(
-    (total, course) => total + course.enrollmentCount,
-    0,
-  );
-  const batchCount = courseList.reduce(
-    (total, course) => total + course.batchCount,
-    0,
-  );
-
+  const groups = data?.courseGroups ?? [];
+  const courses = groups.flatMap((group) => group.courses);
   return (
     <div className="space-y-6 pb-20">
       <AdminCatalogBreadcrumbs
         crumbs={[
           { label: "Services", href: "/admin/services" },
           {
-            label: service.label,
+            label: service.title,
             href: `/admin/services/${service.slug}/categories`,
           },
           { label: category.title },
@@ -75,77 +69,70 @@ export default function CategoryCoursesPage() {
       />
       <AdminCatalogPageHeader
         title={`${category.title} courses`}
-        description={
-          category.serviceType === "FREE_LEARNING"
-            ? "Create and manage the courses that belong to this category. Select a row to manage its sessions."
-            : "Select a course row to manage its batches and curriculum."
-        }
+        description="CourseGroup keeps matching real-world courses together internally. Each Course row is one independently delivered intake or evergreen course."
         action={
           <Button
             disabled={category.status === "ARCHIVED"}
             onClick={() => setCreateDialogOpen(true)}
           >
-            <Plus className="size-4" /> New course
+            <Plus /> New real-world course
           </Button>
         }
       />
       <AdminSummaryStrip
         items={[
           {
-            label: "Courses",
-            value: activeCourseCount,
-            detail: `${courseList.length - activeCourseCount} archived`,
+            label: "Course groups",
+            value: groups.filter((group) => !group.archivedAt).length,
+            detail: `${groups.filter((group) => group.archivedAt).length} archived`,
           },
           {
-            label: "Published",
-            value: publishedCount,
-            detail: `${activeCourseCount - publishedCount} unpublished`,
+            label: "Course records",
+            value: courses.length,
+            detail: `${courses.filter((course) => course.status === "OPEN_ACTIVE").length} public/open`,
           },
           {
-            label: "Sessions",
-            value: sessionCount,
-            detail: "Active curriculum attachments",
+            label: "Active teaching",
+            value: courses.filter((course) =>
+              ["OPEN_ACTIVE", "CLOSED_ACTIVE"].includes(course.status),
+            ).length,
+            detail: "Open and closed-active",
           },
           {
-            label:
-              category.serviceType === "FREE_LEARNING"
-                ? "Enrollments"
-                : "Delivery",
-            value:
-              category.serviceType === "FREE_LEARNING"
-                ? enrollmentCount
-                : `${batchCount} / ${enrollmentCount}`,
-            detail:
-              category.serviceType === "FREE_LEARNING"
-                ? "Across these courses"
-                : "Batches / enrollments",
+            label: "Learners",
+            value: courses.reduce(
+              (total, course) => total + course.enrollmentCount,
+              0,
+            ),
+            detail: "Across every intake",
           },
         ]}
       />
       {isError ? (
-        <p className="rounded-xl bg-destructive/10 p-6 text-destructive">
+        <p
+          role="alert"
+          className="rounded-xl bg-destructive/10 p-6 text-destructive"
+        >
           Could not load courses.
         </p>
       ) : (
         <CourseTable
-          courses={courseList}
+          groups={groups}
           serviceSlug={service.slug}
           category={category}
         />
       )}
-
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-5xl">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle>New course</DialogTitle>
+            <DialogTitle>New real-world course</DialogTitle>
             <DialogDescription>
-              Create a course in {category.title}. It will start unpublished.
+              Create the internal grouping first. Its first Course record is
+              created from the grouped table.
             </DialogDescription>
           </DialogHeader>
-          <CourseForm
-            key={category.id}
-            lockedCategory={category}
-            embedded
+          <CourseGroupForm
+            category={category}
             onSuccess={() => setCreateDialogOpen(false)}
             onCancel={() => setCreateDialogOpen(false)}
           />

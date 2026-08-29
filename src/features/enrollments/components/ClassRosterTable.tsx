@@ -65,7 +65,7 @@ export default function ClassRosterTable({
 }: {
   entries: ClassRosterEntry[];
   isLoading?: boolean;
-  deliveryMode: "COHORT" | "SELF_PACED";
+  deliveryMode: "PAID" | "FREE";
   certificateEnabled: boolean;
 }) {
   const [updateEnrollment, { isLoading: isUpdating }] = useUpdateEnrollmentMutation();
@@ -97,7 +97,7 @@ export default function ClassRosterTable({
   const handleSave = async (id: string) => {
     try {
       const data =
-        deliveryMode === "SELF_PACED"
+        deliveryMode === "FREE"
           ? { status: editForm.status }
           : {
               ...editForm,
@@ -132,8 +132,8 @@ export default function ClassRosterTable({
     <div className="overflow-hidden rounded-md border bg-card">
       <Table>
         <TableCaption className="sr-only">
-          {deliveryMode === "COHORT"
-            ? "Enrolled students in this batch"
+          {deliveryMode === "PAID"
+            ? "Enrolled students in this course intake"
             : "Students enrolled in this Free Learning course"}
         </TableCaption>
         <TableHeader className="bg-muted/40">
@@ -161,7 +161,7 @@ export default function ClassRosterTable({
                 colSpan={6}
                 className="h-24 whitespace-normal text-center text-muted-foreground"
               >
-                No learners enrolled in this batch yet.
+                No learners enrolled in this course yet.
               </TableCell>
             </TableRow>
           ) : (
@@ -201,7 +201,7 @@ export default function ClassRosterTable({
                           })
                         }
                       >
-                        {(deliveryMode === "SELF_PACED" && entry.status === "CANCELLED"
+                        {(deliveryMode === "FREE" && entry.status === "CANCELLED"
                           ? ["CANCELLED" as EnrollmentStatus]
                           : enrollmentStatusOptions[entry.status]
                         ).map((status) => (
@@ -218,7 +218,7 @@ export default function ClassRosterTable({
                   </TableCell>
 
                   <TableCell>
-                    {deliveryMode === "SELF_PACED" ? (
+                    {deliveryMode === "FREE" ? (
                       <Badge variant="outline" className={paymentStyles.NOT_REQUIRED}>
                         Not applicable
                       </Badge>
@@ -251,7 +251,7 @@ export default function ClassRosterTable({
                   </TableCell>
 
                   <TableCell>
-                    {deliveryMode === "SELF_PACED" ? (
+                    {deliveryMode === "FREE" ? (
                       <span className="text-xs text-muted-foreground">Not applicable</span>
                     ) : isEditing ? (
                       <div className="min-w-52 space-y-2">

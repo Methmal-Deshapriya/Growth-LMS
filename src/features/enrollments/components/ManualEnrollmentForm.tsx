@@ -15,11 +15,11 @@ import {
 import type { PaymentStatus } from "../enrollmentsTypes";
 
 export default function ManualEnrollmentForm({
-  batchId,
+  courseId,
   onSuccess,
   onCancel,
 }: {
-  batchId: string;
+  courseId: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
@@ -31,7 +31,7 @@ export default function ManualEnrollmentForm({
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
   const { data, isFetching, isError, refetch } = useGetEligibleStudentsQuery({
-    batchId,
+    courseId,
     q: deferredSearch || undefined,
     limit: 25,
     cursor,
@@ -62,11 +62,11 @@ export default function ManualEnrollmentForm({
     };
     try {
       if (selectedIds.length === 1) {
-        await createEnrollment({ batchId, data: { userId: selectedIds[0], ...payment } }).unwrap();
-        toast.success("Student enrolled in this batch");
+        await createEnrollment({ courseId, data: { userId: selectedIds[0], ...payment } }).unwrap();
+        toast.success("Student enrolled in this course intake");
       } else {
         const result = await bulkCreate({
-          batchId,
+          courseId,
           students: selectedIds.map((userId) => ({ userId, ...payment })),
         }).unwrap();
         if (result.summary.failed) {

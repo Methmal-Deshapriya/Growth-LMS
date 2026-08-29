@@ -1,13 +1,18 @@
 "use client";
 
-import type { LearningServiceSlug, PublicCategory } from "@/features/catalog/catalogTypes";
+import type {
+  LearningServiceSlug,
+  PublicCategory,
+  PublicLearningService,
+} from "@/features/catalog/catalogTypes";
 import { catalogVisual } from "../catalog/visuals";
 import { PublicServicePage } from "./PublicServicePage";
 import { itBootcampsServiceConfig } from "@/data/publicServices/itBootcamps";
 import { pretechServiceConfig } from "@/data/publicServices/pretech";
 import { contributionsServiceConfig } from "@/data/publicServices/contributions";
+import type { PublicServiceConfig } from "./types";
 
-const CONFIGS = {
+const CONFIGS: Record<string, PublicServiceConfig> = {
   bootcamps: itBootcampsServiceConfig,
   "pretech-courses": pretechServiceConfig,
   "free-learning": contributionsServiceConfig,
@@ -23,18 +28,45 @@ const COLORS = [
 export function ServiceLanding({
   service,
   categories,
+  definition,
 }: {
   service: LearningServiceSlug;
   categories: PublicCategory[];
+  definition?: PublicLearningService;
 }) {
-  const source = CONFIGS[service];
+  const source = CONFIGS[service] ?? {
+    ...itBootcampsServiceConfig,
+    breadcrumbLabel:
+      definition?.title ??
+      service
+        .split("-")
+        .map((part) => part[0]?.toUpperCase() + part.slice(1))
+        .join(" "),
+    hero: {
+      ...itBootcampsServiceConfig.hero,
+      eyebrow: "Learning service",
+      title: definition?.title ?? "Explore",
+      highlight: "learning pathways",
+      description:
+        definition?.description ?? itBootcampsServiceConfig.hero.description,
+      illustration: undefined,
+    },
+    categorySection: {
+      ...itBootcampsServiceConfig.categorySection,
+      title: "Choose a",
+      highlight: "learning category",
+      itemLabel: "categories",
+    },
+  };
   const config = {
     ...source,
     basePath: `/${service}`,
     hero: {
       ...source.hero,
       indicators: source.hero.indicators.map((indicator, index) =>
-        index === 0 ? { ...indicator, label: `${categories.length} learning categories` } : indicator
+        index === 0
+          ? { ...indicator, label: `${categories.length} learning categories` }
+          : indicator,
       ),
     },
     categorySection: {

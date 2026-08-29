@@ -2,6 +2,7 @@ import type {
   LearningServiceSlug,
   PublicCategoryDetail,
   PublicCourseDetail,
+  PublicLearningService,
   PublicServiceCatalog,
 } from "@/features/catalog/catalogTypes";
 
@@ -17,7 +18,9 @@ async function fetchCatalog<T>(path: string): Promise<T | null> {
     if (response.status === 404) return null;
     const payload = (await response.json()) as ApiEnvelope<T>;
     if (!response.ok || !payload.success || payload.data === undefined) {
-      throw new Error(payload.error || `Catalog request failed (${response.status}).`);
+      throw new Error(
+        payload.error || `Catalog request failed (${response.status}).`,
+      );
     }
     return payload.data;
   } catch (error) {
@@ -29,14 +32,22 @@ async function fetchCatalog<T>(path: string): Promise<T | null> {
 export const getPublicServiceCatalog = (service: LearningServiceSlug) =>
   fetchCatalog<PublicServiceCatalog>(`/catalog/${service}/categories`);
 
-export const getPublicCategory = (service: LearningServiceSlug, categorySlug: string) =>
-  fetchCatalog<PublicCategoryDetail>(`/catalog/${service}/categories/${categorySlug}`);
+export const getPublicCategory = (
+  service: LearningServiceSlug,
+  categorySlug: string,
+) =>
+  fetchCatalog<PublicCategoryDetail>(
+    `/catalog/${service}/categories/${categorySlug}`,
+  );
 
 export const getPublicCourse = (
   service: LearningServiceSlug,
   categorySlug: string,
-  courseSlug: string
+  courseSlug: string,
 ) =>
   fetchCatalog<PublicCourseDetail>(
-    `/catalog/${service}/categories/${categorySlug}/courses/${courseSlug}`
+    `/catalog/${service}/categories/${categorySlug}/courses/${courseSlug}`,
   );
+
+export const getPublicLearningServices = () =>
+  fetchCatalog<{ services: PublicLearningService[] }>("/catalog/services");

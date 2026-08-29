@@ -6,16 +6,6 @@ export type PaymentStatus = "NOT_REQUIRED" | "PENDING" | "PARTIAL" | "COMPLETED"
 export type EnrollmentSource = "ADMIN" | "SELF";
 export type CertificateStatus = "ISSUED" | "REVOKED";
 
-export interface EnrollmentBatchSummary {
-  id: string;
-  name: string;
-  code: string;
-  startDate: string;
-  expectedEndDate: string;
-  timezone: string;
-  status: string;
-}
-
 export interface EnrollmentCertificateSummary {
   id: string;
   certificateCode: string;
@@ -28,7 +18,6 @@ export interface MyEnrollment {
   id: string;
   userId: string;
   courseId: string;
-  batchId: string | null;
   source: EnrollmentSource;
   status: EnrollmentStatus;
   paymentStatus: PaymentStatus;
@@ -36,8 +25,15 @@ export interface MyEnrollment {
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
-  course: PublicCourseCard;
-  batch: EnrollmentBatchSummary | null;
+  course: PublicCourseCard & {
+    intakeKey: string;
+    code: string;
+    instanceKind: "SEASONAL" | "EVERGREEN";
+    startDate: string | null;
+    expectedEndDate: string | null;
+    timezone: string;
+    courseStatus: string;
+  };
   certificate: EnrollmentCertificateSummary | null;
 }
 
@@ -76,7 +72,7 @@ export type UpdateEnrollmentRequest = {
 };
 export type EligibleStudent = Pick<User, "id" | "firstName" | "lastName" | "email">;
 export type EligibleStudentsParams = {
-  batchId: string;
+  courseId: string;
   q?: string;
   limit?: number;
   cursor?: string;

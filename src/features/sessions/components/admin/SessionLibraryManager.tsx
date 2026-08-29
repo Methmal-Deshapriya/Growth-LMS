@@ -31,7 +31,6 @@ const emptyForm: CreateSessionRequest = {
   quizUrl: "",
   feedbackUrl: "",
   durationMinutes: null,
-  reusePolicy: "SINGLE_COURSE",
   status: "DRAFT",
 };
 
@@ -79,7 +78,6 @@ export default function SessionLibraryManager() {
       quizUrl: session.quizUrl ?? "",
       feedbackUrl: session.feedbackUrl ?? "",
       durationMinutes: session.durationMinutes,
-      reusePolicy: session.reusePolicy,
       status: session.status === "ARCHIVED" ? "DRAFT" : session.status,
     });
     setShowForm(true);
@@ -90,7 +88,7 @@ export default function SessionLibraryManager() {
     if (
       editing?.usage.courseCount &&
       !window.confirm(
-        `This resource is used by ${editing.usage.courseCount} course(s) and ${editing.usage.batchCount} batch(es). Saving changes updates every authorized learner view. Continue?`,
+        `This resource is used by ${editing.usage.courseCount} course intake(s) across ${editing.usage.courseGroupCount} course group(s). Saving changes updates every authorized learner view. Continue?`,
       )
     ) return;
     try {
@@ -162,7 +160,6 @@ export default function SessionLibraryManager() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2"><Label htmlFor="session-title">Title</Label><Input id="session-title" required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></div>
             <div className="space-y-2"><Label htmlFor="session-duration">Duration (minutes)</Label><Input id="session-duration" type="number" min={1} value={form.durationMinutes ?? ""} onChange={(event) => setForm({ ...form, durationMinutes: event.target.value ? Number(event.target.value) : null })} /></div>
-            <div className="space-y-2"><Label htmlFor="session-reuse-policy">Reuse policy</Label><select id="session-reuse-policy" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.reusePolicy} onChange={(event) => setForm({ ...form, reusePolicy: event.target.value as CreateSessionRequest["reusePolicy"] })}><option value="SINGLE_COURSE">One course</option><option value="REUSABLE">Reusable across courses</option></select></div>
             <div className="space-y-2"><Label htmlFor="session-status">Status</Label><select id="session-status" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "DRAFT" | "READY" })}><option value="DRAFT">Draft</option><option value="READY">Ready</option></select></div>
           </div>
           <div className="space-y-2"><Label htmlFor="session-description">Description</Label><textarea id="session-description" className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm" value={form.description ?? ""} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
@@ -186,10 +183,10 @@ export default function SessionLibraryManager() {
               <div>
                 <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide">
                   <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{session.status}</span>
-                  <span className="rounded-full bg-muted px-2 py-1">{session.reusePolicy === "REUSABLE" ? "Reusable" : "One course"}</span>
+                  <span className="rounded-full bg-muted px-2 py-1">Reusable across courses</span>
                 </div>
                 <h3 className="mt-3 text-lg font-bold">{session.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Used by {session.usage.activeCourseCount} active course(s), {session.usage.batchCount} batch(es).</p>
+                <p className="mt-1 text-sm text-muted-foreground">Used by {session.usage.activeCourseCount} active course intake(s) across {session.usage.courseGroupCount} course group(s).</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {session.status !== "ARCHIVED" ? <><Button variant="outline" size="sm" onClick={() => edit(session)}><Edit3 className="mr-2 h-4 w-4" />Edit</Button><Button variant="outline" size="sm" onClick={() => archive(session)}><Archive className="mr-2 h-4 w-4" />Archive</Button></> : <Button variant="outline" size="sm" onClick={() => restore(session)}><RotateCcw className="mr-2 h-4 w-4" />Restore</Button>}
