@@ -1,5 +1,6 @@
 import { baseApi } from "@/store/baseApi";
 import type {
+  CourseSessionDeliveryStatus,
   CourseSession,
   CreateSessionRequest,
   ClassroomResponse,
@@ -7,7 +8,6 @@ import type {
   CurriculumResponse,
   EnrollmentProgress,
   LibrarySession,
-  SessionReusePolicy,
   SessionCompletionResult,
   SessionStatus,
   UpdateSessionRequest,
@@ -22,9 +22,16 @@ export const sessionsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getSessionLibrary: builder.query<
       SessionListResponse,
-      { q?: string; status?: SessionStatus; reusePolicy?: SessionReusePolicy } | void
+      {
+        q?: string;
+        status?: SessionStatus;
+        attachableCourseId?: string;
+      } | void
     >({
-      query: (params) => ({ url: "/sessions", params: params || { limit: 100 } }),
+      query: (params) => ({
+        url: "/sessions",
+        params: { limit: 100, ...(params || {}) },
+      }),
       providesTags: (result) => [
         { type: "Sessions", id: "LIBRARY" },
         ...(result?.sessions.map(({ id }) => ({ type: "Sessions" as const, id })) ?? []),
@@ -74,7 +81,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       ],
     }),
     attachCourseSession: builder.mutation<
-      { courseSession: CourseSession; delivery: CurriculumResponse["delivery"] },
+      { courseSession: CourseSession },
       { courseId: string; sessionId: string; orderIndex?: number }
     >({
       query: ({ courseId, ...body }) => ({
@@ -85,23 +92,30 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Courses",
+        "Services",
       ],
     }),
     reorderCourseCurriculum: builder.mutation<
       { success: true },
-      { courseId: string; courseSessions: { id: string; orderIndex: number }[] }
+      {
+        courseId: string;
+        courseSessions: { id: string; orderIndex: number }[];
+        acknowledgeSequenceRisk?: boolean;
+      }
     >({
-      query: ({ courseId, courseSessions }) => ({
+      query: ({ courseId, courseSessions, acknowledgeSequenceRisk }) => ({
         url: `/courses/${courseId}/curriculum/reorder`,
         method: "PATCH",
-        body: { courseSessions },
+        body: { courseSessions, acknowledgeSequenceRisk },
       }),
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
+        "Courses",
       ],
     }),
     removeCourseSession: builder.mutation<
-      { id: string; action: "REMOVED" | "RETIRED" },
+      { id: string; action: "DETACHED" | "RETIRED" },
       { courseId: string; courseSessionId: string }
     >({
       query: ({ courseId, courseSessionId }) => ({
@@ -111,6 +125,28 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { courseId }) => [
         { type: "Curriculum", id: courseId },
         { type: "Sessions", id: "LIBRARY" },
+        "Courses",
+        "Services",
+      ],
+    }),
+    updateCourseSessionDelivery: builder.mutation<
+      CourseSession,
+      {
+        courseId: string;
+        courseSessionId: string;
+        status: CourseSessionDeliveryStatus;
+        availableAt?: string | null;
+        acknowledgeSequenceRisk?: boolean;
+      }
+    >({
+      query: ({ courseId, courseSessionId, ...body }) => ({
+        url: `/courses/${courseId}/curriculum/${courseSessionId}/delivery`,
+        method: "PATCH",
+        body,
+      }),
+      invalidatesTags: (_result, _error, { courseId }) => [
+        { type: "Curriculum", id: courseId },
+        "Courses",
       ],
     }),
     getEnrollmentProgress: builder.query<EnrollmentProgress, string>({
@@ -177,6 +213,7 @@ export const {
   useAttachCourseSessionMutation,
   useReorderCourseCurriculumMutation,
   useRemoveCourseSessionMutation,
+  useUpdateCourseSessionDeliveryMutation,
   useGetEnrollmentProgressQuery,
   useGetClassroomQuery,
   useGetClassroomSessionQuery,

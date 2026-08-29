@@ -1,92 +1,149 @@
-import React from "react";
-import Link from "next/link";
-import { GraduationCap, BookOpen, Users, Target, ChevronRight } from "lucide-react";
+"use client";
 
-const SERVICES = [
-  {
-    href: "/bootcamps",
-    icon: GraduationCap,
-    color: "text-blue-600 bg-blue-100",
-    title: "Bootcamps",
-    description: "We design and deliver hands-on bootcamps across today's most in-demand tech fields.",
-    tags: ["AI", "Machine Learning", "Software Engineering", "DevOps"],
-  },
-  {
-    href: "/pretech-courses",
-    icon: BookOpen,
-    color: "text-indigo-600 bg-indigo-100",
-    title: "PreTech",
-    description: "Preparing university-bound students for BICT, BBST and BET with the core modules they'll need.",
-    tags: ["Maths", "Physics", "Statistics", "C Programming"],
-  },
-  {
-    href: "/free-learning",
-    icon: Users,
-    color: "text-orange-600 bg-orange-100",
-    title: "Free Learning",
-    description: "Open foundational sessions for anyone looking to build the basics that every tech career rests on.",
-    tags: ["Software Eng. Fundamentals", "Git & GitHub", "General Knowledge", "General English"],
-  },
-  {
-    href: "/consultations",
-    icon: Target,
-    color: "text-emerald-600 bg-emerald-100",
-    title: "Project Consultations",
-    description: "Guidance and support for students working through university and research projects.",
-    tags: ["University Projects", "Research Projects", "Guidance Toward Success"],
-  },
+import Link from "next/link";
+import {
+  BookOpen,
+  ChevronRight,
+  GraduationCap,
+  Target,
+  Users,
+} from "lucide-react";
+import { useGetPublicLearningServicesQuery } from "@/features/catalog/catalogApi";
+
+const ICONS = [GraduationCap, BookOpen, Users];
+const COLORS = [
+  "text-blue-600 bg-blue-100",
+  "text-indigo-600 bg-indigo-100",
+  "text-orange-600 bg-orange-100",
 ];
 
 export function Services() {
+  const { data, isLoading, isError } = useGetPublicLearningServicesQuery();
+  const learningServices = data?.services ?? [];
+  const cards = learningServices.map((service, index) => ({
+    href: `/${service.slug}`,
+    icon: ICONS[index % ICONS.length],
+    color: COLORS[index % COLORS.length],
+    title: service.title,
+    description: service.description,
+    tags: [
+      service.accessType === "FREE" ? "Free access" : "Paid access",
+      service.courseMode === "EVERGREEN" ? "Self-paced" : "Seasonal intakes",
+      service.enrollmentMode === "SELF"
+        ? "Self enrollment"
+        : "Admin enrollment",
+    ],
+  }));
+
   return (
     <div className="w-full">
-      <div className="w-full max-w-5xl mx-auto px-2">
-        <div className="max-w-2xl mb-8 sm:mb-10">
-          <h2 className="font-sans text-3xl sm:text-4xl font-bold text-[#0E1116] leading-tight tracking-tight">
+      <div className="mx-auto w-full max-w-5xl px-2">
+        <div className="mb-8 max-w-2xl sm:mb-10">
+          <h2 className="font-sans text-3xl font-bold leading-tight tracking-tight text-[#0E1116] sm:text-4xl">
             What we{" "}
-            <span className="text-transparent bg-clip-text bg-linear-to-r from-blue-600 to-indigo-500">
+            <span className="bg-linear-to-r from-blue-600 to-indigo-500 bg-clip-text text-transparent">
               offer
             </span>
           </h2>
-          <p className="font-alt text-[#5B6472] text-sm sm:text-base mt-3 sm:mt-4">
-            Four ways we help people build real, job-ready skills in tech.
+          <p className="font-alt mt-3 text-sm text-[#5B6472] sm:mt-4 sm:text-base">
+            Choose a learning service or get support for a project.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-5">
-          {SERVICES.map(({ href, icon: Icon, color, title, description, tags }) => (
-            <Link
-              key={title}
-              href={href}
-              className="group flex flex-col h-full bg-white/80 backdrop-blur-sm border border-black/10 rounded-2xl p-5 sm:p-6 hover:shadow-lg hover:border-blue-300 transition-all"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className={`h-10 w-10 shrink-0 rounded-lg flex items-center justify-center ${color}`}>
-                  <Icon className="h-5 w-5" />
-                </div>
-                <h3 className="font-sans font-semibold text-lg text-[#0E1116]">{title}</h3>
-              </div>
+        {isLoading ? (
+          <p
+            role="status"
+            aria-live="polite"
+            className="py-10 text-center text-[#5B6472]"
+          >
+            Loading learning services…
+          </p>
+        ) : null}
+        {isError ? (
+          <p
+            role="alert"
+            className="mb-4 rounded-xl bg-red-50 p-4 text-sm text-red-700"
+          >
+            Learning services could not be loaded right now.
+          </p>
+        ) : null}
 
-              <p className="font-alt text-sm text-[#5B6472] mb-4 leading-snug">{description}</p>
-
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {tags.map((tag) => (
-                  <span
-                    key={tag}
-                    className="font-alt text-xs text-[#5B6472] bg-[#F5F6FA] border border-black/5 rounded-full px-2.5 py-1"
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+          {cards.map(
+            ({ href, icon: Icon, color, title, description, tags }) => (
+              <Link
+                key={href}
+                href={href}
+                className="group flex h-full flex-col rounded-2xl border border-black/10 bg-white/80 p-5 backdrop-blur-sm transition-all hover:border-blue-300 hover:shadow-lg sm:p-6"
+              >
+                <div className="mb-3 flex items-center gap-3">
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${color}`}
                   >
-                    {tag}
+                    <Icon className="h-5 w-5" />
+                  </div>
+                  <h3 className="font-sans text-lg font-semibold text-[#0E1116]">
+                    {title}
+                  </h3>
+                </div>
+                <p className="font-alt mb-4 text-sm leading-snug text-[#5B6472]">
+                  {description}
+                </p>
+                <div className="mb-4 flex flex-wrap gap-1.5">
+                  {tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="font-alt rounded-full border border-black/5 bg-[#F5F6FA] px-2.5 py-1 text-xs text-[#5B6472]"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                <div className="mt-auto flex items-center justify-end border-t border-black/5 pt-3">
+                  <span className="font-alt flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all group-hover:gap-2">
+                    Explore <ChevronRight className="h-4 w-4" />
                   </span>
-                ))}
-              </div>
+                </div>
+              </Link>
+            ),
+          )}
 
-              <div className="mt-auto flex items-center justify-end pt-3 border-t border-black/5">
-                <span className="flex items-center gap-1 font-alt text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
-                  Explore <ChevronRight className="h-4 w-4" />
-                </span>
+          <Link
+            href="/consultations"
+            className="group flex h-full flex-col rounded-2xl border border-black/10 bg-white/80 p-5 backdrop-blur-sm transition-all hover:border-blue-300 hover:shadow-lg sm:p-6"
+          >
+            <div className="mb-3 flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-600">
+                <Target className="h-5 w-5" />
               </div>
-            </Link>
-          ))}
+              <h3 className="font-sans text-lg font-semibold text-[#0E1116]">
+                Project Consultations
+              </h3>
+            </div>
+            <p className="font-alt mb-4 text-sm leading-snug text-[#5B6472]">
+              Guidance and support for students working through university and
+              research projects.
+            </p>
+            <div className="mb-4 flex flex-wrap gap-1.5">
+              {[
+                "University Projects",
+                "Research Projects",
+                "Guidance Toward Success",
+              ].map((tag) => (
+                <span
+                  key={tag}
+                  className="font-alt rounded-full border border-black/5 bg-[#F5F6FA] px-2.5 py-1 text-xs text-[#5B6472]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+            <div className="mt-auto flex items-center justify-end border-t border-black/5 pt-3">
+              <span className="font-alt flex items-center gap-1 text-sm font-semibold text-blue-600 transition-all group-hover:gap-2">
+                Explore <ChevronRight className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
         </div>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import type { Role } from "@/lib/constants";
+import type { Permission } from "@/lib/access";
 
 export type User = {
   id: string;
@@ -6,6 +7,7 @@ export type User = {
   lastName: string;
   email: string;
   role: Role;
+  permissions: Permission[];
   emailVerified: boolean;
   phone?: string | null;
   address?: string | null;
@@ -14,11 +16,25 @@ export type User = {
   alStream?: string | null;
   createdAt: string;
   updatedAt: string;
+  verificationEmailSent?: boolean;
 };
 
 export type LoginRequest = {
   email: string;
   password: string;
+};
+
+export type LoginChallenge = {
+  requiresMfa: true;
+  challengeId: string;
+  expiresAt: string;
+};
+
+export type LoginResult = User | LoginChallenge;
+
+export type VerifyLoginChallengeRequest = {
+  challengeId: string;
+  code: string;
 };
 
 export type RegisterRequest = {

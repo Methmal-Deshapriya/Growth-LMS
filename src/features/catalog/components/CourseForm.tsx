@@ -1,42 +1,352 @@
 "use client";
+
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { getApiErrorMessage } from "@/lib/api";
-import { type AdminCourse, type CourseInput, useCreateCourseMutation, useGetAdminCategoriesQuery, useUpdateCourseMutation } from "../catalogApi";
+import {
+  type AdminCourse,
+  type AdminCourseGroup,
+  type CourseInput,
+  useCreateCourseMutation,
+  useUpdateCourseMutation,
+} from "../catalogApi";
 
-type FormState = Omit<CourseInput, "highlights" | "skills" | "prerequisites"> & { highlights: string; skills: string; prerequisites: string };
-const fromList = (items?: string[]) => items?.join("\n") ?? "";
-const toList = (value: string) => value.split("\n").map((item) => item.trim()).filter(Boolean);
-const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-const empty = (categoryId = ""): FormState => ({ categoryId, slug: "", title: "", summary: "", description: "", level: "BEGINNER", durationValue: null, durationUnit: null, accessType: "PAID", price: 0, currency: "LKR", certificateEnabled: false, highlights: "", skills: "", prerequisites: "", thumbnailUrl: null, sortOrder: 0 });
+const toList = (value: string) =>
+  value
+    .split("\n")
+    .map((item) => item.trim())
+    .filter(Boolean);
 
-export function CourseForm({ initial }: { initial?: AdminCourse }) {
-  const router = useRouter();
-  const { data: categoriesData } = useGetAdminCategoriesQuery();
-  const categories = categoriesData?.categories.filter((category) => category.status !== "ARCHIVED") ?? [];
-  const [form, setForm] = useState<FormState>(() => initial ? { ...initial, highlights: fromList(initial.highlights), skills: fromList(initial.skills), prerequisites: fromList(initial.prerequisites) } : empty());
+export function CourseForm({
+  group,
+  initial,
+  onSuccess,
+  onCancel,
+}: {
+  group: AdminCourseGroup;
+  initial?: AdminCourse;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) {
+  const firstCourse = group.courses.length === 0;
+  const service = group.category.service;
+  const isFree = service.accessType === "FREE";
+  const [sourceCourseId, setSourceCourseId] = useState(
+    group.courses[0]?.id ?? "",
+  );
+  const [intakeKey, setIntakeKey] = useState(
+    initial?.intakeKey ?? (isFree ? "EVERGREEN" : ""),
+  );
+  const [startDate, setStartDate] = useState(
+    initial?.startDate?.slice(0, 10) ?? "",
+  );
+  const [expectedEndDate, setExpectedEndDate] = useState(
+    initial?.expectedEndDate?.slice(0, 10) ?? "",
+  );
+  const [timezone, setTimezone] = useState(initial?.timezone ?? "Asia/Colombo");
+  const [capacity, setCapacity] = useState(initial?.capacity?.toString() ?? "");
+  const [summary, setSummary] = useState("");
+  const [description, setDescription] = useState("");
+  const [level, setLevel] = useState<AdminCourse["level"]>(
+    isFree ? "OPEN" : "BEGINNER",
+  );
+  const [durationValue, setDurationValue] = useState("");
+  const [durationUnit, setDurationUnit] = useState<
+    NonNullable<AdminCourse["durationUnit"]>
+  >(isFree ? "SESSION" : "WEEK");
+  const [price, setPrice] = useState(isFree ? "0" : "");
+  const [highlights, setHighlights] = useState("");
+  const [skills, setSkills] = useState("");
+  const [prerequisites, setPrerequisites] = useState("");
   const [createCourse, createState] = useCreateCourseMutation();
   const [updateCourse, updateState] = useUpdateCourseMutation();
-  const change = (key: keyof FormState, value: FormState[keyof FormState]) => setForm((current) => ({ ...current, [key]: value }));
+
   const submit = async (event: FormEvent) => {
     event.preventDefault();
-    const payload: CourseInput = { ...form, price: form.accessType === "FREE" ? 0 : Number(form.price), durationValue: form.durationValue ? Number(form.durationValue) : null, durationUnit: form.durationValue ? form.durationUnit || "WEEK" : null, highlights: toList(form.highlights), skills: toList(form.skills), prerequisites: toList(form.prerequisites), thumbnailUrl: form.thumbnailUrl || null };
     try {
-      if (initial) await updateCourse({ id: initial.id, body: payload }).unwrap(); else await createCourse(payload).unwrap();
-      toast.success(initial ? "Course updated" : "Course created as a draft"); router.push("/admin/catalog/courses");
-    } catch (error) { toast.error(getApiErrorMessage(error, "Could not save course")); }
+      if (initial) {
+        await updateCourse({
+          id: initial.id,
+          body: {
+            startDate: isFree ? null : startDate,
+            expectedEndDate: isFree ? null : expectedEndDate,
+            timezone,
+            capacity: capacity ? Number(capacity) : null,
+          },
+        }).unwrap();
+        toast.success("Course intake setup updated");
+      } else {
+        const body: CourseInput = {
+          courseGroupId: group.id,
+          intakeKey,
+          startDate: isFree ? null : startDate,
+          expectedEndDate: isFree ? null : expectedEndDate,
+          timezone,
+          capacity: capacity ? Number(capacity) : null,
+          ...(firstCourse
+            ? {
+                summary,
+                description,
+                level,
+                durationValue: durationValue ? Number(durationValue) : null,
+                durationUnit: durationValue ? durationUnit : null,
+                price: isFree ? 0 : Number(price),
+                highlights: toList(highlights),
+                skills: toList(skills),
+                prerequisites: toList(prerequisites),
+                thumbnailUrl: null,
+                sortOrder: 0,
+              }
+            : { sourceCourseId }),
+        };
+        await createCourse(body).unwrap();
+        toast.success(
+          firstCourse
+            ? "First course created as draft"
+            : "New intake copied as draft",
+        );
+      }
+      onSuccess?.();
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not save course intake"));
+    }
   };
-  return <form onSubmit={submit} className="space-y-6 rounded-2xl border border-border bg-card p-6">
-    <div className="grid gap-5 md:grid-cols-2"><div><Label>Category</Label><select required className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={form.categoryId} onChange={(e) => change("categoryId", e.target.value)} disabled={initial?.status === "PUBLISHED"}>{categories.map((category) => <option key={category.id} value={category.id}>{category.serviceType.replaceAll("_", " ")} — {category.title}</option>)}</select></div><div><Label>Level</Label><select className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={form.level} onChange={(e) => change("level", e.target.value)}>{["OPEN", "FOUNDATION", "BEGINNER", "INTERMEDIATE", "ADVANCED"].map((value) => <option key={value}>{value}</option>)}</select></div>
-      <div><Label>Title</Label><Input required minLength={3} value={form.title} onChange={(e) => { change("title", e.target.value); if (!initial) change("slug", slugify(e.target.value)); }} /></div><div><Label>Slug</Label><Input required pattern="[a-z0-9-]+" value={form.slug} onChange={(e) => change("slug", e.target.value)} disabled={initial?.status === "PUBLISHED"} /></div></div>
-    <div><Label>Card summary</Label><Input required minLength={10} value={form.summary} onChange={(e) => change("summary", e.target.value)} /></div><div><Label>Full description</Label><textarea required minLength={20} className="mt-1 min-h-32 w-full rounded-md border bg-background p-3 text-sm" value={form.description} onChange={(e) => change("description", e.target.value)} /></div>
-    <div className="grid gap-5 md:grid-cols-4"><div><Label>Access</Label><select className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={form.accessType} onChange={(e) => change("accessType", e.target.value)}><option>PAID</option><option>FREE</option></select></div><div><Label>Price</Label><Input type="number" min={0} disabled={form.accessType === "FREE"} value={form.accessType === "FREE" ? 0 : form.price} onChange={(e) => change("price", Number(e.target.value))} /></div><div><Label>Duration</Label><Input type="number" min={1} value={form.durationValue ?? ""} onChange={(e) => change("durationValue", e.target.value ? Number(e.target.value) : null)} /></div><div><Label>Unit</Label><select className="mt-1 h-10 w-full rounded-md border bg-background px-3" value={form.durationUnit ?? ""} onChange={(e) => change("durationUnit", e.target.value || null)}><option value="">None</option>{["SESSION", "DAY", "WEEK", "MONTH"].map((value) => <option key={value}>{value}</option>)}</select></div></div>
-    <div className="grid gap-5 md:grid-cols-3">{(["highlights", "skills", "prerequisites"] as const).map((key) => <div key={key}><Label>{key[0].toUpperCase() + key.slice(1)} (one per line)</Label><textarea className="mt-1 min-h-32 w-full rounded-md border bg-background p-3 text-sm" value={form[key]} onChange={(e) => change(key, e.target.value)} /></div>)}</div>
-    <div className="grid gap-5 md:grid-cols-3"><div><Label>Thumbnail URL</Label><Input type="url" value={form.thumbnailUrl ?? ""} onChange={(e) => change("thumbnailUrl", e.target.value || null)} /></div><div><Label>Sort order</Label><Input type="number" min={0} value={form.sortOrder ?? 0} onChange={(e) => change("sortOrder", Number(e.target.value))} /></div><label className="flex items-center gap-2 pt-7 text-sm font-medium"><input type="checkbox" checked={form.certificateEnabled ?? false} onChange={(e) => change("certificateEnabled", e.target.checked)} /> Certificate enabled</label></div>
-    <div className="flex gap-3"><Button type="submit" disabled={!form.categoryId || createState.isLoading || updateState.isLoading}>{initial ? "Save course" : "Create draft"}</Button><Button type="button" variant="outline" onClick={() => router.back()}>Cancel</Button></div>
-  </form>;
+
+  return (
+    <form className="space-y-5" onSubmit={submit}>
+      <div className="rounded-md border bg-muted/30 p-4 text-sm">
+        <p className="font-semibold">{group.title}</p>
+        <p className="text-muted-foreground">
+          Code prefix: {group.batchCodePrefix}. The server creates the final
+          code.
+        </p>
+        <p className="mt-2 text-muted-foreground">
+          Inherited from {service.title}: {service.accessType.toLowerCase()}{" "}
+          access, {service.courseMode.toLowerCase()} delivery,{" "}
+          {service.enrollmentMode.toLowerCase()} enrollment.
+        </p>
+      </div>
+
+      {!firstCourse && !initial ? (
+        <div className="space-y-2">
+          <Label htmlFor="source-course">
+            Copy curriculum and fixed course details from
+          </Label>
+          <select
+            id="source-course"
+            required
+            className="h-10 w-full rounded-md border bg-background px-3"
+            value={sourceCourseId}
+            onChange={(event) => setSourceCourseId(event.target.value)}
+          >
+            {group.courses.map((course) => (
+              <option key={course.id} value={course.id}>
+                {course.intakeKey} · {course.code}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : null}
+
+      {!initial ? (
+        <div className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label htmlFor="intake-key">Intake key</Label>
+            <Input
+              id="intake-key"
+              required
+              disabled={isFree}
+              pattern="[A-Z0-9]+(?:-[A-Z0-9]+)*"
+              value={intakeKey}
+              onChange={(event) =>
+                setIntakeKey(event.target.value.toUpperCase())
+              }
+              placeholder="2026-B2"
+            />
+          </div>
+          <div className="space-y-2">
+            <Label>Resulting code</Label>
+            <Input
+              readOnly
+              value={`${group.batchCodePrefix}-${intakeKey || "…"}`}
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {service.courseMode === "SEASONAL" ? (
+        <div className="grid gap-4 md:grid-cols-4">
+          <div className="space-y-2">
+            <Label htmlFor="course-start">Start date</Label>
+            <Input
+              id="course-start"
+              required
+              type="date"
+              value={startDate}
+              onChange={(event) => setStartDate(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="course-end">Expected end date</Label>
+            <Input
+              id="course-end"
+              required
+              type="date"
+              value={expectedEndDate}
+              onChange={(event) => setExpectedEndDate(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="course-timezone">Timezone</Label>
+            <Input
+              id="course-timezone"
+              required
+              value={timezone}
+              onChange={(event) => setTimezone(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="course-capacity">Capacity</Label>
+            <Input
+              id="course-capacity"
+              type="number"
+              min={1}
+              value={capacity}
+              onChange={(event) => setCapacity(event.target.value)}
+              placeholder="Unlimited"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      {firstCourse && !initial ? (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="course-summary">Public summary</Label>
+            <Input
+              id="course-summary"
+              required
+              minLength={10}
+              value={summary}
+              onChange={(event) => setSummary(event.target.value)}
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="course-description">Public description</Label>
+            <textarea
+              id="course-description"
+              required
+              minLength={20}
+              className="min-h-28 w-full rounded-md border bg-background p-3 text-sm"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </div>
+          <div className="grid gap-4 md:grid-cols-4">
+            <div className="space-y-2">
+              <Label htmlFor="course-level">Level</Label>
+              <select
+                id="course-level"
+                className="h-10 w-full rounded-md border bg-background px-3"
+                value={level}
+                onChange={(event) =>
+                  setLevel(event.target.value as AdminCourse["level"])
+                }
+              >
+                {[
+                  "OPEN",
+                  "FOUNDATION",
+                  "BEGINNER",
+                  "INTERMEDIATE",
+                  "ADVANCED",
+                ].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="duration">Duration</Label>
+              <Input
+                id="duration"
+                type="number"
+                min={1}
+                value={durationValue}
+                onChange={(event) => setDurationValue(event.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="duration-unit">Unit</Label>
+              <select
+                id="duration-unit"
+                className="h-10 w-full rounded-md border bg-background px-3"
+                value={durationUnit}
+                onChange={(event) =>
+                  setDurationUnit(
+                    event.target.value as NonNullable<
+                      AdminCourse["durationUnit"]
+                    >,
+                  )
+                }
+              >
+                {["SESSION", "DAY", "WEEK", "MONTH"].map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price">Price (LKR)</Label>
+              <Input
+                id="price"
+                required={!isFree}
+                disabled={isFree}
+                type="number"
+                min={isFree ? 0 : 1}
+                value={price}
+                onChange={(event) => setPrice(event.target.value)}
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 md:grid-cols-3">
+            {[
+              ["Highlights", highlights, setHighlights],
+              ["Skills", skills, setSkills],
+              ["Prerequisites", prerequisites, setPrerequisites],
+            ].map(([label, value, setter]) => (
+              <div key={label as string} className="space-y-2">
+                <Label>{label as string} (one per line)</Label>
+                <textarea
+                  className="min-h-24 w-full rounded-md border bg-background p-3 text-sm"
+                  value={value as string}
+                  onChange={(event) =>
+                    (setter as (value: string) => void)(event.target.value)
+                  }
+                />
+              </div>
+            ))}
+          </div>
+        </>
+      ) : null}
+
+      <div className="flex gap-2">
+        <Button
+          type="submit"
+          disabled={createState.isLoading || updateState.isLoading}
+        >
+          {initial
+            ? "Save setup"
+            : firstCourse
+              ? "Create first course"
+              : "Create intake"}
+        </Button>
+        {onCancel ? (
+          <Button type="button" variant="outline" onClick={onCancel}>
+            Cancel
+          </Button>
+        ) : null}
+      </div>
+    </form>
+  );
 }

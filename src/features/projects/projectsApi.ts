@@ -6,32 +6,39 @@ import type {
   ReviewProjectRequest,
 } from "./projectsTypes";
 
+export type ProjectPage = {
+  projects: StudentProject[];
+  nextCursor: string | null;
+};
+
+export type ProjectPageQuery = { cursor?: string; limit?: number };
+
 export const projectsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     // Public: Get showcase projects
-    getPublicShowcase: builder.query<StudentProject[], void>({
-      query: () => "projects/showcase",
+    getPublicShowcase: builder.query<ProjectPage, ProjectPageQuery | void>({
+      query: (params) => ({ url: "projects/showcase", params: params || undefined }),
       providesTags: (result) => [
         { type: "Projects", id: "SHOWCASE" },
-        ...(result ? result.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
+        ...(result ? result.projects.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
       ],
     }),
 
     // Student: Get my projects
-    getMyProjects: builder.query<StudentProject[], void>({
-      query: () => "projects/my",
+    getMyProjects: builder.query<ProjectPage, ProjectPageQuery | void>({
+      query: (params) => ({ url: "projects/my", params: params || undefined }),
       providesTags: (result) => [
         { type: "Projects", id: "MY" },
-        ...(result ? result.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
+        ...(result ? result.projects.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
       ],
     }),
 
     // Admin: Get all projects
-    getAllProjectsAdmin: builder.query<StudentProject[], void>({
-      query: () => "projects/admin/all",
+    getAllProjectsAdmin: builder.query<ProjectPage, ProjectPageQuery | void>({
+      query: (params) => ({ url: "projects/admin/all", params: params || undefined }),
       providesTags: (result) => [
         { type: "Projects", id: "ADMIN-LIST" },
-        ...(result ? result.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
+        ...(result ? result.projects.map((p) => ({ type: "Projects" as const, id: p.id })) : []),
       ],
     }),
 

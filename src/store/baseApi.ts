@@ -11,10 +11,6 @@ import { toNormalizedApiError, type NormalizedApiError, type ApiSuccess } from "
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_BASE_URL,
   credentials: "include",
-  prepareHeaders: (headers) => {
-    headers.set("Content-Type", "application/json");
-    return headers;
-  },
 });
 
 /**
@@ -57,6 +53,6 @@ const baseQueryWithGlobalHandling: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: "api",
   baseQuery: baseQueryWithGlobalHandling,
-  tagTypes: ["Auth", "Categories", "Courses", "Curriculum", "Batches", "Enrollments", "Users", "Audit", "Sessions", "Certificates", "Projects"],
+  tagTypes: ["Auth", "Services", "Categories", "CourseGroups", "Courses", "Curriculum", "Enrollments", "Users", "Audit", "Sessions", "Certificates", "Projects"],
   endpoints: () => ({}),
 });

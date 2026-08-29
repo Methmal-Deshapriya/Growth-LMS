@@ -3,16 +3,9 @@
 import React, { useState } from "react";
 import { useGetAuditLogsQuery } from "@/features/audit/auditApi";
 import AuditLogTable from "@/features/audit/components/AuditLogTable";
-import { 
-  Loader2, 
-  History, 
-  Search, 
-  Filter, 
-  ChevronLeft, 
-  ChevronRight 
-} from "lucide-react";
+import { History, Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { canViewAuditLogs } from "@/lib/access";
 import { Button } from "@/components/ui/button";
 
@@ -22,22 +15,23 @@ import { Button } from "@/components/ui/button";
  * Provides a high-fidelity dashboard for Super Admins to monitor system activity.
  */
 export default function AdminAuditPage() {
-  const role = useAppSelector(selectAuthRole);
+  const user = useAppSelector(selectAuthUser);
   
   // State for filters and pagination
   const [limit] = useState(50);
-  const [offset, setOffset] = useState(0);
+  const [cursor, setCursor] = useState<string | undefined>();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([]);
   const [action, setAction] = useState("");
 
   // Fetch logs with current filters
   const { data, isLoading, isError, isFetching } = useGetAuditLogsQuery({
     limit,
-    offset,
+    cursor,
     action: action || undefined,
   });
 
   // --- Security Check ---
-  if (!canViewAuditLogs(role)) {
+  if (!canViewAuditLogs(user)) {
     return (
       <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
         <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Access Restricted</h2>
@@ -49,15 +43,16 @@ export default function AdminAuditPage() {
   }
 
   const handleNext = () => {
-    if (data?.pagination.hasMore) {
-      setOffset(offset + limit);
+    if (data?.pagination.hasMore && data.pagination.nextCursor) {
+      setCursorHistory((history) => [...history, cursor]);
+      setCursor(data.pagination.nextCursor);
     }
   };
 
   const handlePrev = () => {
-    if (offset > 0) {
-      setOffset(Math.max(0, offset - limit));
-    }
+    if (cursorHistory.length === 0) return;
+    setCursor(cursorHistory.at(-1));
+    setCursorHistory((history) => history.slice(0, -1));
   };
 
   return (
@@ -83,7 +78,8 @@ export default function AdminAuditPage() {
               value={action}
               onChange={(e) => {
                 setAction(e.target.value);
-                setOffset(0); // Reset to first page on filter change
+                setCursor(undefined);
+                setCursorHistory([]);
               }}
             >
               <option value="">All Actions</option>
@@ -99,29 +95,18 @@ export default function AdminAuditPage() {
         </div>
       </div>
 
-      {/* Main Content */}
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground font-medium">Retrieving system history...</p>
-        </div>
-      ) : isError ? (
-        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Service Error</h2>
-          <p className="text-red-700 dark:text-red-400">
-            We couldn&apos;t load the audit logs. Please try again.
-          </p>
-        </div>
-      ) : data && data.logs.length > 0 ? (
-        <div className="space-y-6">
-          <div className={isFetching ? "opacity-50 pointer-events-none transition-opacity" : ""}>
-            <AuditLogTable logs={data.logs} />
-          </div>
+      <div className="space-y-6">
+        <AuditLogTable
+          logs={data?.logs ?? []}
+          isLoading={isLoading}
+          isError={isError}
+          isFetching={isFetching}
+        />
 
-          {/* Pagination Controls */}
+        {data && data.pagination.total > 0 ? (
           <div className="flex items-center justify-between bg-card px-6 py-4 rounded-xl border border-border shadow-sm">
             <p className="text-sm text-muted-foreground">
-              Showing <span className="font-bold text-foreground">{offset + 1}</span> to <span className="font-bold text-foreground">{offset + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
+              Showing <span className="font-bold text-foreground">{cursorHistory.length * limit + 1}</span> to <span className="font-bold text-foreground">{cursorHistory.length * limit + data.logs.length}</span> of <span className="font-bold text-foreground">{data.pagination.total}</span> logs
             </p>
             
             <div className="flex items-center gap-2">
@@ -129,7 +114,7 @@ export default function AdminAuditPage() {
                 variant="outline" 
                 size="sm" 
                 onClick={handlePrev} 
-                disabled={offset === 0 || isFetching}
+                disabled={cursorHistory.length === 0 || isFetching}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Previous
@@ -145,18 +130,8 @@ export default function AdminAuditPage() {
               </Button>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
-            <Search className="h-10 w-10 text-muted-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">No logs found</h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            Try adjusting your filters or check back later as system actions are recorded.
-          </p>
-        </div>
-      )}
+        ) : null}
+      </div>
     </div>
   );
 }

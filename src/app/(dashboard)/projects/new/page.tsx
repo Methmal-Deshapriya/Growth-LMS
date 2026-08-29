@@ -18,7 +18,9 @@ import { toast } from "sonner";
  */
 export default function NewProjectPage() {
   const router = useRouter();
-  const { data: enrollments, isLoading: isEnrollmentsLoading } = useGetMyEnrollmentsQuery();
+  const { data: enrollmentPage, isLoading: isEnrollmentsLoading } =
+    useGetMyEnrollmentsQuery({ limit: 50 });
+  const enrollments = enrollmentPage?.enrollments;
   const [submitProject, { isLoading: isSubmitting }] = useSubmitProjectMutation();
 
   const [formData, setFormData] = useState({

@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { selectAuthRole } from "@/features/auth/authSelectors";
+import { selectAuthUser } from "@/features/auth/authSelectors";
 import { getApiErrorMessage } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import { useAppSelector } from "@/store/hooks";
@@ -31,7 +31,6 @@ const emptyForm: CreateSessionRequest = {
   quizUrl: "",
   feedbackUrl: "",
   durationMinutes: null,
-  reusePolicy: "SINGLE_COURSE",
   status: "DRAFT",
 };
 
@@ -48,8 +47,8 @@ function clean(form: CreateSessionRequest): CreateSessionRequest {
 }
 
 export default function SessionLibraryManager() {
-  const role = useAppSelector(selectAuthRole);
-  const canDelete = hasPermission(role, PERMISSIONS.SESSIONS_DELETE_PERMANENTLY);
+  const user = useAppSelector(selectAuthUser);
+  const canDelete = hasPermission(user, PERMISSIONS.SESSIONS_DELETE_PERMANENTLY);
   const [q, setQ] = useState("");
   const [form, setForm] = useState<CreateSessionRequest>(emptyForm);
   const [editing, setEditing] = useState<LibrarySession | null>(null);
@@ -79,7 +78,6 @@ export default function SessionLibraryManager() {
       quizUrl: session.quizUrl ?? "",
       feedbackUrl: session.feedbackUrl ?? "",
       durationMinutes: session.durationMinutes,
-      reusePolicy: session.reusePolicy,
       status: session.status === "ARCHIVED" ? "DRAFT" : session.status,
     });
     setShowForm(true);
@@ -90,7 +88,7 @@ export default function SessionLibraryManager() {
     if (
       editing?.usage.courseCount &&
       !window.confirm(
-        `This resource is used by ${editing.usage.courseCount} course(s) and ${editing.usage.batchCount} batch(es). Saving changes updates every authorized learner view. Continue?`,
+        `This resource is used by ${editing.usage.courseCount} course intake(s) across ${editing.usage.courseGroupCount} course group(s). Saving changes updates every authorized learner view. Continue?`,
       )
     ) return;
     try {
@@ -119,8 +117,12 @@ export default function SessionLibraryManager() {
 
   const restore = async (session: LibrarySession) => {
     try {
-      await unarchiveSession(session.id).unwrap();
-      toast.success("Session restored as a draft");
+      const restored = await unarchiveSession(session.id).unwrap();
+      toast.success(
+        restored.status === "READY"
+          ? "Used session restored and kept ready"
+          : "Unused session restored as a draft",
+      );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not restore session"));
     }
@@ -158,7 +160,6 @@ export default function SessionLibraryManager() {
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2"><Label htmlFor="session-title">Title</Label><Input id="session-title" required value={form.title} onChange={(event) => setForm({ ...form, title: event.target.value })} /></div>
             <div className="space-y-2"><Label htmlFor="session-duration">Duration (minutes)</Label><Input id="session-duration" type="number" min={1} value={form.durationMinutes ?? ""} onChange={(event) => setForm({ ...form, durationMinutes: event.target.value ? Number(event.target.value) : null })} /></div>
-            <div className="space-y-2"><Label htmlFor="session-reuse-policy">Reuse policy</Label><select id="session-reuse-policy" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.reusePolicy} onChange={(event) => setForm({ ...form, reusePolicy: event.target.value as CreateSessionRequest["reusePolicy"] })}><option value="SINGLE_COURSE">One course</option><option value="REUSABLE">Reusable across courses</option></select></div>
             <div className="space-y-2"><Label htmlFor="session-status">Status</Label><select id="session-status" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={form.status} onChange={(event) => setForm({ ...form, status: event.target.value as "DRAFT" | "READY" })}><option value="DRAFT">Draft</option><option value="READY">Ready</option></select></div>
           </div>
           <div className="space-y-2"><Label htmlFor="session-description">Description</Label><textarea id="session-description" className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm" value={form.description ?? ""} onChange={(event) => setForm({ ...form, description: event.target.value })} /></div>
@@ -173,19 +174,19 @@ export default function SessionLibraryManager() {
         </form>
       ) : null}
 
-      {isLoading ? <p className="py-12 text-center text-muted-foreground">Loading library…</p> : null}
-      {isError ? <p className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load the Session Library.</p> : null}
-      <div className="grid gap-4">
+      {isLoading ? <p role="status" aria-live="polite" className="py-12 text-center text-muted-foreground">Loading library…</p> : null}
+      {isError ? <p role="alert" className="rounded-xl bg-destructive/10 p-5 text-destructive">Could not load the Session Library.</p> : null}
+      <div className="grid gap-4" aria-busy={isLoading}>
         {data?.sessions.map((session) => (
           <article key={session.id} className="rounded-2xl border border-border bg-card p-5">
             <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
               <div>
                 <div className="flex flex-wrap gap-2 text-xs font-semibold uppercase tracking-wide">
                   <span className="rounded-full bg-primary/10 px-2 py-1 text-primary">{session.status}</span>
-                  <span className="rounded-full bg-muted px-2 py-1">{session.reusePolicy === "REUSABLE" ? "Reusable" : "One course"}</span>
+                  <span className="rounded-full bg-muted px-2 py-1">Reusable across courses</span>
                 </div>
                 <h3 className="mt-3 text-lg font-bold">{session.title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Used by {session.usage.activeCourseCount} active course(s), {session.usage.batchCount} batch(es).</p>
+                <p className="mt-1 text-sm text-muted-foreground">Used by {session.usage.activeCourseCount} active course intake(s) across {session.usage.courseGroupCount} course group(s).</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 {session.status !== "ARCHIVED" ? <><Button variant="outline" size="sm" onClick={() => edit(session)}><Edit3 className="mr-2 h-4 w-4" />Edit</Button><Button variant="outline" size="sm" onClick={() => archive(session)}><Archive className="mr-2 h-4 w-4" />Archive</Button></> : <Button variant="outline" size="sm" onClick={() => restore(session)}><RotateCcw className="mr-2 h-4 w-4" />Restore</Button>}

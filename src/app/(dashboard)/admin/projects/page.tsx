@@ -1,27 +1,46 @@
 "use client";
 
-import React, { useState } from "react";
-import { useGetAllProjectsAdminQuery, useReviewProjectMutation } from "@/features/projects/projectsApi";
-import { Loader2, FolderCode, Search, CheckCircle2, XCircle, Clock, ExternalLink } from "lucide-react";
+import { useState } from "react";
+import { format } from "date-fns";
+import { CheckCircle2, Clock, ExternalLink, Loader2, Search, XCircle } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { format } from "date-fns";
-import { cn } from "@/lib/utils";
-import { toast } from "sonner";
-import Link from "next/link";
-import { ProjectStatus } from "@/features/projects/projectsTypes";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { useGetAllProjectsAdminQuery, useReviewProjectMutation } from "@/features/projects/projectsApi";
+import type { ProjectStatus } from "@/features/projects/projectsTypes";
 import { getApiErrorMessage } from "@/lib/api";
+import { cn } from "@/lib/utils";
 
-/**
- * Admin Projects Page
- * 
- * Allows admins to review and approve/reject student project submissions.
- */
+const statusStyles: Record<ProjectStatus, string> = {
+  APPROVED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+  REJECTED: "border-destructive/20 bg-destructive/10 text-destructive",
+  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300",
+};
+
 export default function AdminProjectsPage() {
-  const { data: projects, isLoading, isError } = useGetAllProjectsAdminQuery();
+  const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([undefined]);
+  const cursor = cursorHistory.at(-1);
+  const { data, isLoading, isError, isFetching } = useGetAllProjectsAdminQuery({ cursor });
+  const projects = data?.projects ?? [];
   const [reviewProject, { isLoading: isReviewing }] = useReviewProjectMutation();
-
   const [searchTerm, setSearchTerm] = useState("");
+
+  const normalizedSearch = searchTerm.trim().toLowerCase();
+  const filteredProjects = projects.filter((project) =>
+    project.title.toLowerCase().includes(normalizedSearch) ||
+    `${project.user?.firstName ?? ""} ${project.user?.lastName ?? ""}`.toLowerCase().includes(normalizedSearch) ||
+    (project.course?.title ?? "").toLowerCase().includes(normalizedSearch),
+  );
 
   const handleReview = async (id: string, status: ProjectStatus) => {
     let feedback = "";
@@ -29,165 +48,141 @@ export default function AdminProjectsPage() {
       const input = window.prompt("Please provide feedback for the rejection:");
       if (input === null) return;
       feedback = input;
-    } else if (status === "APPROVED") {
+    } else {
       const input = window.prompt("Optional feedback (leave blank if none):");
-      if (input !== null) {
-        feedback = input;
-      }
+      if (input !== null) feedback = input;
     }
 
     try {
-      await reviewProject({
-        id,
-        data: { status, adminFeedback: feedback || null },
-      }).unwrap();
+      await reviewProject({ id, data: { status, adminFeedback: feedback || null } }).unwrap();
       toast.success(`Project ${status.toLowerCase()} successfully`);
     } catch (error: unknown) {
       toast.error(getApiErrorMessage(error, "Failed to update project status"));
     }
   };
 
-  const getStatusColor = (status: ProjectStatus) => {
-    switch (status) {
-      case "APPROVED": return "bg-green-50 dark:bg-green-950/40 text-green-700 dark:text-green-400 border-green-100 dark:border-green-900/40";
-      case "REJECTED": return "bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-400 border-red-100 dark:border-red-900/40";
-      default: return "bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border-amber-100 dark:border-amber-900/40";
-    }
-  };
-
-  const filteredProjects = projects?.filter(p => 
-    p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    `${p.user?.firstName ?? ""} ${p.user?.lastName ?? ""}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    p.course?.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
     <div className="space-y-8 pb-20">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Project Review</h1>
-          <p className="text-muted-foreground mt-1">
-            Review student submissions and provide feedback.
-          </p>
-        </div>
+      <div>
+        <h1 className="text-3xl font-bold">Project Review</h1>
+        <p className="mt-1 text-muted-foreground">Review student submissions and provide feedback.</p>
       </div>
 
-      <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+      <div className="rounded-md border bg-card p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Search className="absolute left-3 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
           <Input
-            placeholder="Search by title, student, or course..."
-            className="pl-10 border-border h-12 rounded-xl"
+            aria-label="Search projects"
+            placeholder="Search by title, student, or course…"
+            className="h-11 pl-10"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(event) => setSearchTerm(event.target.value)}
           />
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="flex flex-col items-center justify-center py-20">
-          <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-          <p className="text-muted-foreground font-medium">Loading projects...</p>
-        </div>
-      ) : isError ? (
-        <div className="bg-red-50 dark:bg-red-950/40 border border-red-100 dark:border-red-900/40 rounded-2xl p-12 text-center">
-          <h2 className="text-2xl font-bold text-red-900 dark:text-red-300 mb-2">Error</h2>
-          <p className="text-red-700 dark:text-red-400">Failed to load projects.</p>
-        </div>
-      ) : filteredProjects && filteredProjects.length > 0 ? (
-        <div className="overflow-hidden bg-card rounded-2xl border border-border shadow-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-muted/50 border-b border-border">
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Project</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Student / Course</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Status</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest">Submitted</th>
-                  <th className="px-6 py-4 text-xs font-bold text-muted-foreground uppercase tracking-widest text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-50">
-                {filteredProjects.map((project) => (
-                  <tr key={project.id} className="hover:bg-muted/50 transition-colors group">
-                    <td className="px-6 py-4">
-                      <div className="font-bold text-foreground line-clamp-1 max-w-[200px]" title={project.title}>
-                        {project.title}
-                      </div>
-                      <div className="flex items-center gap-2 mt-1">
-                        {project.isPublic ? (
-                          <span className="text-[10px] font-bold text-primary uppercase bg-primary/10 px-1.5 py-0.5 rounded">Public</span>
-                        ) : (
-                          <span className="text-[10px] font-bold text-muted-foreground uppercase bg-muted px-1.5 py-0.5 rounded">Private</span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-foreground">
-                        {project.user?.firstName} {project.user?.lastName}
-                      </div>
-                      <div className="text-sm text-foreground line-clamp-1 max-w-[200px]" title={project.course?.title}>
-                        {project.course?.title}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border",
-                        getStatusColor(project.status)
-                      )}>
-                        {project.status === "APPROVED" && <CheckCircle2 className="h-3 w-3" />}
-                        {project.status === "REJECTED" && <XCircle className="h-3 w-3" />}
-                        {project.status === "PENDING" && <Clock className="h-3 w-3" />}
-                        {project.status}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 text-sm text-muted-foreground">
-                      {format(new Date(project.createdAt), "MMM dd, yyyy")}
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <Button asChild variant="ghost" size="icon" title="View Details">
-                          <Link href={`/projects/${project.id}`}>
-                            <ExternalLink className="h-4 w-4 text-primary" />
-                          </Link>
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Approve" 
-                          onClick={() => handleReview(project.id, "APPROVED")}
-                          disabled={isReviewing || project.status === "APPROVED"}
-                        >
-                          <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" />
-                        </Button>
-                        <Button 
-                          variant="ghost" 
-                          size="icon" 
-                          title="Reject" 
-                          onClick={() => handleReview(project.id, "REJECTED")}
-                          disabled={isReviewing || project.status === "REJECTED"}
-                        >
-                          <XCircle className="h-4 w-4 text-red-500 dark:text-red-400" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : (
-        <div className="bg-card border border-dashed border-border rounded-3xl p-20 text-center">
-          <div className="h-20 w-20 bg-background rounded-full flex items-center justify-center mx-auto mb-6">
-            <FolderCode className="h-10 w-10 text-muted-foreground" />
-          </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">No projects found</h2>
-          <p className="text-muted-foreground max-w-md mx-auto">
-            There are no student projects to review at this time.
-          </p>
-        </div>
-      )}
+      <div className="overflow-hidden rounded-md border bg-card" aria-busy={isLoading || isFetching}>
+        <Table>
+          <TableCaption className="sr-only">Student projects awaiting or carrying an administrative review</TableCaption>
+          <TableHeader className="bg-muted/40">
+            <TableRow>
+              <TableHead className="px-4">Project</TableHead>
+              <TableHead>Student / Course</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead>Submitted</TableHead>
+              <TableHead className="pr-4 text-right">Actions</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody className={cn(isFetching && !isLoading && "opacity-60")}>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                  <span role="status" aria-live="polite" className="inline-flex items-center gap-2">
+                    <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Loading projects…
+                  </span>
+                </TableCell>
+              </TableRow>
+            ) : isError ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center text-destructive">
+                  <span role="alert">Failed to load projects. Please try again.</span>
+                </TableCell>
+              </TableRow>
+            ) : filteredProjects.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 whitespace-normal text-center text-muted-foreground">
+                  {normalizedSearch ? "No projects match your search." : "There are no student projects to review yet."}
+                </TableCell>
+              </TableRow>
+            ) : (
+              filteredProjects.map((project) => (
+                <TableRow key={project.id}>
+                  <TableCell className="max-w-xs whitespace-normal px-4 py-4">
+                    <p className="font-semibold">{project.title}</p>
+                    <p className="mt-1 text-xs text-muted-foreground">{project.isPublic ? "Public" : "Private"}</p>
+                  </TableCell>
+                  <TableCell className="max-w-xs whitespace-normal">
+                    <p className="font-medium">{project.user?.firstName} {project.user?.lastName}</p>
+                    <p className="text-sm text-muted-foreground">{project.course?.title}</p>
+                  </TableCell>
+                  <TableCell>
+                    <span className={cn("inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium", statusStyles[project.status])}>
+                      {project.status === "APPROVED" ? <CheckCircle2 className="size-3" aria-hidden="true" /> : null}
+                      {project.status === "REJECTED" ? <XCircle className="size-3" aria-hidden="true" /> : null}
+                      {project.status === "PENDING" ? <Clock className="size-3" aria-hidden="true" /> : null}
+                      {project.status}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{format(new Date(project.createdAt), "MMM dd, yyyy")}</TableCell>
+                  <TableCell className="pr-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <Button asChild variant="ghost" size="icon">
+                        <Link href={`/projects/${project.id}`} aria-label={`View ${project.title}`}>
+                          <ExternalLink className="size-4 text-primary" aria-hidden="true" />
+                        </Link>
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Approve ${project.title}`}
+                        onClick={() => handleReview(project.id, "APPROVED")}
+                        disabled={isReviewing || project.status === "APPROVED"}
+                      >
+                        <CheckCircle2 className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label={`Reject ${project.title}`}
+                        onClick={() => handleReview(project.id, "REJECTED")}
+                        disabled={isReviewing || project.status === "REJECTED"}
+                      >
+                        <XCircle className="size-4 text-destructive" aria-hidden="true" />
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      <div className="flex justify-end gap-2">
+        <Button
+          variant="outline"
+          disabled={cursorHistory.length === 1 || isFetching}
+          onClick={() => setCursorHistory((history) => history.slice(0, -1))}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          disabled={!data?.nextCursor || isFetching}
+          onClick={() => data?.nextCursor && setCursorHistory((history) => [...history, data.nextCursor ?? undefined])}
+        >
+          Next
+        </Button>
+      </div>
     </div>
   );
 }

@@ -3,65 +3,81 @@ import type {
   BulkEnrollmentResult,
   ClassRosterEntry,
   CreatePaidEnrollmentRequest,
-  EligibleStudent,
+  EligibleStudentsPage,
   EligibleStudentsParams,
-  MyEnrollment,
+  MyEnrollmentsPage,
+  RosterPage,
+  RosterParams,
   UpdateEnrollmentRequest,
+  SelfHistoryParams,
 } from "./enrollmentsTypes";
 
 export const enrollmentsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    getMyEnrollments: builder.query<MyEnrollment[], void>({
-      query: () => "/enrollments/my",
+    getMyEnrollments: builder.query<MyEnrollmentsPage, SelfHistoryParams | void>({
+      query: (params) => ({ url: "/enrollments/my", params: params ?? {} }),
       providesTags: ["Enrollments"],
     }),
-    getCourseRoster: builder.query<ClassRosterEntry[], string>({
-      query: (courseId) => `/enrollments/course/${courseId}`,
-      providesTags: ["Enrollments"],
-    }),
-    getBatchRoster: builder.query<ClassRosterEntry[], string>({
-      query: (batchId) => `/batches/${batchId}/enrollments`,
-      providesTags: (_result, _error, batchId) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
+    getCourseRoster: builder.query<RosterPage, { courseId: string } & RosterParams>({
+      query: ({ courseId, ...params }) => ({
+        url: `/courses/${courseId}/enrollments`,
+        params,
+      }),
+      providesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
       ],
     }),
-    getEligibleStudents: builder.query<EligibleStudent[], EligibleStudentsParams>({
-      query: ({ batchId, q, limit = 10 }) => ({
-        url: `/batches/${batchId}/eligible-students`,
-        params: { q, limit },
+    getEligibleStudents: builder.query<EligibleStudentsPage, EligibleStudentsParams>({
+      query: ({ courseId, q, limit = 25, cursor }) => ({
+        url: `/courses/${courseId}/eligible-students`,
+        params: { q, limit, cursor },
       }),
-      providesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
+      serializeQueryArgs: ({ endpointName, queryArgs: { courseId, q } }) =>
+        `${endpointName}:${courseId}:${q ?? ""}`,
+      merge: (currentCache, incoming, { arg }) => {
+        if (!arg.cursor) return incoming;
+        const existingIds = new Set(currentCache.students.map(({ id }) => id));
+        currentCache.students.push(
+          ...incoming.students.filter(({ id }) => !existingIds.has(id)),
+        );
+        currentCache.pagination = incoming.pagination;
+      },
+      forceRefetch: ({ currentArg, previousArg }) =>
+        currentArg?.cursor !== previousArg?.cursor,
+      providesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
       ],
     }),
     createEnrollment: builder.mutation<
       ClassRosterEntry,
-      { batchId: string; data: CreatePaidEnrollmentRequest }
+      { courseId: string; data: CreatePaidEnrollmentRequest }
     >({
-      query: ({ batchId, data }) => ({
-        url: `/batches/${batchId}/enrollments`,
+      query: ({ courseId, data }) => ({
+        url: `/courses/${courseId}/enrollments`,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
-        "Batches",
+      invalidatesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
+        "Courses",
+        "Services",
       ],
     }),
     bulkCreateEnrollments: builder.mutation<
       BulkEnrollmentResult,
-      { batchId: string; students: CreatePaidEnrollmentRequest[] }
+      { courseId: string; students: CreatePaidEnrollmentRequest[] }
     >({
-      query: ({ batchId, students }) => ({
-        url: `/batches/${batchId}/enrollments/bulk`,
+      query: ({ courseId, students }) => ({
+        url: `/courses/${courseId}/enrollments/bulk`,
         method: "POST",
         body: { students },
       }),
-      invalidatesTags: (_result, _error, { batchId }) => [
-        { type: "Enrollments", id: `BATCH-${batchId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${batchId}` },
-        "Batches",
+      invalidatesTags: (_result, _error, { courseId }) => [
+        { type: "Enrollments", id: `COURSE-${courseId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
+        "Courses",
+        "Services",
       ],
     }),
     updateEnrollment: builder.mutation<
@@ -72,6 +88,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, { id }) => [
         { type: "Enrollments", id },
         "Enrollments",
+        "Services",
       ],
     }),
   }),
@@ -80,7 +97,6 @@ export const enrollmentsApi = baseApi.injectEndpoints({
 export const {
   useGetMyEnrollmentsQuery,
   useGetCourseRosterQuery,
-  useGetBatchRosterQuery,
   useGetEligibleStudentsQuery,
   useCreateEnrollmentMutation,
   useBulkCreateEnrollmentsMutation,

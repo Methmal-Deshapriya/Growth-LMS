@@ -23,7 +23,13 @@ const registerSchema = z
     firstName: z.string().min(1, "First name is required"),
     lastName: z.string().min(1, "Last name is required"),
     email: z.string().email("Please enter a valid email address"),
-    password: z.string().min(8, "Password must be at least 8 characters long"),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters long")
+      .refine(
+        (value) => new TextEncoder().encode(value).length <= 72,
+        "Password must not exceed 72 UTF-8 bytes",
+      ),
     confirmPassword: z.string().min(1, "Please confirm your password"),
     phone: z
       .string()
@@ -101,8 +107,14 @@ export default function SignUpForm({ onSignInClick }: { onSignInClick: () => voi
         alStream: values.alStream,
       };
 
-      await registerUser(payload).unwrap();
-      toast.success("Account created! Check your email for a verification code.");
+      const createdUser = await registerUser(payload).unwrap();
+      if (createdUser.verificationEmailSent === false) {
+        toast.warning(
+          "Your account was created, but email delivery failed. Use Resend code on the verification page.",
+        );
+      } else {
+        toast.success("Account created! Check your email for a verification code.");
+      }
       // Registering does not log the user in — they must verify their
       // email via OTP first, so we redirect explicitly rather than
       // relying on GuestGuard's isAuthenticated-driven redirect.

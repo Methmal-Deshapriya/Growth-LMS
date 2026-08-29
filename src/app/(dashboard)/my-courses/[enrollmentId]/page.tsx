@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft, Loader2, Users } from "lucide-react";
+import { ArrowLeft, LockKeyhole, Loader2, Users } from "lucide-react";
 import { useGetClassroomQuery } from "@/features/sessions/sessionsApi";
 import SessionList from "@/features/sessions/components/SessionList";
 import StudentOnlyRoute from "@/components/access/StudentOnlyRoute";
@@ -46,9 +46,10 @@ export default function LearningPage() {
   }
 
   const { enrollment, sessions, progress } = classroom;
+  const isCompletionHistoryReadOnly = enrollment.status === "COMPLETED";
 
   return (
-    <StudentOnlyRoute description="Admins manage sessions, batches, and enrollments from the admin area.">
+    <StudentOnlyRoute description="Admins manage course delivery and enrollments from the admin area.">
       <div className="space-y-8 pb-20">
         <div className="flex items-center gap-4">
           <Link
@@ -63,10 +64,10 @@ export default function LearningPage() {
               {enrollment.course.title}
             </h1>
             <p className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
-              {enrollment.batch ? (
+              {enrollment.course.instanceKind === "SEASONAL" ? (
                 <>
                   <Users className="h-4 w-4" />
-                  {enrollment.batch.name} ({enrollment.batch.code})
+                  {enrollment.course.intakeKey} ({enrollment.course.code})
                 </>
               ) : (
                 "Self-paced Free Learning"
@@ -88,16 +89,31 @@ export default function LearningPage() {
           </div>
         </div>
 
+        {isCompletionHistoryReadOnly ? (
+          <div
+            role="status"
+            className="flex items-start gap-3 rounded-xl border border-emerald-500/20 bg-emerald-500/10 p-4 text-sm text-emerald-800 dark:text-emerald-200"
+          >
+            <LockKeyhole className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <p>
+              This enrollment is complete. You can continue viewing its sessions,
+              but your completion history is now read-only.
+            </p>
+          </div>
+        ) : null}
+
         <section className="space-y-6">
           <div>
             <h2 className="text-xl font-bold text-foreground">Your Sessions</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              {enrollment.deliveryMode === "COHORT"
-                ? "Sessions appear here as they are released to your batch."
-                : "All active sessions in this course are available immediately."}
+              Sessions appear here as they are released and become available for your course.
             </p>
           </div>
-          <SessionList enrollmentId={enrollment.id} sessions={sessions} />
+          <SessionList
+            enrollmentId={enrollment.id}
+            sessions={sessions}
+            isReadOnly={isCompletionHistoryReadOnly}
+          />
         </section>
       </div>
     </StudentOnlyRoute>

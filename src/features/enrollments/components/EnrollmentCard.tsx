@@ -10,7 +10,12 @@ interface EnrollmentCardProps {
   enrollment: MyEnrollment;
 }
 
-const accessibleBatchStatuses = new Set(["ACTIVE", "COMPLETED", "ARCHIVED"]);
+const accessibleCourseStatuses = new Set([
+  "OPEN_ACTIVE",
+  "CLOSED_ACTIVE",
+  "COMPLETED",
+  "ARCHIVED",
+]);
 
 function getAccessMessage(enrollment: MyEnrollment) {
   if (enrollment.status === "CANCELLED") {
@@ -19,17 +24,14 @@ function getAccessMessage(enrollment: MyEnrollment) {
   if (enrollment.source === "ADMIN" && enrollment.paymentStatus !== "COMPLETED") {
     return "Classroom access opens after an admin confirms the completed payment.";
   }
-  if (
-    enrollment.batch &&
-    !accessibleBatchStatuses.has(enrollment.batch.status)
-  ) {
-    return "Your classroom opens when this batch becomes active.";
+  if (!accessibleCourseStatuses.has(enrollment.course.courseStatus)) {
+    return "This course intake is not currently available for learning.";
   }
   return null;
 }
 
 export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
-  const { course, batch } = enrollment;
+  const { course } = enrollment;
   const accessMessage = getAccessMessage(enrollment);
   const isAccessible = accessMessage === null;
 
@@ -48,7 +50,7 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
                 Enrolled {format(new Date(enrollment.enrolledAt), "MMMM dd, yyyy")}
               </span>
               <span className="rounded-full bg-primary/10 px-2 py-1">
-                {batch ? "Batch learning" : "Self-paced"}
+                {course.instanceKind === "SEASONAL" ? "Seasonal intake" : "Evergreen learning"}
               </span>
             </div>
 
@@ -59,15 +61,17 @@ export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
               {course.summary}
             </p>
 
-            {batch ? (
+            {course.instanceKind === "SEASONAL" ? (
               <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-2 font-medium text-foreground">
                   <Users className="h-4 w-4" />
-                  {batch.name} ({batch.code})
+                  {course.intakeKey} ({course.code})
                 </span>
-                <span>
-                  {format(new Date(batch.startDate), "MMM d, yyyy")} - {format(new Date(batch.expectedEndDate), "MMM d, yyyy")}
-                </span>
+                {course.startDate && course.expectedEndDate ? (
+                  <span>
+                    {format(new Date(course.startDate), "MMM d, yyyy")} - {format(new Date(course.expectedEndDate), "MMM d, yyyy")}
+                  </span>
+                ) : null}
               </div>
             ) : null}
 

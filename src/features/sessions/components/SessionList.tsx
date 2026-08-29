@@ -6,9 +6,14 @@ import SessionItem from "./SessionItem";
 interface SessionListProps {
   enrollmentId: string;
   sessions: ClassroomSession[];
+  isReadOnly?: boolean;
 }
 
-export default function SessionList({ enrollmentId, sessions }: SessionListProps) {
+export default function SessionList({
+  enrollmentId,
+  sessions,
+  isReadOnly = false,
+}: SessionListProps) {
   if (sessions.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card p-12 text-center">
@@ -27,6 +32,7 @@ export default function SessionList({ enrollmentId, sessions }: SessionListProps
           key={session.courseSessionId}
           enrollmentId={enrollmentId}
           session={session}
+          isReadOnly={isReadOnly}
         />
       ))}
     </div>

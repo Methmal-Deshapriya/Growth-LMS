@@ -58,7 +58,17 @@ export default function SignInForm({ onSignUpClick }: { onSignUpClick: () => voi
   // 3. Handle Submit
   const onSubmit = async (data: LoginFormValues) => {
     try {
-      await login(data).unwrap();
+      const result = await login(data).unwrap();
+      if ("requiresMfa" in result) {
+        const intent = enrollmentCourseId
+          ? `&enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
+          : "";
+        toast.success("Check your administrator email for a login code.");
+        router.push(
+          `/verify-login?challenge=${encodeURIComponent(result.challengeId)}${intent}`,
+        );
+        return;
+      }
       toast.success("Welcome back to Foundry Academy!");
       const intent = enrollmentCourseId
         ? `?enrollCourse=${encodeURIComponent(enrollmentCourseId)}`
