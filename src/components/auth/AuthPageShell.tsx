@@ -3,7 +3,7 @@ import { CATALOG_GRADIENT_BG } from "@/components/marketing/catalog/background";
 
 /**
  * Shared shell for the auth pages that stay as dedicated routes
- * (forgot-password, reset-password, verify-email) — just the page-level
+ * (forgot-password, reset-password, verify-email, verify-login) — just the page-level
  * gradient wash + centering, matching the rest of the public site. No logo,
  * no card — the forms themselves carry the same plain, no-card styling as
  * the sign-up/sign-in forms.
