@@ -1,5 +1,6 @@
 import { baseApi } from "@/store/baseApi";
 import type {
+  ProjectStatus,
   StudentProject,
   SubmitProjectRequest,
   UpdateProjectRequest,
@@ -11,7 +12,31 @@ export type ProjectPage = {
   nextCursor: string | null;
 };
 
+export interface ProjectAdminSummary {
+  all: number;
+  pending: number;
+  approved: number;
+  rejected: number;
+}
+
+// Same dual-mode shape as certificates: cursor mode (nextCursor set,
+// pagination absent) for the global admin page, or offset mode
+// (pagination set, nextCursor absent) for the course workspace's
+// Projects tab — selected by which params the caller sends.
+export type ProjectAdminPage = {
+  projects: StudentProject[];
+  summary: ProjectAdminSummary;
+  nextCursor?: string | null;
+  pagination?: { total: number; limit: number; offset: number; hasMore: boolean };
+};
+
 export type ProjectPageQuery = { cursor?: string; limit?: number };
+export type ProjectAdminPageQuery = ProjectPageQuery & {
+  q?: string;
+  intakeId?: string;
+  status?: ProjectStatus;
+  offset?: number;
+};
 
 export const projectsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -34,7 +59,7 @@ export const projectsApi = baseApi.injectEndpoints({
     }),
 
     // Admin: Get all projects
-    getAllProjectsAdmin: builder.query<ProjectPage, ProjectPageQuery | void>({
+    getAllProjectsAdmin: builder.query<ProjectAdminPage, ProjectAdminPageQuery | void>({
       query: (params) => ({ url: "projects/admin/all", params: params || undefined }),
       providesTags: (result) => [
         { type: "Projects", id: "ADMIN-LIST" },

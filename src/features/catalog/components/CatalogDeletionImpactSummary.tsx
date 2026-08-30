@@ -8,7 +8,7 @@ export function CatalogDeletionImpactSummary({ impact, isLoading, error }: { imp
   if (!impact) return null;
   const inventory = [
     ["Courses", impact.courses ?? 0],
-    ["Course groups", impact.courseGroups ?? 0],
+    ["Intakes", impact.intakes ?? 0],
     ["Curriculum links", impact.curriculumLinks ?? 0],
     ["Enrollments / history", impact.enrollments ?? impact.history ?? 0],
   ] as const;

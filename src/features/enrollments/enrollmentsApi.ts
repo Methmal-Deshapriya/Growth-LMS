@@ -18,22 +18,22 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       query: (params) => ({ url: "/enrollments/my", params: params ?? {} }),
       providesTags: ["Enrollments"],
     }),
-    getCourseRoster: builder.query<RosterPage, { courseId: string } & RosterParams>({
-      query: ({ courseId, ...params }) => ({
-        url: `/courses/${courseId}/enrollments`,
+    getCourseRoster: builder.query<RosterPage, { intakeId: string } & RosterParams>({
+      query: ({ intakeId, ...params }) => ({
+        url: `/intakes/${intakeId}/enrollments`,
         params,
       }),
-      providesTags: (_result, _error, { courseId }) => [
-        { type: "Enrollments", id: `COURSE-${courseId}` },
+      providesTags: (_result, _error, { intakeId }) => [
+        { type: "Enrollments", id: `INTAKE-${intakeId}` },
       ],
     }),
     getEligibleStudents: builder.query<EligibleStudentsPage, EligibleStudentsParams>({
-      query: ({ courseId, q, limit = 25, cursor }) => ({
-        url: `/courses/${courseId}/eligible-students`,
+      query: ({ intakeId, q, limit = 25, cursor }) => ({
+        url: `/intakes/${intakeId}/eligible-students`,
         params: { q, limit, cursor },
       }),
-      serializeQueryArgs: ({ endpointName, queryArgs: { courseId, q } }) =>
-        `${endpointName}:${courseId}:${q ?? ""}`,
+      serializeQueryArgs: ({ endpointName, queryArgs: { intakeId, q } }) =>
+        `${endpointName}:${intakeId}:${q ?? ""}`,
       merge: (currentCache, incoming, { arg }) => {
         if (!arg.cursor) return incoming;
         const existingIds = new Set(currentCache.students.map(({ id }) => id));
@@ -44,39 +44,39 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       },
       forceRefetch: ({ currentArg, previousArg }) =>
         currentArg?.cursor !== previousArg?.cursor,
-      providesTags: (_result, _error, { courseId }) => [
-        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
+      providesTags: (_result, _error, { intakeId }) => [
+        { type: "Enrollments", id: `ELIGIBLE-${intakeId}` },
       ],
     }),
     createEnrollment: builder.mutation<
       ClassRosterEntry,
-      { courseId: string; data: CreatePaidEnrollmentRequest }
+      { intakeId: string; data: CreatePaidEnrollmentRequest }
     >({
-      query: ({ courseId, data }) => ({
-        url: `/courses/${courseId}/enrollments`,
+      query: ({ intakeId, data }) => ({
+        url: `/intakes/${intakeId}/enrollments`,
         method: "POST",
         body: data,
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Enrollments", id: `COURSE-${courseId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
-        "Courses",
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Enrollments", id: `INTAKE-${intakeId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${intakeId}` },
+        "Intakes",
         "Services",
       ],
     }),
     bulkCreateEnrollments: builder.mutation<
       BulkEnrollmentResult,
-      { courseId: string; students: CreatePaidEnrollmentRequest[] }
+      { intakeId: string; students: CreatePaidEnrollmentRequest[] }
     >({
-      query: ({ courseId, students }) => ({
-        url: `/courses/${courseId}/enrollments/bulk`,
+      query: ({ intakeId, students }) => ({
+        url: `/intakes/${intakeId}/enrollments/bulk`,
         method: "POST",
         body: { students },
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Enrollments", id: `COURSE-${courseId}` },
-        { type: "Enrollments", id: `ELIGIBLE-${courseId}` },
-        "Courses",
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Enrollments", id: `INTAKE-${intakeId}` },
+        { type: "Enrollments", id: `ELIGIBLE-${intakeId}` },
+        "Intakes",
         "Services",
       ],
     }),
@@ -91,6 +91,13 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         "Services",
       ],
     }),
+    completePayment: builder.mutation<ClassRosterEntry, string>({
+      query: (id) => ({ url: `/enrollments/${id}/complete-payment`, method: "POST" }),
+      invalidatesTags: (_result, _error, id) => [
+        { type: "Enrollments", id },
+        "Enrollments",
+      ],
+    }),
   }),
 });
 
@@ -101,4 +108,5 @@ export const {
   useCreateEnrollmentMutation,
   useBulkCreateEnrollmentsMutation,
   useUpdateEnrollmentMutation,
+  useCompletePaymentMutation,
 } = enrollmentsApi;

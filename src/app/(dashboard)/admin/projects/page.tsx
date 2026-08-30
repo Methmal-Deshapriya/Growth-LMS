@@ -19,13 +19,10 @@ import {
 import { useGetAllProjectsAdminQuery, useReviewProjectMutation } from "@/features/projects/projectsApi";
 import type { ProjectStatus } from "@/features/projects/projectsTypes";
 import { getApiErrorMessage } from "@/lib/api";
+import { PROJECT_STATUS_STYLES } from "@/lib/statusColors";
 import { cn } from "@/lib/utils";
 
-const statusStyles: Record<ProjectStatus, string> = {
-  APPROVED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
-  REJECTED: "border-destructive/20 bg-destructive/10 text-destructive",
-  PENDING: "border-amber-500/20 bg-amber-500/10 text-amber-700",
-};
+const statusStyles = PROJECT_STATUS_STYLES;
 
 export default function AdminProjectsPage() {
   const [cursorHistory, setCursorHistory] = useState<Array<string | undefined>>([undefined]);

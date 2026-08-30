@@ -20,15 +20,14 @@ export interface SessionContent {
 
 export interface SessionUsageCourse {
   courseSessionId: string;
+  intakeId: string;
   courseId: string;
   courseTitle: string;
-  courseCode: string;
-  courseGroupId: string;
-  courseGroupTitle: string;
+  intakeCode: string;
+  // categoryId/serviceSlug exist only to build the click-through link to the
+  // intake's workspace page — not for display.
   categoryId: string;
-  categoryTitle: string;
   serviceSlug: string;
-  serviceTitle: string;
   orderIndex: number | null;
   retiredAt: string | null;
   deliveryStatus: CourseSessionDeliveryStatus;
@@ -41,9 +40,9 @@ export interface LibrarySession extends SessionContent {
   createdAt: string;
   updatedAt: string;
   usage: {
+    intakeCount: number;
+    activeIntakeCount: number;
     courseCount: number;
-    activeCourseCount: number;
-    courseGroupCount: number;
     courses: SessionUsageCourse[];
   };
 }
@@ -58,7 +57,7 @@ export type UpdateSessionRequest = Partial<CreateSessionRequest>;
 
 export interface CourseSession {
   id: string;
-  courseId: string;
+  intakeId: string;
   orderIndex: number | null;
   deliveryStatus: CourseSessionDeliveryStatus;
   availableAt: string | null;
@@ -70,9 +69,8 @@ export interface CourseSession {
 }
 
 export interface CurriculumResponse {
-  course: {
+  intake: {
     id: string;
-    title: string;
     code: string;
     status: string;
     accessType: "FREE" | "PAID";
@@ -84,6 +82,7 @@ export interface CurriculumResponse {
 export interface EnrollmentProgress {
   enrollmentId: string;
   courseId: string;
+  intakeId: string;
   completedCount: number;
   availableSessionCount: number;
   progressPercent: number;
@@ -127,7 +126,7 @@ export interface SessionCompletionResult {
   id: string;
   enrollmentId: string;
   courseSessionId: string;
-  courseId: string;
+  intakeId: string;
   completedAt: string;
   created: boolean;
 }

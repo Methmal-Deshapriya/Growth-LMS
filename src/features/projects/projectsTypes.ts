@@ -3,7 +3,7 @@ export type ProjectStatus = "PENDING" | "APPROVED" | "REJECTED";
 export type StudentProject = {
   id: string;
   userId: string;
-  courseId: string;
+  intakeId: string;
   enrollmentId: string;
   title: string;
   description?: string | null;
@@ -32,7 +32,7 @@ export type StudentProject = {
 };
 
 export type SubmitProjectRequest = {
-  courseId: string;
+  intakeId: string;
   enrollmentId: string;
   title: string;
   description?: string | null;
@@ -44,7 +44,7 @@ export type SubmitProjectRequest = {
   isPublic?: boolean;
 };
 
-export type UpdateProjectRequest = Partial<Omit<SubmitProjectRequest, "courseId" | "enrollmentId">>;
+export type UpdateProjectRequest = Partial<Omit<SubmitProjectRequest, "intakeId" | "enrollmentId">>;
 
 export type ReviewProjectRequest = {
   status: ProjectStatus;

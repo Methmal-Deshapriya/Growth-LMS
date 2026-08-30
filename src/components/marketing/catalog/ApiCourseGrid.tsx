@@ -91,6 +91,11 @@ export function ApiCourseGrid({
                     <span className="text-xs text-[#5B6472] bg-[#F5F6FA] rounded-full px-2.5 py-1">
                       {course.accessType === "FREE" ? "Free" : "Paid"}
                     </span>
+                    {course.enrollmentStatus !== "OPEN" && (
+                      <span className="text-xs text-amber-700 bg-amber-50 rounded-full px-2.5 py-1">
+                        {course.enrollmentStatus === "COMING_SOON" ? "Coming soon" : "Reopening soon"}
+                      </span>
+                    )}
                   </div>
                   <span className="mt-auto pt-3 border-t border-black/5 flex justify-end items-center gap-1 text-sm font-semibold text-blue-600">
                     View course <ChevronRight className="h-4 w-4" />

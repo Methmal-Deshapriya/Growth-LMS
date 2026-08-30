@@ -40,20 +40,35 @@ export type RevokeCertificateRequest = {
   revocationReason: string;
 };
 
+export interface CertificateAdminSummary {
+  all: number;
+  issued: number;
+  revoked: number;
+}
+
+// The same endpoint serves two pagination modes (see certificate.repository.js):
+// cursor (nextCursor set, total/offset absent) for the global admin page, or
+// offset (total/offset set, nextCursor absent) for the course workspace's
+// Certificates tab — selected by which params the caller sends.
 export type CertificateAdminPage = {
   certificates: Certificate[];
+  summary: CertificateAdminSummary;
   pagination: {
     limit: number;
     hasMore: boolean;
-    nextCursor: string | null;
+    nextCursor?: string | null;
+    total?: number;
+    offset?: number;
   };
 };
 
 export type CertificateAdminParams = {
   q?: string;
   status?: CertificateStatus;
+  intakeId?: string;
   limit?: number;
   cursor?: string;
+  offset?: number;
 };
 
 export type MyCertificatesPage = {

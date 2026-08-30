@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/table";
 import { useGetAllCertificatesAdminQuery, useRevokeCertificateMutation } from "@/features/certificates/certificatesApi";
 import { getApiErrorMessage } from "@/lib/api";
+import { CERTIFICATE_STATUS_STYLES } from "@/lib/statusColors";
 import { cn } from "@/lib/utils";
 import { CursorPagination } from "@/components/ui/cursor-pagination";
 
@@ -114,9 +115,7 @@ export default function AdminCertificatesPage() {
                     <span
                       className={cn(
                         "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
-                        certificate.status === "ISSUED"
-                          ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-700"
-                          : "border-destructive/20 bg-destructive/10 text-destructive",
+                        CERTIFICATE_STATUS_STYLES[certificate.status],
                       )}
                     >
                       {certificate.status}

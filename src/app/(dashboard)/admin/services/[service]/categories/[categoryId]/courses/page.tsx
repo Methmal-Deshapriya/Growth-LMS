@@ -14,11 +14,11 @@ import {
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
 import { AdminSummaryStrip } from "@/features/catalog/components/AdminSummaryStrip";
-import { CourseGroupForm } from "@/features/catalog/components/CourseGroupForm";
+import { CourseForm } from "@/features/catalog/components/CourseForm";
 import { CourseTable } from "@/features/catalog/components/CourseTable";
 import {
   useGetAdminCategoryQuery,
-  useGetCourseGroupsQuery,
+  useGetCoursesQuery,
 } from "@/features/catalog/catalogApi";
 
 export default function CategoryCoursesPage() {
@@ -31,11 +31,11 @@ export default function CategoryCoursesPage() {
     useGetAdminCategoryQuery(categoryId);
   const {
     data,
-    isLoading: groupsLoading,
+    isLoading: coursesLoading,
     isError,
-  } = useGetCourseGroupsQuery({ categoryId, includeArchived: true });
+  } = useGetCoursesQuery({ categoryId, includeArchived: true });
 
-  if (categoryLoading || groupsLoading)
+  if (categoryLoading || coursesLoading)
     return (
       <p
         role="status"
@@ -53,8 +53,7 @@ export default function CategoryCoursesPage() {
     );
   const service = category.service;
 
-  const groups = data?.courseGroups ?? [];
-  const courses = groups.flatMap((group) => group.courses);
+  const courses = data?.courses ?? [];
   return (
     <div className="space-y-6 pb-20">
       <AdminCatalogBreadcrumbs
@@ -69,42 +68,32 @@ export default function CategoryCoursesPage() {
       />
       <AdminCatalogPageHeader
         title={`${category.title} courses`}
-        description="CourseGroup keeps matching real-world courses together internally. Each Course row is one independently delivered intake or evergreen course."
+        description="Each course here is a real-world program students browse and enroll in. Its intakes are the scheduled runs — sessions, enrollments, and lifecycle live there."
         action={
           <Button
             disabled={category.status === "ARCHIVED"}
             onClick={() => setCreateDialogOpen(true)}
           >
-            <Plus /> New real-world course
+            <Plus /> New course
           </Button>
         }
       />
       <AdminSummaryStrip
         items={[
           {
-            label: "Course groups",
-            value: groups.filter((group) => !group.archivedAt).length,
-            detail: `${groups.filter((group) => group.archivedAt).length} archived`,
+            label: "Courses",
+            value: courses.filter((course) => !course.archivedAt).length,
+            detail: `${courses.filter((course) => course.archivedAt).length} archived`,
           },
           {
-            label: "Course records",
-            value: courses.length,
-            detail: `${courses.filter((course) => course.status === "OPEN_ACTIVE").length} public/open`,
+            label: "Open for enrollment",
+            value: courses.filter((course) => course.enrollmentStatus === "OPEN").length,
+            detail: "Have an open-active intake",
           },
           {
-            label: "Active teaching",
-            value: courses.filter((course) =>
-              ["OPEN_ACTIVE", "CLOSED_ACTIVE"].includes(course.status),
-            ).length,
-            detail: "Open and closed-active",
-          },
-          {
-            label: "Learners",
-            value: courses.reduce(
-              (total, course) => total + course.enrollmentCount,
-              0,
-            ),
-            detail: "Across every intake",
+            label: "Total intakes",
+            value: courses.reduce((total, course) => total + course.intakeCount, 0),
+            detail: "Across every course",
           },
         ]}
       />
@@ -117,21 +106,20 @@ export default function CategoryCoursesPage() {
         </p>
       ) : (
         <CourseTable
-          groups={groups}
+          courses={courses}
           serviceSlug={service.slug}
           category={category}
         />
       )}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent>
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl">
           <DialogHeader>
-            <DialogTitle>New real-world course</DialogTitle>
+            <DialogTitle>New course</DialogTitle>
             <DialogDescription>
-              Create the internal grouping first. Its first Course record is
-              created from the grouped table.
+              This is what students browse and enroll in. Add its first intake next.
             </DialogDescription>
           </DialogHeader>
-          <CourseGroupForm
+          <CourseForm
             category={category}
             onSuccess={() => setCreateDialogOpen(false)}
             onCancel={() => setCreateDialogOpen(false)}

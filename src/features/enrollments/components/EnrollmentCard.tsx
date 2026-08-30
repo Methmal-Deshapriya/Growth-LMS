@@ -24,8 +24,8 @@ function getAccessMessage(enrollment: MyEnrollment) {
   if (enrollment.source === "ADMIN" && enrollment.paymentStatus !== "COMPLETED") {
     return "Classroom access opens after an admin confirms the completed payment.";
   }
-  if (!accessibleCourseStatuses.has(enrollment.course.courseStatus)) {
-    return "This course intake is not currently available for learning.";
+  if (!accessibleCourseStatuses.has(enrollment.course.intakeStatus)) {
+    return "This intake is not currently available for learning.";
   }
   return null;
 }

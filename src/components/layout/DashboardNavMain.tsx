@@ -2,17 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  BookOpen,
-  Users,
-  ShieldCheck,
-  FileText,
-  Award,
-  FolderCode,
-  Library,
-  type LucideIcon,
-} from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import { Icons } from "@/lib/icons";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthUser } from "@/features/auth/authSelectors";
 import {
@@ -49,28 +40,28 @@ export function DashboardNavMain() {
   const role = user?.role ?? null;
 
   const overviewItems: NavItem[] = [
-    { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+    { label: "Dashboard", href: "/dashboard", icon: Icons.dashboard },
     ...(isStudent(role)
       ? [
-          { label: "My Courses", href: "/my-courses", icon: BookOpen },
-          { label: "Certificates", href: "/certificates", icon: Award },
-          { label: "My Projects", href: "/projects", icon: FolderCode },
+          { label: "My Courses", href: "/my-courses", icon: Icons.myCourses },
+          { label: "Certificates", href: "/certificates", icon: Icons.certificates },
+          { label: "My Projects", href: "/projects", icon: Icons.myProjects },
         ]
       : []),
   ];
 
   const adminItems: NavItem[] = canAccessAdminArea(user)
     ? [
-        { label: "Services", href: "/admin/services", icon: ShieldCheck },
-        { label: "Session Library", href: "/admin/sessions", icon: Library },
-        { label: "Manage Certificates", href: "/admin/certificates", icon: Award },
-        { label: "Review Projects", href: "/admin/projects", icon: FolderCode },
+        { label: "Services", href: "/admin/services", icon: Icons.services },
+        { label: "Session Library", href: "/admin/sessions", icon: Icons.sessionLibrary },
+        { label: "Manage Certificates", href: "/admin/certificates", icon: Icons.manageCertificates },
+        { label: "Review Projects", href: "/admin/projects", icon: Icons.reviewProjects },
       ]
     : [];
 
   const superAdminItems: NavItem[] = [
-    ...(canViewUsers(user) ? [{ label: "Users", href: "/admin/users", icon: Users }] : []),
-    ...(canViewAuditLogs(user) ? [{ label: "Audit Logs", href: "/admin/audit", icon: FileText }] : []),
+    ...(canViewUsers(user) ? [{ label: "Users", href: "/admin/users", icon: Icons.users }] : []),
+    ...(canViewAuditLogs(user) ? [{ label: "Audit Logs", href: "/admin/audit", icon: Icons.auditLogs }] : []),
   ];
 
   const isItemActive = (href: string) =>

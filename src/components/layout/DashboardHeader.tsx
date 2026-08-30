@@ -42,7 +42,7 @@ export default function DashboardHeader() {
     breadcrumbs?.pathname === pathname ? breadcrumbs.crumbs : null;
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center gap-4 border-b border-border px-4 md:px-8">
+    <header className="sticky top-0 z-30 flex h-16 w-full shrink-0 items-center gap-4 border-b border-border bg-background px-4 md:px-8">
       <SidebarTrigger />
       <Separator orientation="vertical" className="h-6" />
       {activeBreadcrumbs ? (

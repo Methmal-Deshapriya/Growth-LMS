@@ -57,6 +57,7 @@ import { AdminSummaryStrip } from "@/features/catalog/components/AdminSummaryStr
 import { NavigableTableRow } from "@/features/catalog/components/NavigableTableRow";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import { getApiErrorMessage } from "@/lib/api";
+import { LEARNING_SERVICE_STATUS_STYLES } from "@/lib/statusColors";
 import { useAppSelector } from "@/store/hooks";
 
 type ServiceForm = Pick<
@@ -309,7 +310,9 @@ export default function AdminServicesPage() {
                   <TableCell className="max-w-sm whitespace-normal px-4 py-4">
                     <div className="flex items-center gap-2">
                       <p className="font-semibold">{service.title}</p>
-                      <Badge variant="outline">{service.status}</Badge>
+                      <Badge variant="outline" className={LEARNING_SERVICE_STATUS_STYLES[service.status]}>
+                        {service.status}
+                      </Badge>
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {service.description}

@@ -2,7 +2,7 @@ import type { PublicCourseCard } from "@/features/catalog/catalogTypes";
 import type { User } from "@/features/auth/authTypes";
 
 export type EnrollmentStatus = "ACTIVE" | "COMPLETED" | "CANCELLED";
-export type PaymentStatus = "NOT_REQUIRED" | "PENDING" | "PARTIAL" | "COMPLETED";
+export type PaymentStatus = "NOT_REQUIRED" | "PARTIAL" | "COMPLETED";
 export type EnrollmentSource = "ADMIN" | "SELF";
 export type CertificateStatus = "ISSUED" | "REVOKED";
 
@@ -18,6 +18,7 @@ export interface MyEnrollment {
   id: string;
   userId: string;
   courseId: string;
+  intakeId: string;
   source: EnrollmentSource;
   status: EnrollmentStatus;
   paymentStatus: PaymentStatus;
@@ -25,14 +26,18 @@ export interface MyEnrollment {
   completedAt?: string | null;
   createdAt: string;
   updatedAt: string;
+  // The program (title, summary, price, ...) comes from Course; the run's
+  // own facts (intake key, code, dates, timezone, lifecycle status) come
+  // from Intake — see the rename plan §6.
   course: PublicCourseCard & {
+    intakeId: string;
     intakeKey: string;
     code: string;
     instanceKind: "SEASONAL" | "EVERGREEN";
     startDate: string | null;
     expectedEndDate: string | null;
     timezone: string;
-    courseStatus: string;
+    intakeStatus: string;
   };
   certificate: EnrollmentCertificateSummary | null;
 }
@@ -64,15 +69,18 @@ export interface CreatePaidEnrollmentRequest {
   paymentNote?: string | null;
 }
 
+// paymentStatus is not editable here — it only ever changes via the
+// ledger-aware paths (creating the enrollment, or completing its
+// remaining payment through CompletePaymentRequest below), so every
+// change stays backed by a Payment row.
 export type UpdateEnrollmentRequest = {
   status?: EnrollmentStatus;
-  paymentStatus?: Exclude<PaymentStatus, "NOT_REQUIRED">;
   externalPaymentReference?: string | null;
   paymentNote?: string | null;
 };
 export type EligibleStudent = Pick<User, "id" | "firstName" | "lastName" | "email">;
 export type EligibleStudentsParams = {
-  courseId: string;
+  intakeId: string;
   q?: string;
   limit?: number;
   cursor?: string;
@@ -86,12 +94,21 @@ export interface EligibleStudentsPage {
   };
 }
 
+export interface RosterSummary {
+  all: number;
+  active: number;
+  completed: number;
+  cancelled: number;
+}
+
 export interface RosterPage {
   enrollments: ClassRosterEntry[];
+  summary: RosterSummary;
   pagination: {
+    total: number;
     limit: number;
+    offset: number;
     hasMore: boolean;
-    nextCursor: string | null;
   };
 }
 
@@ -99,7 +116,7 @@ export type RosterParams = {
   q?: string;
   status?: EnrollmentStatus;
   limit?: number;
-  cursor?: string;
+  offset?: number;
 };
 
 export interface BulkEnrollmentResult {

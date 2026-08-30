@@ -1,10 +1,15 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import {
+  ArrowLeft,
+  ArrowRight,
   Archive,
   ArchiveRestore,
+  Check,
+  CheckCircle2,
   Copy,
+  FileCheck2,
   Link2,
   Loader2,
   MoreHorizontal,
@@ -42,6 +47,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import {
   Sheet,
   SheetContent,
@@ -59,9 +65,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { selectAuthUser } from "@/features/auth/authSelectors";
-import { useGetAdminCoursesQuery } from "@/features/catalog/catalogApi";
+import { useGetIntakesQuery } from "@/features/catalog/catalogApi";
 import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
+import { SESSION_STATUS_STYLES } from "@/lib/statusColors";
+import { cn } from "@/lib/utils";
 import { useAppSelector } from "@/store/hooks";
 import {
   useArchiveSessionMutation,
@@ -74,15 +82,57 @@ import {
   useUnarchiveSessionMutation,
   useUpdateSessionMutation,
 } from "../../sessionsApi";
+import type { SessionLibrarySummary } from "../../sessionsApi";
 import type {
   CreateSessionRequest,
   LibrarySession,
   SessionStatus,
 } from "../../sessionsTypes";
 
-const PAGE_SIZE = 20;
+const STATUS_PILLS: {
+  key: SessionStatus | "";
+  label: string;
+  countKey: keyof SessionLibrarySummary;
+  activeClassName: string;
+}[] = [
+  { key: "", label: "All", countKey: "all", activeClassName: "border-primary bg-primary/10 text-primary" },
+  {
+    key: "READY",
+    label: "Ready",
+    countKey: "ready",
+    activeClassName: "border-emerald-500/30 bg-emerald-500/10 text-emerald-700",
+  },
+  {
+    key: "DRAFT",
+    label: "Draft",
+    countKey: "draft",
+    activeClassName: "border-muted-foreground/30 bg-muted text-foreground",
+  },
+  {
+    key: "ARCHIVED",
+    label: "Archived",
+    countKey: "archive",
+    activeClassName: "border-amber-500/30 bg-amber-500/10 text-amber-700",
+  },
+];
+
+const DEFAULT_PAGE_SIZE = 20;
+const PAGE_SIZE_OPTIONS = [5, 10, 20, 50];
+const PAGE_SIZE_LABELS = PAGE_SIZE_OPTIONS.map((size) => `${size} / page`);
 const FILTER_DEBOUNCE_MS = 300;
+const MIN_FILTER_LENGTH = 3;
 const REQUIRED_DELETE_TEXT = "DELETE";
+
+const WIZARD_STEPS = [
+  { step: 1 as const, label: "Details" },
+  { step: 2 as const, label: "Links" },
+  { step: 3 as const, label: "Preview" },
+];
+
+const STATUS_SELECT_LABELS = { DRAFT: "Draft", READY: "Ready" } as const;
+function statusFromLabel(label: string): "DRAFT" | "READY" {
+  return label === "Ready" ? "READY" : "DRAFT";
+}
 
 const emptyForm: CreateSessionRequest = {
   title: "",
@@ -96,13 +146,7 @@ const emptyForm: CreateSessionRequest = {
   tags: [],
 };
 
-const statusStyles: Record<SessionStatus, string> = {
-  DRAFT: "border-muted-foreground/20 bg-muted text-muted-foreground",
-  READY:
-    "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
-  ARCHIVED:
-    "border-amber-500/20 bg-amber-500/10 text-amber-700",
-};
+const statusStyles = SESSION_STATUS_STYLES;
 
 const eligibleAttachStatuses = new Set(["DRAFT", "OPEN_ACTIVE", "CLOSED_ACTIVE"]);
 
@@ -123,10 +167,10 @@ function clean(form: CreateSessionRequest, tags: string[]): CreateSessionRequest
 
 function formatUpdatedAt(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
-  if (days <= 0) return "Updated today";
-  if (days === 1) return "Updated yesterday";
-  if (days < 30) return `Updated ${days} days ago`;
-  return `Updated ${new Date(iso).toLocaleDateString()}`;
+  if (days <= 0) return "Today";
+  if (days === 1) return "Yesterday";
+  if (days < 30) return `${days} days ago`;
+  return new Date(iso).toLocaleDateString();
 }
 
 function formatDuration(minutes: number | null | undefined) {
@@ -182,20 +226,28 @@ export default function SessionLibraryManager() {
   const [q, setQ] = useState("");
   const [tagFilter, setTagFilter] = useState("");
   const [statusFilter, setStatusFilter] = useState<SessionStatus | "">("");
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [offset, setOffset] = useState(0);
 
   const debouncedQ = useDebouncedValue(q.trim(), FILTER_DEBOUNCE_MS);
   const debouncedTag = useDebouncedValue(tagFilter.trim(), FILTER_DEBOUNCE_MS);
+  // Debounce alone still fires a request for a single keystroke once the
+  // user pauses — a minimum length keeps us from querying on 1-2 characters
+  // that can't narrow the results down anyway. Below the threshold we just
+  // hold off (params stay unchanged, so no extra request goes out) until
+  // either enough letters are typed or the field is cleared entirely.
+  const appliedQ = debouncedQ.length === 0 || debouncedQ.length >= MIN_FILTER_LENGTH ? debouncedQ : "";
+  const appliedTag = debouncedTag.length === 0 || debouncedTag.length >= MIN_FILTER_LENGTH ? debouncedTag : "";
 
   const { data, isLoading, isError } = useGetSessionLibraryQuery({
-    q: debouncedQ || undefined,
+    q: appliedQ || undefined,
     status: statusFilter || undefined,
-    tag: debouncedTag || undefined,
-    limit: PAGE_SIZE,
+    tag: appliedTag || undefined,
+    limit: pageSize,
     offset,
   });
 
-  const hasActiveFilters = Boolean(debouncedQ || statusFilter || debouncedTag);
+  const hasActiveFilters = Boolean(appliedQ || statusFilter || appliedTag);
 
   const [form, setForm] = useState<CreateSessionRequest>(emptyForm);
   const [tagsInput, setTagsInput] = useState("");
@@ -222,8 +274,9 @@ export default function SessionLibraryManager() {
   const [attachCourseId, setAttachCourseId] = useState("");
   const [attachCourseSearch, setAttachCourseSearch] = useState("");
   const [pendingSave, setPendingSave] = useState<CreateSessionRequest | null>(null);
+  const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
 
-  const { data: coursesData, isFetching: isCoursesFetching } = useGetAdminCoursesQuery(
+  const { data: intakesData, isFetching: isIntakesFetching } = useGetIntakesQuery(
     undefined,
     { skip: !attachTarget },
   );
@@ -235,6 +288,7 @@ export default function SessionLibraryManager() {
     setFormOpen(false);
     setFieldErrors({});
     setPendingSave(null);
+    setWizardStep(1);
   };
 
   const edit = (session: LibrarySession) => {
@@ -252,10 +306,14 @@ export default function SessionLibraryManager() {
     });
     setTagsInput((session.tags ?? []).join(", "));
     setFieldErrors({});
+    setWizardStep(1);
     setFormOpen(true);
   };
 
   const isEditingUsed = Boolean(editing?.usage.courseCount);
+  const requiresRecording = form.status === "READY";
+  const isStep1Valid = form.title.trim().length >= 3;
+  const isStep2Valid = !requiresRecording || Boolean(form.recordingUrl?.trim());
 
   const performSave = async (payload: CreateSessionRequest) => {
     try {
@@ -278,6 +336,17 @@ export default function SessionLibraryManager() {
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
+    if (wizardStep === 1) {
+      if (!isStep1Valid) return;
+      setWizardStep(2);
+      return;
+    }
+    if (wizardStep === 2) {
+      if (!isStep2Valid) return;
+      setWizardStep(3);
+      return;
+    }
+
     setFieldErrors({});
     const tags = tagsInput
       .split(",")
@@ -319,6 +388,19 @@ export default function SessionLibraryManager() {
       );
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not restore session"));
+    }
+  };
+
+  const markReady = async (session: LibrarySession) => {
+    try {
+      await updateSession({ id: session.id, data: { status: "READY" } }).unwrap();
+      toast.success("Session marked Ready");
+    } catch (error) {
+      if (isNormalizedApiError(error) && error.field === "recordingUrl") {
+        toast.error("Add a recording URL before marking this session Ready");
+      } else {
+        toast.error(getApiErrorMessage(error, "Could not mark session Ready"));
+      }
     }
   };
 
@@ -378,27 +460,27 @@ export default function SessionLibraryManager() {
     }
   };
 
-  const eligibleAttachCourses = useMemo(() => {
+  const eligibleAttachIntakes = useMemo(() => {
     if (!attachTarget) return [];
-    const usedCourseIds = new Set(attachTarget.usage.courses.map((c) => c.courseId));
+    const usedIntakeIds = new Set(attachTarget.usage.courses.map((c) => c.intakeId));
     const search = attachCourseSearch.trim().toLowerCase();
-    return (coursesData?.courses ?? []).filter(
-      (course) =>
-        !usedCourseIds.has(course.id) &&
-        eligibleAttachStatuses.has(course.status) &&
+    return (intakesData?.intakes ?? []).filter(
+      (intake) =>
+        !usedIntakeIds.has(intake.id) &&
+        eligibleAttachStatuses.has(intake.status) &&
         (!search ||
-          `${course.title} ${course.code}`.toLowerCase().includes(search)),
+          `${intake.course.title} ${intake.code}`.toLowerCase().includes(search)),
     );
-  }, [attachTarget, coursesData, attachCourseSearch]);
+  }, [attachTarget, intakesData, attachCourseSearch]);
 
   const confirmAttach = async () => {
     if (!attachTarget || !attachCourseId) return;
     try {
       await attachCourseSession({
-        courseId: attachCourseId,
+        intakeId: attachCourseId,
         sessionId: attachTarget.id,
       }).unwrap();
-      toast.success("Session attached to the course curriculum");
+      toast.success("Session attached to the intake curriculum");
       setAttachTarget(null);
       setAttachCourseId("");
       setAttachCourseSearch("");
@@ -426,13 +508,13 @@ export default function SessionLibraryManager() {
     },
   });
 
-  const totalPages = data ? Math.max(1, Math.ceil(data.pagination.total / PAGE_SIZE)) : 1;
-  const currentPage = Math.floor(offset / PAGE_SIZE) + 1;
+  const totalPages = data ? Math.max(1, Math.ceil(data.pagination.total / pageSize)) : 1;
+  const currentPage = Math.floor(offset / pageSize) + 1;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex flex-1 flex-wrap gap-3">
+      <div className="flex items-center gap-3">
+        <div className="flex flex-1 items-center gap-2 overflow-x-auto pb-1">
           <Input
             aria-label="Search Session Library"
             value={q}
@@ -441,22 +523,8 @@ export default function SessionLibraryManager() {
               setOffset(0);
             }}
             placeholder="Search title or description"
-            className="max-w-xs"
+            className="h-9 w-56 shrink-0"
           />
-          <select
-            aria-label="Filter by status"
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            value={statusFilter}
-            onChange={(event) => {
-              setStatusFilter(event.target.value as SessionStatus | "");
-              setOffset(0);
-            }}
-          >
-            <option value="">All statuses</option>
-            <option value="DRAFT">Draft</option>
-            <option value="READY">Ready</option>
-            <option value="ARCHIVED">Archived</option>
-          </select>
           <Input
             aria-label="Filter by tag"
             value={tagFilter}
@@ -465,11 +533,43 @@ export default function SessionLibraryManager() {
               setOffset(0);
             }}
             placeholder="Filter by tag"
-            className="max-w-40"
+            className="h-9 w-40 shrink-0"
           />
+          <div className="flex shrink-0 gap-2" role="group" aria-label="Filter by status">
+            {STATUS_PILLS.map(({ key, label, countKey, activeClassName }) => {
+              const active = statusFilter === key;
+              return (
+                <button
+                  key={label}
+                  type="button"
+                  aria-pressed={active}
+                  onClick={() => {
+                    setStatusFilter(key);
+                    setOffset(0);
+                  }}
+                  className={cn(
+                    "inline-flex h-9 shrink-0 items-center gap-1.5 rounded-md border px-3 text-sm font-medium whitespace-nowrap transition-colors",
+                    active
+                      ? activeClassName
+                      : "border-input text-muted-foreground hover:bg-muted",
+                  )}
+                >
+                  {label}
+                  <span
+                    className={cn(
+                      "inline-flex min-w-5 items-center justify-center rounded-full px-1.5 text-xs font-semibold",
+                      active ? "bg-background/60" : "bg-muted",
+                    )}
+                  >
+                    {data?.summary?.[countKey] ?? 0}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
         {canManage ? (
-          <Button onClick={() => { reset(); setFormOpen(true); }}>
+          <Button className="shrink-0" onClick={() => { reset(); setFormOpen(true); }}>
             <Plus className="mr-2 h-4 w-4" /> New session resource
           </Button>
         ) : null}
@@ -494,7 +594,7 @@ export default function SessionLibraryManager() {
       ) : null}
 
       <div className="overflow-hidden rounded-md border bg-card">
-        <Table>
+        <Table className="table-fixed">
           <TableCaption className="sr-only">Session Library resources</TableCaption>
           <TableHeader className="bg-muted/40">
             <TableRow>
@@ -508,18 +608,19 @@ export default function SessionLibraryManager() {
                   />
                 </TableHead>
               ) : null}
-              <TableHead>Resource</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Duration</TableHead>
-              <TableHead>Tags</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead className="pr-4 text-right">Actions</TableHead>
+              <TableHead className="w-auto">Resource</TableHead>
+              <TableHead className="w-24">Status</TableHead>
+              <TableHead className="w-20">Duration</TableHead>
+              <TableHead className="w-32">Tags</TableHead>
+              <TableHead className="w-24">Usage</TableHead>
+              <TableHead className="w-24">Updated</TableHead>
+              <TableHead className="w-28 pr-6 text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={8} className="h-32 text-center text-muted-foreground">
                   <span role="status" aria-live="polite" className="inline-flex items-center gap-2">
                     <Loader2 className="size-4 animate-spin" aria-hidden="true" /> Loading library…
                   </span>
@@ -527,7 +628,7 @@ export default function SessionLibraryManager() {
               </TableRow>
             ) : isError ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-32 text-center">
+                <TableCell colSpan={8} className="h-32 text-center">
                   <p role="alert" className="text-sm text-destructive">
                     Could not load the Session Library.
                   </p>
@@ -536,7 +637,7 @@ export default function SessionLibraryManager() {
             ) : data?.sessions.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="h-32 whitespace-normal text-center text-muted-foreground"
                 >
                   {hasActiveFilters
@@ -561,16 +662,18 @@ export default function SessionLibraryManager() {
                         />
                       </TableCell>
                     ) : null}
-                    <TableCell className="max-w-sm whitespace-normal py-4">
-                      <p className="font-semibold">{session.title}</p>
+                    <TableCell className="max-w-0 py-4">
+                      <p className="truncate font-semibold" title={session.title}>
+                        {session.title}
+                      </p>
                       {session.description ? (
-                        <p className="mt-0.5 line-clamp-1 text-xs text-muted-foreground">
+                        <p
+                          className="mt-0.5 truncate text-xs text-muted-foreground"
+                          title={session.description}
+                        >
                           {session.description}
                         </p>
                       ) : null}
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        {formatUpdatedAt(session.updatedAt)}
-                      </p>
                     </TableCell>
                     <TableCell>
                       <Badge variant="outline" className={statusStyles[session.status]}>
@@ -598,7 +701,10 @@ export default function SessionLibraryManager() {
                         ? `${session.usage.courseCount} course(s)`
                         : "Unused"}
                     </TableCell>
-                    <TableCell className="pr-4 text-right" data-no-row-navigation>
+                    <TableCell className="text-sm text-muted-foreground">
+                      {formatUpdatedAt(session.updatedAt)}
+                    </TableCell>
+                    <TableCell className="pr-6 text-right" data-no-row-navigation>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -621,6 +727,11 @@ export default function SessionLibraryManager() {
                             </DropdownMenuItem>
                           ) : null}
                           {canManage ? <DropdownMenuSeparator /> : null}
+                          {canManage && session.status === "DRAFT" ? (
+                            <DropdownMenuItem onSelect={() => markReady(session)}>
+                              <CheckCircle2 /> Mark Ready
+                            </DropdownMenuItem>
+                          ) : null}
                           {canManage && session.status !== "ARCHIVED" ? (
                             <DropdownMenuItem onSelect={() => setArchiveTarget(session)}>
                               <Archive /> Archive
@@ -655,17 +766,32 @@ export default function SessionLibraryManager() {
 
       {data && data.pagination.total > 0 ? (
         <div className="flex items-center justify-between text-sm text-muted-foreground">
-          <p>
-            Showing {Math.min(offset + 1, data.pagination.total)}–
-            {Math.min(offset + data.sessions.length, data.pagination.total)} of{" "}
-            {data.pagination.total}
-          </p>
+          <div className="flex items-center gap-3">
+            <p>
+              Showing {Math.min(offset + 1, data.pagination.total)}–
+              {Math.min(offset + data.sessions.length, data.pagination.total)} of{" "}
+              {data.pagination.total}
+            </p>
+            <Label htmlFor="session-page-size" className="sr-only">
+              Rows per page
+            </Label>
+            <Select
+              id="session-page-size"
+              className="h-9 w-28 rounded-md py-0 pl-3 pr-8 text-sm"
+              options={PAGE_SIZE_LABELS}
+              value={`${pageSize} / page`}
+              onChange={(label) => {
+                setPageSize(Number(label.split(" ")[0]));
+                setOffset(0);
+              }}
+            />
+          </div>
           <div className="flex items-center gap-2">
             <Button
               size="sm"
               variant="outline"
               disabled={offset === 0}
-              onClick={() => setOffset((value) => Math.max(0, value - PAGE_SIZE))}
+              onClick={() => setOffset((value) => Math.max(0, value - pageSize))}
             >
               Previous
             </Button>
@@ -676,7 +802,7 @@ export default function SessionLibraryManager() {
               size="sm"
               variant="outline"
               disabled={!data.pagination.hasMore}
-              onClick={() => setOffset((value) => value + PAGE_SIZE)}
+              onClick={() => setOffset((value) => value + pageSize)}
             >
               Next
             </Button>
@@ -695,25 +821,16 @@ export default function SessionLibraryManager() {
                 </SheetDescription>
               </SheetHeader>
               <div className="flex-1 space-y-5 overflow-y-auto px-4">
-                <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="outline" className={statusStyles[detailSession.status]}>
                     {detailSession.status.charAt(0) + detailSession.status.slice(1).toLowerCase()}
                   </Badge>
-                  <span>{formatUpdatedAt(detailSession.updatedAt)}</span>
-                  {formatDuration(detailSession.durationMinutes) ? (
-                    <span>· {formatDuration(detailSession.durationMinutes)}</span>
-                  ) : null}
+                  {(detailSession.tags ?? []).map((tag) => (
+                    <Badge key={tag} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
                 </div>
-
-                {(detailSession.tags ?? []).length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {(detailSession.tags ?? []).map((tag) => (
-                      <Badge key={tag} variant="outline" className="text-xs">
-                        {tag}
-                      </Badge>
-                    ))}
-                  </div>
-                ) : null}
 
                 <RecordingPreview url={detailSession.recordingUrl} />
 
@@ -746,25 +863,37 @@ export default function SessionLibraryManager() {
                   >
                     <Link2 className="mr-2 h-4 w-4" /> Attach to a course
                   </Button>
+                ) : canDelete && detailSession.status === "ARCHIVED" && detailSession.usage.courseCount === 0 ? (
+                  <Button
+                    className="w-full bg-linear-to-r from-red-600 to-rose-500 text-white hover:opacity-90"
+                    onClick={() => {
+                      setDeleteConfirmation("");
+                      setDeleteTarget(detailSession);
+                      setDetailSession(null);
+                    }}
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" /> Delete permanently
+                  </Button>
                 ) : null}
 
                 <div className="space-y-2">
                   <p className="text-sm font-semibold">
-                    Used in ({detailSession.usage.courseCount})
+                    Used in ({detailSession.usage.intakeCount})
                   </p>
                   {detailSession.usage.courses.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Not attached to any course yet.</p>
+                    <p className="text-sm text-muted-foreground">Not attached to any intake yet.</p>
                   ) : (
-                    <div className="space-y-2">
+                    <div className="max-h-56 space-y-2 overflow-y-auto">
                       {detailSession.usage.courses.map((usage) => {
                         const meta = (
-                          <>
-                            <p className="font-medium">{usage.courseTitle}</p>
-                            <p className="mt-0.5 text-xs text-muted-foreground">
-                              {usage.serviceTitle} · {usage.categoryTitle} · {usage.courseGroupTitle} ·{" "}
-                              {usage.courseCode}
-                            </p>
-                            <div className="mt-2 flex flex-wrap items-center gap-2">
+                          <div className="flex items-center justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="truncate font-medium">{usage.courseTitle}</p>
+                              <p className="font-mono text-xs text-muted-foreground">
+                                {usage.intakeCode}
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 items-center gap-2">
                               <Badge variant="outline" className="text-xs">
                                 {usage.deliveryStatus}
                               </Badge>
@@ -772,12 +901,12 @@ export default function SessionLibraryManager() {
                                 <span className="text-xs text-muted-foreground">Retired</span>
                               ) : null}
                             </div>
-                          </>
+                          </div>
                         );
                         return usage.serviceSlug ? (
                           <a
                             key={usage.courseSessionId}
-                            href={`/admin/services/${usage.serviceSlug}/categories/${usage.categoryId}/courses/${usage.courseId}/sessions`}
+                            href={`/admin/services/${usage.serviceSlug}/categories/${usage.categoryId}/courses/${usage.courseId}/intakes/${usage.intakeId}`}
                             className="block rounded-md border p-3 text-sm transition hover:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                           >
                             {meta}
@@ -792,21 +921,6 @@ export default function SessionLibraryManager() {
                   )}
                 </div>
 
-                {canDelete && detailSession.status === "ARCHIVED" && detailSession.usage.courseCount === 0 ? (
-                  <div className="pt-2 text-right">
-                    <Button
-                      variant="link"
-                      className="h-auto p-0 text-xs text-destructive"
-                      onClick={() => {
-                        setDeleteConfirmation("");
-                        setDeleteTarget(detailSession);
-                        setDetailSession(null);
-                      }}
-                    >
-                      <Trash2 className="mr-1 h-3 w-3" /> Delete permanently
-                    </Button>
-                  </div>
-                ) : null}
               </div>
             </>
           ) : null}
@@ -820,106 +934,214 @@ export default function SessionLibraryManager() {
             <DialogDescription>
               Recording, material, quiz, and feedback URLs stay on this reusable resource.
             </DialogDescription>
+            <div className="flex items-center gap-2 pt-4">
+              {WIZARD_STEPS.map(({ step, label }, index) => (
+                <Fragment key={step}>
+                  <div className="flex items-center gap-2">
+                    <span
+                      className={cn(
+                        "flex size-7 shrink-0 items-center justify-center rounded-full text-xs font-semibold transition-colors",
+                        wizardStep === step
+                          ? "bg-linear-to-r from-blue-600 to-indigo-500 text-white"
+                          : wizardStep > step
+                            ? "bg-primary/10 text-primary"
+                            : "bg-muted text-muted-foreground",
+                      )}
+                    >
+                      {wizardStep > step ? <Check className="size-3.5" aria-hidden="true" /> : step}
+                    </span>
+                    <span
+                      className={cn(
+                        "text-sm font-medium",
+                        wizardStep === step ? "text-foreground" : "text-muted-foreground",
+                      )}
+                    >
+                      {label}
+                    </span>
+                  </div>
+                  {index < WIZARD_STEPS.length - 1 ? (
+                    <div className={cn("h-px flex-1", wizardStep > step ? "bg-primary/40" : "bg-border")} />
+                  ) : null}
+                </Fragment>
+              ))}
+            </div>
           </DialogHeader>
-          <form onSubmit={submit} className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-2">
-                <Label htmlFor="session-title">Title</Label>
-                <Input
-                  id="session-title"
-                  required
-                  value={form.title}
-                  onChange={(event) => setForm({ ...form, title: event.target.value })}
-                />
-                {fieldErrors.title ? (
-                  <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors.title}</p>
-                ) : null}
+          <form onSubmit={submit} className="space-y-6 pt-2">
+            {wizardStep === 1 ? (
+              <div className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div className="space-y-2">
+                    <Label htmlFor="session-title">
+                      Title <span className="text-red-500" aria-hidden="true">*</span>
+                    </Label>
+                    <Input
+                      id="session-title"
+                      required
+                      value={form.title}
+                      onChange={(event) => setForm({ ...form, title: event.target.value })}
+                    />
+                    {fieldErrors.title ? (
+                      <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors.title}</p>
+                    ) : null}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="session-duration">Duration (minutes)</Label>
+                    <Input
+                      id="session-duration"
+                      type="number"
+                      min={1}
+                      value={form.durationMinutes ?? ""}
+                      onChange={(event) =>
+                        setForm({
+                          ...form,
+                          durationMinutes: event.target.value ? Number(event.target.value) : null,
+                        })
+                      }
+                    />
+                    {fieldErrors.durationMinutes ? (
+                      <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors.durationMinutes}</p>
+                    ) : null}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="session-status">Status</Label>
+                    <Select
+                      id="session-status"
+                      className="h-10 w-full rounded-md py-0 pl-3 pr-8 text-sm"
+                      options={isEditingUsed ? [STATUS_SELECT_LABELS.READY] : [STATUS_SELECT_LABELS.DRAFT, STATUS_SELECT_LABELS.READY]}
+                      value={STATUS_SELECT_LABELS[form.status as "DRAFT" | "READY"]}
+                      onChange={(label) => setForm({ ...form, status: statusFromLabel(label) })}
+                    />
+                    {isEditingUsed ? (
+                      <p className="text-xs text-muted-foreground">
+                        Used by a course, so this resource can&apos;t return to Draft — archive it instead to stop new use.
+                      </p>
+                    ) : null}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="session-tags">Tags (comma-separated)</Label>
+                    <Input
+                      id="session-tags"
+                      value={tagsInput}
+                      onChange={(event) => setTagsInput(event.target.value)}
+                      placeholder="javascript, intro, week-1"
+                    />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="session-description">Description</Label>
+                  <textarea
+                    id="session-description"
+                    className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm focus-visible:outline-none"
+                    value={form.description ?? ""}
+                    onChange={(event) => setForm({ ...form, description: event.target.value })}
+                  />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="session-duration">Duration (minutes)</Label>
-                <Input
-                  id="session-duration"
-                  type="number"
-                  min={1}
-                  value={form.durationMinutes ?? ""}
-                  onChange={(event) =>
-                    setForm({
-                      ...form,
-                      durationMinutes: event.target.value ? Number(event.target.value) : null,
-                    })
-                  }
-                />
-                {fieldErrors.durationMinutes ? (
-                  <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors.durationMinutes}</p>
-                ) : null}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="session-status">Status</Label>
-                <select
-                  id="session-status"
-                  className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
-                  value={form.status}
-                  onChange={(event) =>
-                    setForm({ ...form, status: event.target.value as "DRAFT" | "READY" })
-                  }
-                >
-                  <option value="DRAFT" disabled={isEditingUsed}>
-                    Draft
-                  </option>
-                  <option value="READY">Ready</option>
-                </select>
-                {isEditingUsed ? (
-                  <p className="text-xs text-muted-foreground">
-                    Used by a course, so this resource can&apos;t return to Draft — archive it instead to stop new use.
+            ) : null}
+
+            {wizardStep === 2 ? (
+              <div className="grid gap-4 md:grid-cols-2">
+                {(["recordingUrl", "materialUrl", "quizUrl", "feedbackUrl"] as const).map((field) => (
+                  <div key={field} className="space-y-2">
+                    <Label htmlFor={`session-${field}`}>
+                      {field.replace("Url", " URL")}{" "}
+                      {field === "recordingUrl" && requiresRecording ? (
+                        <span className="text-red-500" aria-hidden="true">*</span>
+                      ) : null}
+                    </Label>
+                    <Input
+                      id={`session-${field}`}
+                      type="url"
+                      value={form[field] ?? ""}
+                      onChange={(event) => setForm({ ...form, [field]: event.target.value })}
+                      placeholder="https://"
+                    />
+                    {fieldErrors[field] ? (
+                      <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors[field]}</p>
+                    ) : null}
+                  </div>
+                ))}
+                {requiresRecording && !form.recordingUrl?.trim() ? (
+                  <p className="text-xs text-muted-foreground md:col-span-2">
+                    A recording URL is required to mark this resource Ready.
                   </p>
                 ) : null}
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="session-tags">Tags (comma-separated)</Label>
-                <Input
-                  id="session-tags"
-                  value={tagsInput}
-                  onChange={(event) => setTagsInput(event.target.value)}
-                  placeholder="javascript, intro, week-1"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="session-description">Description</Label>
-              <textarea
-                id="session-description"
-                className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm"
-                value={form.description ?? ""}
-                onChange={(event) => setForm({ ...form, description: event.target.value })}
-              />
-            </div>
-            <div className="grid gap-4 md:grid-cols-2">
-              {(["recordingUrl", "materialUrl", "quizUrl", "feedbackUrl"] as const).map((field) => (
-                <div key={field} className="space-y-2">
-                  <Label htmlFor={`session-${field}`}>{field.replace("Url", " URL")}</Label>
-                  <Input
-                    id={`session-${field}`}
-                    type="url"
-                    value={form[field] ?? ""}
-                    onChange={(event) => setForm({ ...form, [field]: event.target.value })}
-                    placeholder="https://"
-                  />
-                  {fieldErrors[field] ? (
-                    <p className="text-xs font-medium text-destructive" role="alert">{fieldErrors[field]}</p>
+            ) : null}
+
+            {wizardStep === 3 ? (
+              <div className="space-y-4">
+                <RecordingPreview url={form.recordingUrl} />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline" className={cn("text-xs", statusStyles[form.status as SessionStatus])}>
+                    {STATUS_SELECT_LABELS[form.status as "DRAFT" | "READY"]}
+                  </Badge>
+                  {formatDuration(form.durationMinutes) ? (
+                    <span className="text-xs text-muted-foreground">{formatDuration(form.durationMinutes)}</span>
                   ) : null}
                 </div>
-              ))}
-            </div>
-            <div className="flex gap-2">
-              <Button disabled={createState.isLoading || updateState.isLoading} type="submit">
-                {(createState.isLoading || updateState.isLoading) ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <div>
+                  <p className="text-sm font-semibold">{form.title || "Untitled resource"}</p>
+                  {form.description ? (
+                    <p className="mt-1 text-sm text-muted-foreground">{form.description}</p>
+                  ) : null}
+                </div>
+                {tagsInput.trim() ? (
+                  <div className="flex flex-wrap gap-1">
+                    {tagsInput
+                      .split(",")
+                      .map((tag) => tag.trim())
+                      .filter(Boolean)
+                      .map((tag) => (
+                        <Badge key={tag} variant="outline" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                  </div>
                 ) : null}
-                Save resource
+                <div className="space-y-1.5 rounded-md border bg-muted/30 p-3">
+                  {(["recordingUrl", "materialUrl", "quizUrl", "feedbackUrl"] as const).map((field) => (
+                    <div key={field} className="flex items-center gap-2 text-sm">
+                      {form[field] ? (
+                        <FileCheck2 className="size-3.5 shrink-0 text-emerald-600" aria-hidden="true" />
+                      ) : (
+                        <span className="size-3.5 shrink-0 rounded-full border border-dashed border-muted-foreground/40" />
+                      )}
+                      <span className={form[field] ? "text-foreground" : "text-muted-foreground"}>
+                        {field.replace("Url", " URL")}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="flex items-center justify-between pt-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => (wizardStep === 1 ? reset() : setWizardStep((step) => (step - 1) as 1 | 2 | 3))}
+              >
+                {wizardStep === 1 ? (
+                  "Cancel"
+                ) : (
+                  <>
+                    <ArrowLeft className="mr-2 size-4" aria-hidden="true" /> Back
+                  </>
+                )}
               </Button>
-              <Button type="button" variant="outline" onClick={reset}>
-                Cancel
-              </Button>
+              {wizardStep < 3 ? (
+                <Button type="submit" disabled={wizardStep === 1 ? !isStep1Valid : !isStep2Valid}>
+                  Next <ArrowRight className="ml-2 size-4" aria-hidden="true" />
+                </Button>
+              ) : (
+                <Button disabled={createState.isLoading || updateState.isLoading} type="submit">
+                  {(createState.isLoading || updateState.isLoading) ? (
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  ) : null}
+                  Save resource
+                </Button>
+              )}
             </div>
           </form>
         </DialogContent>
@@ -947,8 +1169,8 @@ export default function SessionLibraryManager() {
           <AlertDialogHeader>
             <AlertDialogTitle>Update a resource in active use?</AlertDialogTitle>
             <AlertDialogDescription>
-              This resource is used by {editing?.usage.courseCount} course intake(s) across{" "}
-              {editing?.usage.courseGroupCount} course group(s). Saving changes updates every
+              This resource is used by {editing?.usage.intakeCount} intake(s) across{" "}
+              {editing?.usage.courseCount} course(s). Saving changes updates every
               authorized learner view.
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -1034,44 +1256,44 @@ export default function SessionLibraryManager() {
       >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>Attach to course</DialogTitle>
+            <DialogTitle>Attach to intake</DialogTitle>
             <DialogDescription>
-              Attach &quot;{attachTarget?.title}&quot; to a course that hasn&apos;t used it yet. To restore a
-              retired attachment instead, use that course&apos;s curriculum page.
+              Attach &quot;{attachTarget?.title}&quot; to an intake that hasn&apos;t used it yet. To restore a
+              retired attachment instead, use that intake&apos;s curriculum page.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <Input
-              aria-label="Search courses"
-              placeholder="Search by title or code"
+              aria-label="Search intakes"
+              placeholder="Search by course title or intake code"
               value={attachCourseSearch}
               onChange={(event) => setAttachCourseSearch(event.target.value)}
             />
             <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
-              {isCoursesFetching ? (
+              {isIntakesFetching ? (
                 <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" /> Loading courses…
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading intakes…
                 </p>
-              ) : eligibleAttachCourses.length === 0 ? (
+              ) : eligibleAttachIntakes.length === 0 ? (
                 <p className="p-4 text-center text-sm text-muted-foreground">
-                  No eligible courses found.
+                  No eligible intakes found.
                 </p>
               ) : (
-                eligibleAttachCourses.map((course) => (
+                eligibleAttachIntakes.map((intake) => (
                   <label
-                    key={course.id}
+                    key={intake.id}
                     className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-muted/60"
                   >
                     <input
                       type="radio"
                       name="attach-course"
-                      checked={attachCourseId === course.id}
-                      onChange={() => setAttachCourseId(course.id)}
+                      checked={attachCourseId === intake.id}
+                      onChange={() => setAttachCourseId(intake.id)}
                     />
                     <span>
-                      <span className="block text-sm font-semibold">{course.title}</span>
+                      <span className="block text-sm font-semibold">{intake.course.title}</span>
                       <span className="block font-mono text-xs text-muted-foreground">
-                        {course.code} · {course.category.title}
+                        {intake.code} · {intake.category.title}
                       </span>
                     </span>
                   </label>

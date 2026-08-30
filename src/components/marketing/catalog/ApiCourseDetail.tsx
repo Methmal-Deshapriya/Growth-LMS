@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { Check } from "lucide-react";
+import { Check, Clock, RefreshCw } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import type { PublicCourseDetail } from "@/features/catalog/catalogTypes";
 import { CatalogIcon } from "./visuals";
 import { CATALOG_GRADIENT_BG } from "./background";
-import { ContactCTAButton } from "./ContactCTAButton";
 import { PageSlide } from "./PageSlide";
 
 export function ApiCourseDetail({ course }: { course: PublicCourseDetail }) {
@@ -79,18 +78,34 @@ export function ApiCourseDetail({ course }: { course: PublicCourseDetail }) {
               </p>
             </div>
           )}
-          {course.accessType === "FREE" ? (
-            <Link
-              href={`/?slide=auth&enrollCourse=${course.id}`}
-              className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
-            >
-              Sign in and add to My Courses
-            </Link>
+          {course.enrollmentStatus === "OPEN" && course.openIntake ? (
+            course.accessType === "FREE" ? (
+              <Link
+                href={`/?slide=auth&enrollCourse=${course.openIntake.id}`}
+                className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
+              >
+                Sign in and add to My Courses
+              </Link>
+            ) : (
+              <Link
+                href={`/?slide=auth&requestCourse=${course.id}`}
+                className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
+              >
+                Enroll now
+              </Link>
+            )
           ) : (
-            <ContactCTAButton
-              message={`Hello! I'm interested in ${course.title}.`}
-              label="Get in touch about this course"
-            />
+            <div className="inline-flex items-center gap-2 h-11 rounded-full bg-[#F5F6FA] px-6 font-alt text-sm font-semibold text-[#5B6472]">
+              {course.enrollmentStatus === "COMING_SOON" ? (
+                <>
+                  <Clock className="h-4 w-4" /> Coming soon
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="h-4 w-4" /> Reopening soon
+                </>
+              )}
+            </div>
           )}
         </Reveal>
       </div>

@@ -2,6 +2,7 @@ export type LearningServiceSlug = string;
 export type LearningServiceType = string;
 export type CourseLevel =
   "OPEN" | "FOUNDATION" | "BEGINNER" | "INTERMEDIATE" | "ADVANCED";
+export type CourseEnrollmentStatus = "COMING_SOON" | "OPEN" | "REOPENING_SOON";
 
 export interface PublicLearningService {
   id: string;
@@ -49,10 +50,20 @@ export interface PublicCourseCard {
   price: number;
   currency: string;
   certificateEnabled: boolean;
+  /** Derived from this course's intakes — see the course-to-program rename plan §8. Drives the public CTA: OPEN shows Enroll, COMING_SOON/REOPENING_SOON show the matching waiting state. */
+  enrollmentStatus: CourseEnrollmentStatus;
 }
 
 export interface PublicCategoryDetail extends PublicCategory {
   courses: PublicCourseCard[];
+}
+
+/** The course's currently OPEN_ACTIVE intake, if any — the target for Enroll/self-enroll. */
+export interface PublicOpenIntake {
+  id: string;
+  startDate: string | null;
+  expectedEndDate: string | null;
+  capacity: number | null;
 }
 
 export interface PublicCourseDetail extends PublicCourseCard {
@@ -62,6 +73,7 @@ export interface PublicCourseDetail extends PublicCourseCard {
   prerequisites: string[];
   thumbnailUrl: string | null;
   category: PublicCategory;
+  openIntake: PublicOpenIntake | null;
 }
 
 export interface PublicServiceCatalog {

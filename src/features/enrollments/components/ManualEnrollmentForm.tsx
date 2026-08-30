@@ -6,7 +6,9 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
 import { getApiErrorMessage } from "@/lib/api";
+import { formatLKR } from "@/lib/utils";
 import {
   useBulkCreateEnrollmentsMutation,
   useCreateEnrollmentMutation,
@@ -14,12 +16,20 @@ import {
 } from "../enrollmentsApi";
 import type { PaymentStatus } from "../enrollmentsTypes";
 
+type PaidStatus = Exclude<PaymentStatus, "NOT_REQUIRED">;
+
 export default function ManualEnrollmentForm({
-  courseId,
+  intakeId,
+  coursePrice,
+  discountAmount,
   onSuccess,
   onCancel,
 }: {
-  courseId: string;
+  intakeId: string;
+  /** Full course price, before any one-time-payment discount. */
+  coursePrice: number;
+  /** This course's flat discount for paying the full price in one go. */
+  discountAmount: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
@@ -27,11 +37,24 @@ export default function ManualEnrollmentForm({
   const deferredSearch = useDeferredValue(search.trim());
   const [cursor, setCursor] = useState<string>();
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  const [paymentStatus, setPaymentStatus] = useState<Exclude<PaymentStatus, "NOT_REQUIRED">>("COMPLETED");
+  const [paymentStatus, setPaymentStatus] = useState<PaidStatus>("COMPLETED");
   const [reference, setReference] = useState("");
   const [note, setNote] = useState("");
+
+  const fullAmount = coursePrice - discountAmount;
+  const halfAmount = coursePrice / 2;
+  const paymentOptionLabels: Record<PaidStatus, string> = {
+    COMPLETED:
+      discountAmount > 0
+        ? `Full payment — ${formatLKR(fullAmount)} (${formatLKR(discountAmount)} discount applied)`
+        : `Full payment — ${formatLKR(fullAmount)}`,
+    PARTIAL: `Partial — ${formatLKR(halfAmount)} now, ${formatLKR(halfAmount)} later`,
+  };
+  const paymentOptions = Object.values(paymentOptionLabels);
+  const labelToStatus = (label: string): PaidStatus =>
+    label === paymentOptionLabels.PARTIAL ? "PARTIAL" : "COMPLETED";
   const { data, isFetching, isError, refetch } = useGetEligibleStudentsQuery({
-    courseId,
+    intakeId,
     q: deferredSearch || undefined,
     limit: 25,
     cursor,
@@ -62,11 +85,11 @@ export default function ManualEnrollmentForm({
     };
     try {
       if (selectedIds.length === 1) {
-        await createEnrollment({ courseId, data: { userId: selectedIds[0], ...payment } }).unwrap();
-        toast.success("Student enrolled in this course intake");
+        await createEnrollment({ intakeId, data: { userId: selectedIds[0], ...payment } }).unwrap();
+        toast.success("Student enrolled in this intake");
       } else {
         const result = await bulkCreate({
-          courseId,
+          intakeId,
           students: selectedIds.map((userId) => ({ userId, ...payment })),
         }).unwrap();
         if (result.summary.failed) {
@@ -142,7 +165,16 @@ export default function ManualEnrollmentForm({
         {selectedIds.length} selected · up to 100 students per enrollment request
       </p>
       <div className="grid gap-4 md:grid-cols-2">
-        <div className="space-y-2"><Label htmlFor="enrollment-payment-status">Payment status</Label><select id="enrollment-payment-status" className="h-10 w-full rounded-md border border-input bg-background px-3 text-sm" value={paymentStatus} onChange={(event) => setPaymentStatus(event.target.value as Exclude<PaymentStatus, "NOT_REQUIRED">)}><option value="COMPLETED">Completed</option><option value="PARTIAL">Partial</option><option value="PENDING">Pending</option></select></div>
+        <div className="space-y-2">
+          <Label htmlFor="enrollment-payment-status">Payment</Label>
+          <Select
+            id="enrollment-payment-status"
+            className="h-10 w-full rounded-md py-0 pl-3 pr-8 text-sm"
+            options={paymentOptions}
+            value={paymentOptionLabels[paymentStatus]}
+            onChange={(label) => setPaymentStatus(labelToStatus(label))}
+          />
+        </div>
         <div className="space-y-2"><Label htmlFor="enrollment-payment-reference">External payment reference</Label><Input id="enrollment-payment-reference" value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Receipt or transfer reference" /></div>
       </div>
       <div className="space-y-2"><Label htmlFor="enrollment-payment-note">Internal payment note</Label><textarea id="enrollment-payment-note" className="min-h-20 w-full rounded-md border border-input bg-background p-3 text-sm" value={note} onChange={(event) => setNote(event.target.value)} /></div>

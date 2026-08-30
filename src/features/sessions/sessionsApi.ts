@@ -14,8 +14,16 @@ import type {
   UpdateSessionRequest,
 } from "./sessionsTypes";
 
+export interface SessionLibrarySummary {
+  all: number;
+  ready: number;
+  draft: number;
+  archive: number;
+}
+
 interface SessionListResponse {
   sessions: LibrarySession[];
+  summary: SessionLibrarySummary;
   pagination: { total: number; limit: number; offset: number; hasMore: boolean };
 }
 
@@ -27,7 +35,7 @@ export const sessionsApi = baseApi.injectEndpoints({
         q?: string;
         status?: SessionStatus;
         tag?: string;
-        attachableCourseId?: string;
+        attachableIntakeId?: string;
         limit?: number;
         offset?: number;
       } | void
@@ -83,82 +91,82 @@ export const sessionsApi = baseApi.injectEndpoints({
       query: (ids) => ({ url: "/sessions/bulk-archive", method: "POST", body: { ids } }),
       invalidatesTags: [{ type: "Sessions", id: "LIBRARY" }],
     }),
-    getCourseCurriculum: builder.query<CurriculumResponse, { courseId: string; includeRetired?: boolean }>({
-      query: ({ courseId, includeRetired }) => ({
-        url: `/courses/${courseId}/curriculum`,
+    getCourseCurriculum: builder.query<CurriculumResponse, { intakeId: string; includeRetired?: boolean }>({
+      query: ({ intakeId, includeRetired }) => ({
+        url: `/intakes/${intakeId}/curriculum`,
         params: { includeRetired: Boolean(includeRetired) },
       }),
-      providesTags: (_result, _error, { courseId }) => [
-        { type: "Curriculum", id: courseId },
+      providesTags: (_result, _error, { intakeId }) => [
+        { type: "Curriculum", id: intakeId },
       ],
     }),
     attachCourseSession: builder.mutation<
       { courseSession: CourseSession },
-      { courseId: string; sessionId: string; orderIndex?: number }
+      { intakeId: string; sessionId: string; orderIndex?: number }
     >({
-      query: ({ courseId, ...body }) => ({
-        url: `/courses/${courseId}/curriculum`,
+      query: ({ intakeId, ...body }) => ({
+        url: `/intakes/${intakeId}/curriculum`,
         method: "POST",
         body,
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Curriculum", id: courseId },
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Curriculum", id: intakeId },
         { type: "Sessions", id: "LIBRARY" },
-        "Courses",
+        "Intakes",
         "Services",
       ],
     }),
     reorderCourseCurriculum: builder.mutation<
       { success: true },
       {
-        courseId: string;
+        intakeId: string;
         courseSessions: { id: string; orderIndex: number }[];
         acknowledgeSequenceRisk?: boolean;
       }
     >({
-      query: ({ courseId, courseSessions, acknowledgeSequenceRisk }) => ({
-        url: `/courses/${courseId}/curriculum/reorder`,
+      query: ({ intakeId, courseSessions, acknowledgeSequenceRisk }) => ({
+        url: `/intakes/${intakeId}/curriculum/reorder`,
         method: "PATCH",
         body: { courseSessions, acknowledgeSequenceRisk },
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Curriculum", id: courseId },
-        "Courses",
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Curriculum", id: intakeId },
+        "Intakes",
       ],
     }),
     removeCourseSession: builder.mutation<
       { id: string; action: "DETACHED" | "RETIRED" },
-      { courseId: string; courseSessionId: string }
+      { intakeId: string; courseSessionId: string }
     >({
-      query: ({ courseId, courseSessionId }) => ({
-        url: `/courses/${courseId}/curriculum/${courseSessionId}`,
+      query: ({ intakeId, courseSessionId }) => ({
+        url: `/intakes/${intakeId}/curriculum/${courseSessionId}`,
         method: "DELETE",
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Curriculum", id: courseId },
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Curriculum", id: intakeId },
         { type: "Sessions", id: "LIBRARY" },
-        "Courses",
+        "Intakes",
         "Services",
       ],
     }),
     updateCourseSessionDelivery: builder.mutation<
       CourseSession,
       {
-        courseId: string;
+        intakeId: string;
         courseSessionId: string;
         status: CourseSessionDeliveryStatus;
         availableAt?: string | null;
         acknowledgeSequenceRisk?: boolean;
       }
     >({
-      query: ({ courseId, courseSessionId, ...body }) => ({
-        url: `/courses/${courseId}/curriculum/${courseSessionId}/delivery`,
+      query: ({ intakeId, courseSessionId, ...body }) => ({
+        url: `/intakes/${intakeId}/curriculum/${courseSessionId}/delivery`,
         method: "PATCH",
         body,
       }),
-      invalidatesTags: (_result, _error, { courseId }) => [
-        { type: "Curriculum", id: courseId },
-        "Courses",
+      invalidatesTags: (_result, _error, { intakeId }) => [
+        { type: "Curriculum", id: intakeId },
+        "Intakes",
       ],
     }),
     getEnrollmentProgress: builder.query<EnrollmentProgress, string>({
