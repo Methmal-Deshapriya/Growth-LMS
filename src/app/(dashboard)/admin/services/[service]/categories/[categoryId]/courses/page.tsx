@@ -112,7 +112,7 @@ export default function CategoryCoursesPage() {
         />
       )}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-3xl">
+        <DialogContent className="max-h-[92vh] overflow-y-auto sm:max-w-2xl">
           <DialogHeader>
             <DialogTitle>New course</DialogTitle>
             <DialogDescription>
