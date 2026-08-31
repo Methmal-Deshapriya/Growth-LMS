@@ -64,6 +64,8 @@ export interface PublicOpenIntake {
   startDate: string | null;
   expectedEndDate: string | null;
   capacity: number | null;
+  /** null means unlimited capacity — distinct from 0 (full). */
+  seatsRemaining: number | null;
 }
 
 export interface PublicCourseDetail extends PublicCourseCard {

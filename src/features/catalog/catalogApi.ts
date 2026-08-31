@@ -182,6 +182,7 @@ export interface CatalogDeletionImpact {
   curriculumLinks?: number;
   enrollments?: number;
   projects?: number;
+  enrollmentRequests?: number;
 }
 
 export interface CourseAnalytics {

@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { Check, Clock, RefreshCw } from "lucide-react";
+import { Check, Clock, RefreshCw, Users } from "lucide-react";
 import { Reveal } from "@/components/ui/reveal";
 import type { PublicCourseDetail } from "@/features/catalog/catalogTypes";
 import { CatalogIcon } from "./visuals";
@@ -79,21 +79,31 @@ export function ApiCourseDetail({ course }: { course: PublicCourseDetail }) {
             </div>
           )}
           {course.enrollmentStatus === "OPEN" && course.openIntake ? (
-            course.accessType === "FREE" ? (
-              <Link
-                href={`/?slide=auth&enrollCourse=${course.openIntake.id}`}
-                className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
-              >
-                Sign in and add to My Courses
-              </Link>
-            ) : (
-              <Link
-                href={`/?slide=auth&requestCourse=${course.id}`}
-                className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
-              >
-                Enroll now
-              </Link>
-            )
+            <div className="space-y-2">
+              {course.accessType === "FREE" ? (
+                <Link
+                  href={`/?slide=auth&enrollCourse=${course.openIntake.id}`}
+                  className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
+                >
+                  Sign in and add to My Courses
+                </Link>
+              ) : (
+                <Link
+                  href={`/?slide=auth&requestCourse=${course.id}`}
+                  className="inline-flex h-11 items-center rounded-full bg-blue-600 px-6 font-semibold text-white hover:bg-blue-700"
+                >
+                  Enroll now
+                </Link>
+              )}
+              <p className="flex items-center gap-1.5 text-xs text-[#5B6472]">
+                <Users className="h-3.5 w-3.5" />
+                {course.openIntake.seatsRemaining === null
+                  ? "Unlimited seats"
+                  : course.openIntake.seatsRemaining > 0
+                    ? `${course.openIntake.seatsRemaining} seat${course.openIntake.seatsRemaining === 1 ? "" : "s"} left`
+                    : "Full"}
+              </p>
+            </div>
           ) : (
             <div className="inline-flex items-center gap-2 h-11 rounded-full bg-[#F5F6FA] px-6 font-alt text-sm font-semibold text-[#5B6472]">
               {course.enrollmentStatus === "COMING_SOON" ? (

@@ -39,7 +39,8 @@ export const enrollmentRequestsApi = baseApi.injectEndpoints({
     }),
     updateEnrollmentRequestStatus: builder.mutation<
       EnrollmentRequest,
-      { id: string; status: Extract<EnrollmentRequestStatus, "CONTACTED" | "DECLINED"> }
+      // PENDING reopens a Declined request rather than forcing a resubmission.
+      { id: string; status: Extract<EnrollmentRequestStatus, "CONTACTED" | "DECLINED" | "PENDING"> }
     >({
       query: ({ id, status }) => ({
         url: `/enrollment-requests/${id}/status`,

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { Check, Copy, Loader2, UserCheck, XCircle } from "lucide-react";
+import { Check, Copy, Loader2, RotateCcw, UserCheck, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import {
   Dialog,
@@ -146,6 +146,17 @@ export function EnrollmentRequestsTab({
       toast.success("Request declined");
     } catch (error) {
       toast.error(getApiErrorMessage(error, "Could not update the request"));
+    }
+  };
+
+  // Reopens a Declined request back to Pending instead of forcing the
+  // student to resubmit — keeps their original contactPhone and history.
+  const reopen = async (request: EnrollmentRequest) => {
+    try {
+      await updateStatus({ id: request.id, status: "PENDING" }).unwrap();
+      toast.success("Request reopened");
+    } catch (error) {
+      toast.error(getApiErrorMessage(error, "Could not reopen the request"));
     }
   };
 
@@ -318,6 +329,17 @@ export function EnrollmentRequestsTab({
                           </Button>
                         </>
                       ) : null}
+                      {request.status === "DECLINED" ? (
+                        <Button
+                          aria-label="Reopen this request"
+                          variant="ghost"
+                          size="icon"
+                          disabled={isUpdatingStatus}
+                          onClick={() => reopen(request)}
+                        >
+                          <RotateCcw className="size-4 text-sky-600" aria-hidden="true" />
+                        </Button>
+                      ) : null}
                     </div>
                   </TableCell>
                 </TableRow>
@@ -431,6 +453,12 @@ export function EnrollmentRequestsTab({
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => decline(detailRequest)} disabled={isUpdatingStatus}>
                       <XCircle className="mr-2 size-4" aria-hidden="true" /> Decline
+                    </Button>
+                  </div>
+                ) : detailRequest.status === "DECLINED" ? (
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onClick={() => reopen(detailRequest)} disabled={isUpdatingStatus}>
+                      <RotateCcw className="mr-2 size-4" aria-hidden="true" /> Reopen
                     </Button>
                   </div>
                 ) : null}
