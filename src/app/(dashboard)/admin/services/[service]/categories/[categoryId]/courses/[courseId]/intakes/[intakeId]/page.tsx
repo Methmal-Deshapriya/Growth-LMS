@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useParams, useSearchParams } from "next/navigation";
-import { Plus } from "lucide-react";
+import { ListChecks, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -182,9 +182,11 @@ export default function IntakeWorkspacePage() {
           <CourseOverviewAnalytics intakeId={intake.id} />
         </TabsContent>
 
-        <TabsContent value="sessions" className="space-y-4">
+        <TabsContent value="sessions" className="space-y-6">
           <div>
-            <h2 className="text-xl font-semibold">Curriculum and delivery</h2>
+            <h2 className="flex items-center gap-2 text-xl font-semibold">
+              <ListChecks className="size-5 text-primary" aria-hidden="true" /> Curriculum and delivery
+            </h2>
             <p className="text-sm text-muted-foreground">
               Every attached row has its own order and learner visibility for this intake.
             </p>
@@ -192,7 +194,7 @@ export default function IntakeWorkspacePage() {
           <CourseCurriculumManager intakeId={intake.id} readOnly={readOnly} />
         </TabsContent>
 
-        <TabsContent value="enrollments" className="space-y-4">
+        <TabsContent value="enrollments" className="space-y-6">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div>
               <h2 className="text-xl font-semibold">Learner roster</h2>
@@ -214,7 +216,7 @@ export default function IntakeWorkspacePage() {
         </TabsContent>
 
         {intake.accessType === "PAID" ? (
-          <TabsContent value="enrollment-requests" className="space-y-4">
+          <TabsContent value="enrollment-requests" className="space-y-6">
             <div>
               <h2 className="text-xl font-semibold">Enrollment requests</h2>
               <p className="text-sm text-muted-foreground">

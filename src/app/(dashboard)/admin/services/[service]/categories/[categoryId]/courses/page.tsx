@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Plus } from "lucide-react";
+import { BookOpen, CalendarCheck, Layers, Plus } from "lucide-react";
 import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
-import { AdminSummaryStrip } from "@/features/catalog/components/AdminSummaryStrip";
+import { CourseKpiTile } from "@/features/catalog/components/admin/CourseKpiTile";
 import { CourseForm } from "@/features/catalog/components/CourseForm";
 import { CourseTable } from "@/features/catalog/components/CourseTable";
 import {
@@ -78,25 +78,26 @@ export default function CategoryCoursesPage() {
           </Button>
         }
       />
-      <AdminSummaryStrip
-        items={[
-          {
-            label: "Courses",
-            value: courses.filter((course) => !course.archivedAt).length,
-            detail: `${courses.filter((course) => course.archivedAt).length} archived`,
-          },
-          {
-            label: "Open for enrollment",
-            value: courses.filter((course) => course.enrollmentStatus === "OPEN").length,
-            detail: "Have an open-active intake",
-          },
-          {
-            label: "Total intakes",
-            value: courses.reduce((total, course) => total + course.intakeCount, 0),
-            detail: "Across every course",
-          },
-        ]}
-      />
+      <div className="flex flex-wrap gap-3">
+        <CourseKpiTile
+          icon={BookOpen}
+          label="Courses"
+          value={courses.filter((course) => !course.archivedAt).length}
+          secondary={`${courses.filter((course) => course.archivedAt).length} archived`}
+        />
+        <CourseKpiTile
+          icon={CalendarCheck}
+          label="Open for enrollment"
+          value={courses.filter((course) => course.enrollmentStatus === "OPEN").length}
+          secondary="Have an open-active intake"
+        />
+        <CourseKpiTile
+          icon={Layers}
+          label="Total intakes"
+          value={courses.reduce((total, course) => total + course.intakeCount, 0)}
+          secondary="Across every course"
+        />
+      </div>
       {isError ? (
         <p
           role="alert"

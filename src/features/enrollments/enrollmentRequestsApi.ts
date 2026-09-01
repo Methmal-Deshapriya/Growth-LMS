@@ -67,6 +67,7 @@ export const enrollmentRequestsApi = baseApi.injectEndpoints({
         "Enrollments",
         "Intakes",
         "Services",
+        "Courses",
       ],
     }),
   }),

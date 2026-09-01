@@ -1,11 +1,36 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { ArrowDown, ArrowUp, Link2, Loader2, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
+import {
+  DndContext,
+  KeyboardSensor,
+  PointerSensor,
+  closestCenter,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { format } from "date-fns";
+import { Archive, Clock, GripVertical, Link2, Loader2, MoreHorizontal, RotateCcw, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { SequenceRiskConfirmationDialog } from "@/components/admin/SequenceRiskConfirmationDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,7 +38,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { FilterPills, type FilterPillOption } from "@/components/ui/filter-pills";
 import { Input } from "@/components/ui/input";
 import {
   Sheet,
@@ -22,17 +46,11 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
 import { COURSE_SESSION_DELIVERY_STATUS_STYLES, SESSION_STATUS_STYLES } from "@/lib/statusColors";
+import { cn } from "@/lib/utils";
+import { RecordingPreview } from "./RecordingPreview";
+import { ScheduleReleaseDialog } from "./ScheduleReleaseDialog";
 import {
   useAttachCourseSessionMutation,
   useGetCourseCurriculumQuery,
@@ -49,22 +67,128 @@ type PendingRisk =
 
 const statusClass = COURSE_SESSION_DELIVERY_STATUS_STYLES;
 
-const DELIVERY_PILLS: { key: CourseSessionDeliveryStatus | ""; label: string }[] = [
-  { key: "", label: "All" },
-  { key: "UNRELEASED", label: "Unreleased" },
-  { key: "SCHEDULED", label: "Scheduled" },
-  { key: "RELEASED", label: "Released" },
-  { key: "WITHDRAWN", label: "Withdrawn" },
-];
-const PILL_ACTIVE_CLASS: Record<CourseSessionDeliveryStatus | "", string> = {
-  "": "border-primary bg-primary/10 text-primary",
-  UNRELEASED: statusClass.UNRELEASED,
-  SCHEDULED: statusClass.SCHEDULED,
-  RELEASED: statusClass.RELEASED,
-  WITHDRAWN: statusClass.WITHDRAWN,
-};
-
 const INTERACTIVE_SELECTOR = "input,button,a,[role=menuitem],[data-no-row-navigation]";
+
+/**
+ * One row of the active curriculum — a syllabus is a single ordered
+ * sequence, not independently sortable/filterable data, so this is a
+ * drag-reorderable card rather than a table row. See the 2026-09-01
+ * curriculum-tab redesign: dnd-kit's KeyboardSensor makes the drag handle
+ * itself keyboard-operable (focus it, Space to lift, arrow keys to move,
+ * Space to drop), so there's no separate "Move up/down" control to keep.
+ */
+function CurriculumCard({
+  item,
+  position,
+  readOnly,
+  dimmed,
+  onOpenDetail,
+  onRelease,
+  onSchedule,
+  onWithdraw,
+  onRemove,
+}: {
+  item: CourseSession;
+  position: number;
+  readOnly: boolean;
+  dimmed: boolean;
+  onOpenDetail: () => void;
+  onRelease: () => void;
+  onSchedule: () => void;
+  onWithdraw: () => void;
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: item.id,
+    disabled: readOnly,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{ transform: CSS.Transform.toString(transform), transition }}
+      tabIndex={0}
+      role="button"
+      aria-label={`View details for ${item.session.title}`}
+      className={cn(
+        "flex cursor-pointer items-center gap-3 rounded-md border bg-card p-3 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+        isDragging && "relative z-10 shadow-md",
+        dimmed && "opacity-40",
+      )}
+      onClick={(event) => {
+        if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
+        onOpenDetail();
+      }}
+      onKeyDown={(event) => {
+        if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onOpenDetail();
+        }
+      }}
+    >
+      {!readOnly ? (
+        <button
+          type="button"
+          aria-label={`Reorder ${item.session.title}`}
+          data-no-row-navigation
+          className="shrink-0 cursor-grab touch-none text-muted-foreground hover:text-foreground active:cursor-grabbing"
+          {...attributes}
+          {...listeners}
+        >
+          <GripVertical className="size-4" aria-hidden="true" />
+        </button>
+      ) : null}
+      <span className="w-6 shrink-0 text-center font-mono text-sm text-muted-foreground">{position}</span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate font-semibold">{item.session.title}</p>
+        <p className="text-xs text-muted-foreground">
+          {item.session.durationMinutes ? `${item.session.durationMinutes} minutes` : "Duration not set"}
+        </p>
+      </div>
+      {item.availableAt ? (
+        <span className="flex shrink-0 items-center gap-1 text-xs text-muted-foreground">
+          <Clock className="size-3" aria-hidden="true" />
+          {format(new Date(item.availableAt), "MMM d, yyyy · h:mm a")}
+        </span>
+      ) : null}
+      <Badge variant="outline" className={cn("shrink-0", statusClass[item.deliveryStatus])}>
+        {item.deliveryStatus.replace("_", " ")}
+      </Badge>
+      <span className="w-20 shrink-0 text-right font-mono text-sm text-muted-foreground">
+        {item.usage.completionCount} done
+      </span>
+      {readOnly ? (
+        <span className="shrink-0 text-xs text-muted-foreground">Read only</span>
+      ) : (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={`Actions for ${item.session.title}`}>
+              <MoreHorizontal />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            {item.deliveryStatus !== "RELEASED" ? (
+              <DropdownMenuItem onSelect={onRelease}>Release now</DropdownMenuItem>
+            ) : null}
+            {item.deliveryStatus !== "RELEASED" ? (
+              <DropdownMenuItem onSelect={onSchedule}>
+                {item.deliveryStatus === "SCHEDULED" ? "Reschedule release" : "Schedule release"}
+              </DropdownMenuItem>
+            ) : null}
+            {item.deliveryStatus === "RELEASED" || item.deliveryStatus === "SCHEDULED" ? (
+              <DropdownMenuItem onSelect={onWithdraw}>Withdraw</DropdownMenuItem>
+            ) : null}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive" onSelect={onRemove}>
+              <Trash2 /> Remove from curriculum
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
+    </div>
+  );
+}
 
 export default function CourseCurriculumManager({
   intakeId,
@@ -75,10 +199,12 @@ export default function CourseCurriculumManager({
   categoryId?: string;
   readOnly?: boolean;
 }) {
-  const [selectedSessionId, setSelectedSessionId] = useState("");
+  const [selectedSessionIds, setSelectedSessionIds] = useState<Set<string>>(() => new Set());
+  const [attachDialogOpen, setAttachDialogOpen] = useState(false);
+  const [attachSearch, setAttachSearch] = useState("");
+  const [attaching, setAttaching] = useState(false);
   const [pendingRisk, setPendingRisk] = useState<PendingRisk | null>(null);
   const [q, setQ] = useState("");
-  const [deliveryFilter, setDeliveryFilter] = useState<CourseSessionDeliveryStatus | "">("");
   const [detailItem, setDetailItem] = useState<CourseSession | null>(null);
   const { data, isLoading, isError } = useGetCourseCurriculumQuery({ intakeId, includeRetired: true });
   const { data: library, isFetching: libraryLoading } = useGetSessionLibraryQuery(
@@ -90,36 +216,83 @@ export default function CourseCurriculumManager({
   const [remove, removeState] = useRemoveCourseSessionMutation();
   const [updateDelivery, deliveryState] = useUpdateCourseSessionDeliveryMutation();
 
-  const active = useMemo(() => data?.curriculum.filter((item) => !item.retiredAt) ?? [], [data]);
+  const serverActive = useMemo(() => data?.curriculum.filter((item) => !item.retiredAt) ?? [], [data]);
   const retired = useMemo(() => data?.curriculum.filter((item) => item.retiredAt) ?? [], [data]);
-  const attachable = library?.sessions ?? [];
 
-  // Every row keeps its real position (needed for move up/down and the
-  // "Order" column) even while search/status filtering only changes which
-  // rows are shown.
-  const indexedActive = useMemo(() => active.map((item, index) => ({ item, index })), [active]);
-  const searchFiltered = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    return query ? indexedActive.filter(({ item }) => item.session.title.toLowerCase().includes(query)) : indexedActive;
-  }, [indexedActive, q]);
-  const visible = useMemo(
-    () => (deliveryFilter ? searchFiltered.filter(({ item }) => item.deliveryStatus === deliveryFilter) : searchFiltered),
-    [searchFiltered, deliveryFilter],
+  // Optimistic drag order: shown the instant a card is dropped, before the
+  // reorder request (and any sequence-risk confirmation) has settled.
+  // Ignored (falls back to server order) once the server's own order
+  // catches up, so there's never a stale-vs-fresh flicker; the dialog/error
+  // handlers below clear it immediately if the reorder is cancelled or
+  // rejected, snapping back to the last confirmed order right away instead
+  // of waiting for that natural catch-up.
+  const [localOrder, setLocalOrder] = useState<CourseSession[] | null>(null);
+  const active = useMemo(() => {
+    if (!localOrder) return serverActive;
+    const serverIds = serverActive.map((item) => item.id).join(",");
+    const localIds = localOrder.map((item) => item.id).join(",");
+    return serverIds === localIds ? serverActive : localOrder;
+  }, [serverActive, localOrder]);
+  const attachable = useMemo(() => library?.sessions ?? [], [library]);
+  const attachableFiltered = useMemo(() => {
+    const query = attachSearch.trim().toLowerCase();
+    return query ? attachable.filter((session) => session.title.toLowerCase().includes(query)) : attachable;
+  }, [attachable, attachSearch]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   );
-  const pillCounts = useMemo(() => {
-    const counts: Record<CourseSessionDeliveryStatus, number> = { UNRELEASED: 0, SCHEDULED: 0, RELEASED: 0, WITHDRAWN: 0 };
-    for (const { item } of searchFiltered) counts[item.deliveryStatus] += 1;
-    return counts;
-  }, [searchFiltered]);
+
+  const toggleAttachSelect = (sessionId: string) => {
+    setSelectedSessionIds((current) => {
+      const next = new Set(current);
+      if (next.has(sessionId)) next.delete(sessionId);
+      else next.add(sessionId);
+      return next;
+    });
+  };
+
+  const allAttachableFilteredSelected =
+    attachableFiltered.length > 0 && attachableFiltered.every((session) => selectedSessionIds.has(session.id));
+  const toggleAttachSelectAll = () => {
+    setSelectedSessionIds((current) => {
+      if (allAttachableFilteredSelected) {
+        const next = new Set(current);
+        for (const session of attachableFiltered) next.delete(session.id);
+        return next;
+      }
+      return new Set([...current, ...attachableFiltered.map((session) => session.id)]);
+    });
+  };
 
   const attachSelected = async () => {
-    if (!selectedSessionId) return;
-    try {
-      await attach({ intakeId, sessionId: selectedSessionId }).unwrap();
-      setSelectedSessionId("");
-      toast.success("Session attached as unreleased");
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not attach session"));
+    if (selectedSessionIds.size === 0) return;
+    setAttaching(true);
+    // Attached one at a time (not Promise.all) so ordering matches selection
+    // order and a failure on one session doesn't affect the rest — each
+    // outcome is tracked individually so only the ones that actually
+    // succeeded are cleared from the selection below.
+    const succeededIds = new Set<string>();
+    let failure: unknown = null;
+    for (const sessionId of selectedSessionIds) {
+      try {
+        await attach({ intakeId, sessionId }).unwrap();
+        succeededIds.add(sessionId);
+      } catch (error) {
+        failure = error;
+      }
+    }
+    setAttaching(false);
+    setSelectedSessionIds((current) => new Set([...current].filter((id) => !succeededIds.has(id))));
+    if (succeededIds.size > 0) {
+      toast.success(succeededIds.size === 1 ? "Session attached as unreleased" : `${succeededIds.size} sessions attached as unreleased`);
+    }
+    if (failure) {
+      toast.error(getApiErrorMessage(failure, "Could not attach one of the selected sessions"));
+    } else {
+      setAttachDialogOpen(false);
+      setAttachSearch("");
     }
   };
 
@@ -134,16 +307,24 @@ export default function CourseCurriculumManager({
     } catch (error) {
       if (isNormalizedApiError(error) && error.code === "SEQUENCE_RISK_CONFIRMATION_REQUIRED" && !acknowledgeSequenceRisk) {
         setPendingRisk({ kind: "REORDER", courseSessions, message: error.message, details: error.details });
-      } else toast.error(getApiErrorMessage(error, "Could not reorder curriculum"));
+        // Keep showing the dropped-to order while the confirmation dialog is
+        // up — it only snaps back if the dialog is dismissed without confirming.
+      } else {
+        toast.error(getApiErrorMessage(error, "Could not reorder curriculum"));
+        setLocalOrder(null);
+      }
     }
   };
 
-  const move = (index: number, direction: -1 | 1) => {
-    const target = index + direction;
-    if (target < 0 || target >= active.length) return;
-    const ordered = [...active];
-    [ordered[index], ordered[target]] = [ordered[target], ordered[index]];
-    void submitReorder(ordered.map(({ id }, orderIndex) => ({ id, orderIndex })));
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active: draggedItem, over } = event;
+    if (!over || draggedItem.id === over.id) return;
+    const oldIndex = active.findIndex((item) => item.id === draggedItem.id);
+    const newIndex = active.findIndex((item) => item.id === over.id);
+    if (oldIndex === -1 || newIndex === -1) return;
+    const reordered = arrayMove(active, oldIndex, newIndex);
+    setLocalOrder(reordered);
+    void submitReorder(reordered.map((item, orderIndex) => ({ id: item.id, orderIndex })));
   };
 
   const changeDelivery = async (
@@ -163,16 +344,7 @@ export default function CourseCurriculumManager({
     }
   };
 
-  const schedule = (courseSessionId: string) => {
-    const value = window.prompt("Enter a future date/time in ISO format, for example 2026-09-01T09:00:00+05:30");
-    if (!value) return;
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) {
-      toast.error("Enter a valid date and time");
-      return;
-    }
-    void changeDelivery(courseSessionId, "SCHEDULED", date.toISOString());
-  };
+  const [scheduleTarget, setScheduleTarget] = useState<string | null>(null);
 
   const removeItem = async (courseSessionId: string) => {
     try {
@@ -186,63 +358,71 @@ export default function CourseCurriculumManager({
   if (isLoading) return <p role="status" aria-live="polite" className="py-14 text-center text-muted-foreground">Loading curriculum…</p>;
   if (isError || !data) return <p role="alert" className="rounded-md bg-destructive/10 p-5 text-destructive">Could not load the curriculum.</p>;
 
-  const pillOptions: FilterPillOption<CourseSessionDeliveryStatus | "">[] = DELIVERY_PILLS.map(({ key, label }) => ({
-    key,
-    label,
-    count: key === "" ? searchFiltered.length : pillCounts[key],
-    activeClassName: PILL_ACTIVE_CLASS[key],
-  }));
+  const query = q.trim().toLowerCase();
 
   return (
     <div className="space-y-6">
-      {!readOnly ? (
-        <div className="flex flex-wrap items-end gap-3">
-          <label className="w-80 max-w-full space-y-2 text-sm font-medium">
-            Attach a ready Session Library resource
-            <select className="mt-2 h-10 w-full rounded-md border bg-background px-3" value={selectedSessionId} onChange={(event) => setSelectedSessionId(event.target.value)} disabled={libraryLoading || attachable.length === 0}>
-              <option value="">{libraryLoading ? "Loading sessions…" : attachable.length ? "Choose a session" : "No ready sessions available"}</option>
-              {attachable.map((session) => <option key={session.id} value={session.id}>{session.title}</option>)}
-            </select>
-          </label>
-          <Button disabled={!selectedSessionId || attachState.isLoading} onClick={attachSelected}>
-            {attachState.isLoading ? <Loader2 className="animate-spin" /> : <Link2 />} Attach session
-          </Button>
-        </div>
-      ) : null}
-
-      <div className="flex flex-wrap items-center gap-2">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <Input
-          aria-label="Search curriculum by session title"
+          aria-label="Highlight sessions by title"
           value={q}
           onChange={(event) => setQ(event.target.value)}
-          placeholder="Search session title"
-          className="h-9 w-56 shrink-0"
+          placeholder="Highlight by session title"
+          className="h-9 w-64 shrink-0"
         />
-        <FilterPills
-          ariaLabel="Filter by delivery status"
-          options={pillOptions}
-          active={deliveryFilter}
-          onChange={setDeliveryFilter}
-        />
+        {!readOnly ? (
+          <Button className="shrink-0" onClick={() => setAttachDialogOpen(true)}>
+            <Link2 /> Attach session
+          </Button>
+        ) : null}
       </div>
 
-      <div className="overflow-hidden rounded-md border bg-card">
-        <Table>
-          <TableCaption className="sr-only">Current course curriculum and learner visibility</TableCaption>
-          <TableHeader className="bg-muted/40"><TableRow><TableHead className="px-4">Order</TableHead><TableHead>Session</TableHead><TableHead>Visibility</TableHead><TableHead>Completions</TableHead><TableHead className="pr-4 text-right">Actions</TableHead></TableRow></TableHeader>
-          <TableBody>
-            {visible.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
-                  {active.length === 0 ? "No sessions are attached to this course." : "No sessions match your filters."}
-                </TableCell>
-              </TableRow>
-            ) : visible.map(({ item, index }) => (
-              <TableRow
+      {active.length === 0 ? (
+        <div className="rounded-md border border-dashed p-10 text-center text-sm text-muted-foreground">
+          No sessions are attached to this intake yet.
+        </div>
+      ) : (
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+          <SortableContext items={active.map((item) => item.id)} strategy={verticalListSortingStrategy}>
+            <div className="space-y-2">
+              {active.map((item, index) => (
+                <CurriculumCard
+                  key={item.id}
+                  item={item}
+                  position={index + 1}
+                  readOnly={readOnly}
+                  dimmed={query.length > 0 && !item.session.title.toLowerCase().includes(query)}
+                  onOpenDetail={() => setDetailItem(item)}
+                  onRelease={() => changeDelivery(item.id, "RELEASED")}
+                  onSchedule={() => setScheduleTarget(item.id)}
+                  onWithdraw={() => changeDelivery(item.id, "WITHDRAWN")}
+                  onRemove={() => removeItem(item.id)}
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      )}
+
+      {retired.length ? (
+        <section className="mt-10 space-y-4 rounded-lg border bg-muted/40 p-4">
+          <div className="flex items-start gap-2">
+            <Archive className="mt-0.5 size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
+            <div>
+              <h2 className="text-lg font-semibold text-muted-foreground">Retired sessions</h2>
+              <p className="text-sm text-muted-foreground">
+                Outside the active curriculum above — preserved because they were previously exposed or completed.
+              </p>
+            </div>
+          </div>
+          <div className="space-y-2">
+            {retired.map((item) => (
+              <div
                 key={item.id}
                 tabIndex={0}
+                role="button"
                 aria-label={`View details for ${item.session.title}`}
-                className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                className="flex cursor-pointer items-center gap-3 rounded-md border bg-card p-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 onClick={(event) => {
                   if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
                   setDetailItem(item);
@@ -255,60 +435,135 @@ export default function CourseCurriculumManager({
                   }
                 }}
               >
-                <TableCell className="px-4 font-mono">{index + 1}</TableCell>
-                <TableCell className="max-w-lg whitespace-normal py-4"><p className="font-semibold">{item.session.title}</p><p className="text-xs text-muted-foreground">{item.session.durationMinutes ? `${item.session.durationMinutes} minutes` : "Duration not set"}</p></TableCell>
-                <TableCell><Badge variant="outline" className={statusClass[item.deliveryStatus]}>{item.deliveryStatus.replace("_", " ")}</Badge>{item.availableAt ? <p className="mt-1 text-xs text-muted-foreground">{new Date(item.availableAt).toLocaleString()}</p> : null}</TableCell>
-                <TableCell className="font-mono">{item.usage.completionCount}</TableCell>
-                <TableCell className="pr-4 text-right" data-no-row-navigation>
-                  {readOnly ? <span className="text-xs text-muted-foreground">Read only</span> : <DropdownMenu><DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={`Actions for ${item.session.title}`}><MoreHorizontal /></Button></DropdownMenuTrigger><DropdownMenuContent align="end">
-                    <DropdownMenuItem disabled={index === 0} onSelect={() => move(index, -1)}><ArrowUp /> Move up</DropdownMenuItem>
-                    <DropdownMenuItem disabled={index === active.length - 1} onSelect={() => move(index, 1)}><ArrowDown /> Move down</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem onSelect={() => changeDelivery(item.id, "RELEASED")}>Release now</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => schedule(item.id)}>Schedule release</DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => changeDelivery(item.id, "WITHDRAWN")}>Withdraw</DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem variant="destructive" onSelect={() => removeItem(item.id)}><Trash2 /> Remove from curriculum</DropdownMenuItem>
-                  </DropdownMenuContent></DropdownMenu>}
-                </TableCell>
-              </TableRow>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-semibold">{item.session.title}</p>
+                  <p className="text-xs text-muted-foreground">
+                    Historical position {item.historicalOrderIndex == null ? "—" : `#${item.historicalOrderIndex + 1}`}
+                  </p>
+                </div>
+                <Badge variant="outline" className={statusClass[item.deliveryStatus]}>
+                  {item.deliveryStatus.replace("_", " ")}
+                </Badge>
+                <span className="w-20 shrink-0 text-right font-mono text-sm text-muted-foreground">
+                  {item.usage.completionCount} done
+                </span>
+                {readOnly ? (
+                  <span className="shrink-0 text-xs text-muted-foreground">Read only</span>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    disabled={attachState.isLoading}
+                    data-no-row-navigation
+                    onClick={() =>
+                      attach({ intakeId, sessionId: item.session.id })
+                        .unwrap()
+                        .then(() => toast.success("Session reattached as withdrawn"))
+                        .catch((error) => toast.error(getApiErrorMessage(error, "Could not reattach session")))
+                    }
+                  >
+                    <RotateCcw /> Reattach
+                  </Button>
+                )}
+              </div>
             ))}
-          </TableBody>
-        </Table>
-      </div>
+          </div>
+        </section>
+      ) : null}
 
-      {retired.length ? <section className="space-y-3"><div><h2 className="text-lg font-semibold">Retired sessions</h2><p className="text-sm text-muted-foreground">These are outside the current curriculum but preserved because they were previously exposed or completed.</p></div><div className="overflow-hidden rounded-md border bg-card"><Table><TableHeader className="bg-muted/40"><TableRow><TableHead className="px-4">Session</TableHead><TableHead>Last delivery state</TableHead><TableHead>Historical order</TableHead><TableHead>Completions</TableHead><TableHead className="pr-4 text-right">Actions</TableHead></TableRow></TableHeader><TableBody>{retired.map((item) => (
-        <TableRow
-          key={item.id}
-          tabIndex={0}
-          aria-label={`View details for ${item.session.title}`}
-          className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
-          onClick={(event) => {
-            if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
-            setDetailItem(item);
-          }}
-          onKeyDown={(event) => {
-            if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              setDetailItem(item);
-            }
-          }}
-        >
-          <TableCell className="px-4 py-4 font-semibold">{item.session.title}</TableCell>
-          <TableCell><Badge variant="outline" className={statusClass[item.deliveryStatus]}>{item.deliveryStatus.replace("_", " ")}</Badge></TableCell>
-          <TableCell className="font-mono">{item.historicalOrderIndex == null ? "—" : item.historicalOrderIndex + 1}</TableCell>
-          <TableCell className="font-mono">{item.usage.completionCount}</TableCell>
-          <TableCell className="pr-4 text-right" data-no-row-navigation>{readOnly ? <span className="text-xs text-muted-foreground">Read only</span> : <Button variant="ghost" size="sm" disabled={attachState.isLoading} onClick={() => attach({ intakeId, sessionId: item.session.id }).unwrap().then(() => toast.success("Session reattached as withdrawn")).catch((error) => toast.error(getApiErrorMessage(error, "Could not reattach session")))}><RotateCcw /> Reattach</Button>}</TableCell>
-        </TableRow>
-      ))}</TableBody></Table></div></section> : null}
+      <Dialog
+        open={attachDialogOpen}
+        onOpenChange={(open) => {
+          setAttachDialogOpen(open);
+          if (!open) {
+            setSelectedSessionIds(new Set());
+            setAttachSearch("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Attach sessions</DialogTitle>
+            <DialogDescription>
+              Attach ready Session Library resources this intake hasn&apos;t used yet. Each is added as unreleased.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            <Input
+              aria-label="Search sessions"
+              placeholder="Search session title"
+              value={attachSearch}
+              onChange={(event) => setAttachSearch(event.target.value)}
+            />
+            {attachableFiltered.length > 0 ? (
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+                <input type="checkbox" checked={allAttachableFilteredSelected} onChange={toggleAttachSelectAll} />
+                Select all{attachSearch ? " matching" : ""} ({attachableFiltered.length})
+              </label>
+            ) : null}
+            <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
+              {libraryLoading ? (
+                <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
+                  <Loader2 className="h-4 w-4 animate-spin" /> Loading sessions…
+                </p>
+              ) : attachableFiltered.length === 0 ? (
+                <p className="p-4 text-center text-sm text-muted-foreground">
+                  {attachable.length === 0 ? "No ready sessions available." : "No sessions match your search."}
+                </p>
+              ) : (
+                attachableFiltered.map((session) => (
+                  <label
+                    key={session.id}
+                    className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-muted/60"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedSessionIds.has(session.id)}
+                      onChange={() => toggleAttachSelect(session.id)}
+                    />
+                    <span>
+                      <span className="block text-sm font-semibold">{session.title}</span>
+                      <span className="block text-xs text-muted-foreground">
+                        {session.durationMinutes ? `${session.durationMinutes} minutes` : "Duration not set"}
+                        {session.tags.length > 0 ? ` · ${session.tags.join(", ")}` : ""}
+                      </span>
+                    </span>
+                  </label>
+                ))
+              )}
+            </div>
+            <Button disabled={selectedSessionIds.size === 0 || attaching} onClick={attachSelected}>
+              {attaching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
+              {selectedSessionIds.size > 1 ? `Attach ${selectedSessionIds.size} sessions` : "Attach session"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <ScheduleReleaseDialog
+        open={Boolean(scheduleTarget)}
+        onOpenChange={(open) => { if (!open) setScheduleTarget(null); }}
+        isLoading={deliveryState.isLoading}
+        onConfirm={(isoDate) => {
+          if (!scheduleTarget) return;
+          void changeDelivery(scheduleTarget, "SCHEDULED", isoDate);
+          setScheduleTarget(null);
+        }}
+      />
 
       <SequenceRiskConfirmationDialog
         open={Boolean(pendingRisk)}
         description={pendingRisk?.message ?? "Confirm this sequence exception."}
         details={pendingRisk?.details}
         isLoading={reorderState.isLoading || deliveryState.isLoading || removeState.isLoading}
-        onOpenChange={(open) => { if (!open) setPendingRisk(null); }}
+        onOpenChange={(open) => {
+          if (!open) {
+            // Dismissed (Cancel, Escape, click outside) without confirming —
+            // snap the optimistic drag order back to the last confirmed one.
+            if (pendingRisk?.kind === "REORDER") setLocalOrder(null);
+            setPendingRisk(null);
+          }
+        }}
         onConfirm={() => {
           if (!pendingRisk) return;
           if (pendingRisk.kind === "REORDER") void submitReorder(pendingRisk.courseSessions, true);
@@ -341,58 +596,64 @@ export default function CourseCurriculumManager({
                   ))}
                 </div>
 
-                <div className="space-y-1.5 text-sm">
-                  <p className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">Duration</span>
-                    <span className="font-medium">
-                      {detailItem.session.durationMinutes ? `${detailItem.session.durationMinutes} minutes` : "Not set"}
-                    </span>
-                  </p>
-                  <p className="flex justify-between gap-4">
-                    <span className="text-muted-foreground">Completions</span>
-                    <span className="font-medium">{detailItem.usage.completionCount}</span>
-                  </p>
-                  {detailItem.availableAt ? (
-                    <p className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Available from</span>
-                      <span className="font-medium">{new Date(detailItem.availableAt).toLocaleString()}</span>
-                    </p>
-                  ) : null}
-                  {detailItem.firstReleasedAt ? (
-                    <p className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">First released</span>
-                      <span className="font-medium">{new Date(detailItem.firstReleasedAt).toLocaleString()}</span>
-                    </p>
-                  ) : null}
-                  {detailItem.retiredAt ? (
-                    <p className="flex justify-between gap-4">
-                      <span className="text-muted-foreground">Retired</span>
-                      <span className="font-medium">{new Date(detailItem.retiredAt).toLocaleString()}</span>
-                    </p>
-                  ) : null}
+                <RecordingPreview url={detailItem.session.recordingUrl} />
+
+                <div className="grid grid-cols-3 gap-2">
+                  {(["materialUrl", "quizUrl", "feedbackUrl"] as const).map((field) => {
+                    const label = field === "materialUrl" ? "Material" : field === "quizUrl" ? "Quiz" : "Feedback";
+                    const url = detailItem.session[field];
+                    return url ? (
+                      <Button key={field} variant="outline" size="sm" asChild>
+                        <a href={url} target="_blank" rel="noopener noreferrer">
+                          {label}
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button key={field} variant="outline" size="sm" disabled>
+                        {label}
+                      </Button>
+                    );
+                  })}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
-                  {detailItem.session.recordingUrl ? (
-                    <Button asChild variant="outline" size="sm">
-                      <a href={detailItem.session.recordingUrl} target="_blank" rel="noopener noreferrer">Recording</a>
-                    </Button>
-                  ) : null}
-                  {detailItem.session.materialUrl ? (
-                    <Button asChild variant="outline" size="sm">
-                      <a href={detailItem.session.materialUrl} target="_blank" rel="noopener noreferrer">Material</a>
-                    </Button>
-                  ) : null}
-                  {detailItem.session.quizUrl ? (
-                    <Button asChild variant="outline" size="sm">
-                      <a href={detailItem.session.quizUrl} target="_blank" rel="noopener noreferrer">Quiz</a>
-                    </Button>
-                  ) : null}
-                  {detailItem.session.feedbackUrl ? (
-                    <Button asChild variant="outline" size="sm">
-                      <a href={detailItem.session.feedbackUrl} target="_blank" rel="noopener noreferrer">Feedback</a>
-                    </Button>
-                  ) : null}
+                <div className="space-y-2">
+                  <p className="text-sm font-semibold">This intake</p>
+                  <div className="space-y-1.5 text-sm">
+                    <p className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Position</span>
+                      <span className="font-medium">
+                        {detailItem.orderIndex != null ? `#${detailItem.orderIndex + 1}` : "Retired"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Duration</span>
+                      <span className="font-medium">
+                        {detailItem.session.durationMinutes ? `${detailItem.session.durationMinutes} minutes` : "Not set"}
+                      </span>
+                    </p>
+                    <p className="flex justify-between gap-4">
+                      <span className="text-muted-foreground">Completions</span>
+                      <span className="font-medium">{detailItem.usage.completionCount}</span>
+                    </p>
+                    {detailItem.availableAt ? (
+                      <p className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Available from</span>
+                        <span className="font-medium">{format(new Date(detailItem.availableAt), "MMM d, yyyy · h:mm a")}</span>
+                      </p>
+                    ) : null}
+                    {detailItem.firstReleasedAt ? (
+                      <p className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">First released</span>
+                        <span className="font-medium">{format(new Date(detailItem.firstReleasedAt), "MMM d, yyyy · h:mm a")}</span>
+                      </p>
+                    ) : null}
+                    {detailItem.retiredAt ? (
+                      <p className="flex justify-between gap-4">
+                        <span className="text-muted-foreground">Retired</span>
+                        <span className="font-medium">{format(new Date(detailItem.retiredAt), "MMM d, yyyy · h:mm a")}</span>
+                      </p>
+                    ) : null}
+                  </div>
                 </div>
               </div>
             </>

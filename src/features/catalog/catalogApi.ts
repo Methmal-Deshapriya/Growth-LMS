@@ -211,6 +211,28 @@ export interface CourseAnalytics {
   projects: { pending: number; approved: number; rejected: number };
 }
 
+/**
+ * Course-level (cross-intake) rollup — same shape as CourseAnalytics minus
+ * capacity/districts/sessionEngagement, which are intake-specific and don't
+ * aggregate meaningfully across intakes that may run different curricula.
+ * See the 2026-08-31 course detail page improvement plan §4.
+ */
+export interface CourseRollupAnalytics {
+  enrollments: { active: number; completed: number; cancelled: number };
+  payments: {
+    full: { count: number; amount: number };
+    partial: { count: number; amount: number };
+    topUp: { count: number; amount: number };
+  };
+  revenue: { total: number; currency: string };
+  successRate: {
+    completedPct: number | null;
+    certificatesIssued: number;
+    certificateEligible: number;
+  };
+  projects: { pending: number; approved: number; rejected: number };
+}
+
 export interface AdminLearningServiceSummary {
   id: string;
   key: LearningServiceType;
@@ -414,6 +436,10 @@ export const catalogApi = baseApi.injectEndpoints({
     getCourseDeletionImpact: builder.query<CatalogDeletionImpact, string>({
       query: (id) => `/courses/${id}/deletion-impact`,
     }),
+    getCourseAnalytics: builder.query<CourseRollupAnalytics, string>({
+      query: (id) => `/courses/${id}/analytics`,
+      providesTags: (_result, _error, id) => [{ type: "Courses" as const, id: `ANALYTICS-${id}` }],
+    }),
     createCourse: builder.mutation<AdminCourse, CourseInput>({
       query: (body) => ({ url: "/courses", method: "POST", body }),
       invalidatesTags: ["Courses", "Categories", "Services"],
@@ -555,6 +581,7 @@ export const {
   useGetCoursesQuery,
   useGetCourseQuery,
   useLazyGetCourseDeletionImpactQuery,
+  useGetCourseAnalyticsQuery,
   useCreateCourseMutation,
   useUpdateCourseMutation,
   useArchiveCourseMutation,

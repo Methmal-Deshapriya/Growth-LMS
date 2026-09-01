@@ -14,7 +14,6 @@ import {
   Loader2,
   MoreHorizontal,
   Pencil,
-  Play,
   Plus,
   Trash2,
 } from "lucide-react";
@@ -66,6 +65,7 @@ import {
 } from "@/components/ui/table";
 import { selectAuthUser } from "@/features/auth/authSelectors";
 import { useGetIntakesQuery } from "@/features/catalog/catalogApi";
+import { RecordingPreview } from "./RecordingPreview";
 import { getApiErrorMessage, isNormalizedApiError } from "@/lib/api";
 import { hasPermission, PERMISSIONS } from "@/lib/access";
 import { SESSION_STATUS_STYLES } from "@/lib/statusColors";
@@ -186,29 +186,6 @@ function formatDuration(minutes: number | null | undefined) {
 // permission-aware thumbnail without a storage/proxy pipeline we don't want.
 // This is a deliberate generic placeholder, not a preview of the actual
 // content — it just signals "this session has a recording attached."
-function RecordingPreview({ url }: { url: string | null | undefined }) {
-  if (!url) {
-    return (
-      <div className="flex h-40 items-center justify-center rounded-md border border-dashed bg-muted/30 text-sm text-muted-foreground">
-        No recording added yet
-      </div>
-    );
-  }
-  return (
-    <a
-      href={url}
-      target="_blank"
-      rel="noopener noreferrer"
-      aria-label="Open recording"
-      className="group flex h-40 items-center justify-center rounded-md bg-linear-to-br from-primary/15 via-primary/5 to-transparent transition hover:from-primary/25 hover:via-primary/10"
-    >
-      <span className="flex size-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-sm transition group-hover:scale-105">
-        <Play className="size-6 fill-current" aria-hidden="true" />
-      </span>
-    </a>
-  );
-}
-
 function useDebouncedValue(value: string, delayMs: number) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {

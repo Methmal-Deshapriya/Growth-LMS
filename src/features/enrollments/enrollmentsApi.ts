@@ -62,6 +62,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id: `ELIGIBLE-${intakeId}` },
         "Intakes",
         "Services",
+        "Courses",
       ],
     }),
     bulkCreateEnrollments: builder.mutation<
@@ -78,6 +79,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id: `ELIGIBLE-${intakeId}` },
         "Intakes",
         "Services",
+        "Courses",
       ],
     }),
     updateEnrollment: builder.mutation<
@@ -89,6 +91,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
         { type: "Enrollments", id },
         "Enrollments",
         "Services",
+        "Courses",
       ],
     }),
     completePayment: builder.mutation<ClassRosterEntry, string>({
@@ -96,6 +99,7 @@ export const enrollmentsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: "Enrollments", id },
         "Enrollments",
+        "Courses",
       ],
     }),
   }),
