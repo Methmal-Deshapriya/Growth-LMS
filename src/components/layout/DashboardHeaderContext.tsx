@@ -25,12 +25,22 @@ interface DashboardHeaderContextValue {
     pathname: string,
     crumbs: DashboardHeaderCrumb[],
   ) => () => void;
+  /**
+   * DOM node a page can portal page-specific "always visible, never
+   * scrolls" chrome into (a title/KPI row, a tab strip, ...) — rendered by
+   * PageToolbarSlot as a sibling of <main>, so anything portaled here sits
+   * outside <main>'s scroll entirely, exactly like the sidebar and this
+   * header already do. Null until PageToolbarSlot mounts.
+   */
+  toolbarSlot: HTMLDivElement | null;
+  setToolbarSlot: (node: HTMLDivElement | null) => void;
 }
 
 const DashboardHeaderContext = createContext<DashboardHeaderContextValue | null>(null);
 
 export function DashboardHeaderProvider({ children }: { children: ReactNode }) {
   const [breadcrumbs, setBreadcrumbs] = useState<HeaderBreadcrumbState | null>(null);
+  const [toolbarSlot, setToolbarSlot] = useState<HTMLDivElement | null>(null);
 
   const registerBreadcrumbs = useCallback(
     (pathname: string, crumbs: DashboardHeaderCrumb[]) => {
@@ -46,8 +56,8 @@ export function DashboardHeaderProvider({ children }: { children: ReactNode }) {
   );
 
   const value = useMemo(
-    () => ({ breadcrumbs, registerBreadcrumbs }),
-    [breadcrumbs, registerBreadcrumbs],
+    () => ({ breadcrumbs, registerBreadcrumbs, toolbarSlot, setToolbarSlot }),
+    [breadcrumbs, registerBreadcrumbs, toolbarSlot],
   );
 
   return (

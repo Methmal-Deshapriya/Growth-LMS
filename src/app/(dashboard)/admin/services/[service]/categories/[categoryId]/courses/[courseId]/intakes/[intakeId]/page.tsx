@@ -14,6 +14,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { PageToolbarPortal } from "@/components/layout/PageToolbar";
 import { selectAuthUser } from "@/features/auth/authSelectors";
 import { AdminCatalogBreadcrumbs } from "@/features/catalog/components/AdminCatalogBreadcrumbs";
 import { AdminCatalogPageHeader } from "@/features/catalog/components/AdminCatalogPageHeader";
@@ -111,72 +112,76 @@ export default function IntakeWorkspacePage() {
         ]}
       />
 
-      <AdminCatalogPageHeader
-        title={course.title}
-        description={`${intake.intakeKey} · ${intake.code} · This intake owns its own sessions, enrollments, and lifecycle.`}
-        icon={Icons.myCourses}
-        badge={
-          <Badge variant="outline" className={INTAKE_STATUS_STYLES[intake.status]}>
-            {intake.status.replace("_", " ")}
-          </Badge>
-        }
-        action={
-          <div className="flex flex-wrap items-center justify-end gap-2">
-            {transitions[intake.status].map((status) => (
-              <Button
-                key={status}
-                size="sm"
-                variant={status === "CANCELLED" || status === "ARCHIVED" ? "destructive" : "outline"}
-                disabled={
-                  (catalogLocked && status === "OPEN_ACTIVE") ||
-                  statusState.isLoading ||
-                  (["OPEN_ACTIVE", "CLOSED_ACTIVE", "ARCHIVED"].includes(status) && !canPublish)
-                }
-                onClick={() => move(status)}
-              >
-                Move to {status.replace("_", " ").toLowerCase()}
-              </Button>
-            ))}
-          </div>
-        }
-      />
-
-      <div className="flex flex-wrap gap-3">
-        <CourseKpiTile
-          label="Enrolled"
-          value={analytics ? `${enrolledCount} / ${analytics.enrollments.capacity ?? "∞"}` : "—"}
-          secondary={
-            analytics && analytics.enrollments.cancelled > 0
-              ? `+${analytics.enrollments.cancelled} cancelled`
-              : undefined
-          }
-        />
-        <CourseKpiTile
-          label="Revenue"
-          value={analytics ? formatLKR(analytics.revenue.total) : "—"}
-        />
-        <CourseKpiTile
-          label="Success rate"
-          value={analytics?.successRate.completedPct != null ? `${analytics.successRate.completedPct}%` : "—"}
-          secondary={
-            analytics && intake.certificateEnabled
-              ? `${analytics.successRate.certificatesIssued} / ${analytics.successRate.certificateEligible} certified`
-              : undefined
-          }
-        />
-      </div>
-
       <Tabs defaultValue={defaultTab}>
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="sessions">Sessions</TabsTrigger>
-          <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
-          {intake.accessType === "PAID" ? (
-            <TabsTrigger value="enrollment-requests">Enrollment Requests</TabsTrigger>
-          ) : null}
-          <TabsTrigger value="certificates">Certificates</TabsTrigger>
-          <TabsTrigger value="projects">Projects</TabsTrigger>
-        </TabsList>
+        <PageToolbarPortal>
+          <div className="space-y-6 pt-6 pb-4">
+            <AdminCatalogPageHeader
+              title={course.title}
+              description={`${intake.intakeKey} · ${intake.code} · This intake owns its own sessions, enrollments, and lifecycle.`}
+              icon={Icons.myCourses}
+              badge={
+                <Badge variant="outline" className={INTAKE_STATUS_STYLES[intake.status]}>
+                  {intake.status.replace("_", " ")}
+                </Badge>
+              }
+              action={
+                <div className="flex flex-wrap items-center justify-end gap-2">
+                  {transitions[intake.status].map((status) => (
+                    <Button
+                      key={status}
+                      size="sm"
+                      variant={status === "CANCELLED" || status === "ARCHIVED" ? "destructive" : "outline"}
+                      disabled={
+                        (catalogLocked && status === "OPEN_ACTIVE") ||
+                        statusState.isLoading ||
+                        (["OPEN_ACTIVE", "CLOSED_ACTIVE", "ARCHIVED"].includes(status) && !canPublish)
+                      }
+                      onClick={() => move(status)}
+                    >
+                      Move to {status.replace("_", " ").toLowerCase()}
+                    </Button>
+                  ))}
+                </div>
+              }
+            />
+
+            <div className="flex flex-wrap gap-3">
+              <CourseKpiTile
+                label="Enrolled"
+                value={analytics ? `${enrolledCount} / ${analytics.enrollments.capacity ?? "∞"}` : "—"}
+                secondary={
+                  analytics && analytics.enrollments.cancelled > 0
+                    ? `+${analytics.enrollments.cancelled} cancelled`
+                    : undefined
+                }
+              />
+              <CourseKpiTile
+                label="Revenue"
+                value={analytics ? formatLKR(analytics.revenue.total) : "—"}
+              />
+              <CourseKpiTile
+                label="Success rate"
+                value={analytics?.successRate.completedPct != null ? `${analytics.successRate.completedPct}%` : "—"}
+                secondary={
+                  analytics && intake.certificateEnabled
+                    ? `${analytics.successRate.certificatesIssued} / ${analytics.successRate.certificateEligible} certified`
+                    : undefined
+                }
+              />
+            </div>
+          </div>
+
+          <TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="sessions">Sessions</TabsTrigger>
+            <TabsTrigger value="enrollments">Enrollments</TabsTrigger>
+            {intake.accessType === "PAID" ? (
+              <TabsTrigger value="enrollment-requests">Enrollment Requests</TabsTrigger>
+            ) : null}
+            <TabsTrigger value="certificates">Certificates</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+          </TabsList>
+        </PageToolbarPortal>
 
         <TabsContent value="overview">
           <CourseOverviewAnalytics intakeId={intake.id} />
