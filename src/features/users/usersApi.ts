@@ -1,5 +1,5 @@
 import { baseApi } from "@/store/baseApi";
-import type { UserRecord, UsersResponse, GetUsersParams } from "./usersTypes";
+import type { UserRecord, UsersResponse, GetUsersParams, UserDetail } from "./usersTypes";
 
 export const usersApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -10,25 +10,30 @@ export const usersApi = baseApi.injectEndpoints({
       }),
       providesTags: ["Users"],
     }),
+    getUserDetail: builder.query<UserDetail, string>({
+      query: (id) => `/users/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Users", id }],
+    }),
     promoteUser: builder.mutation<UserRecord, string>({
       query: (id) => ({
         url: `/users/${id}/promote`,
         method: "PATCH",
       }),
-      invalidatesTags: ["Users"],
+      invalidatesTags: (_result, _error, id) => ["Users", { type: "Users", id }],
     }),
     demoteUser: builder.mutation<UserRecord, string>({
       query: (id) => ({
         url: `/users/${id}/demote`,
         method: "PATCH",
       }),
-      invalidatesTags: ["Users"],
+      invalidatesTags: (_result, _error, id) => ["Users", { type: "Users", id }],
     }),
   }),
 });
 
 export const {
   useGetUsersQuery,
+  useGetUserDetailQuery,
   usePromoteUserMutation,
   useDemoteUserMutation,
 } = usersApi;

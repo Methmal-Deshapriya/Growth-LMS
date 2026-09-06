@@ -12,7 +12,7 @@ import { Loader2, RefreshCw, WifiOff } from "lucide-react";
 
 /**
  * AuthenticatedGuard Component
- * 
+ *
  * Protects routes that require a user to be logged in.
  * If the user is NOT authenticated, it redirects them to the sign-in slide
  * on the landing page.

@@ -110,3 +110,11 @@ export const PROJECT_STATUS_STYLES = styles<ProjectStatus>({
   APPROVED: "positive",
   REJECTED: "negative",
 });
+
+// An unverified signup isn't itself an error state (they just haven't
+// finished a step yet), so this gets the same "needs a look" amber as
+// PENDING elsewhere, not the red "negative" tone.
+export const EMAIL_VERIFICATION_STYLES = styles<"VERIFIED" | "UNVERIFIED">({
+  VERIFIED: "positive",
+  UNVERIFIED: "warning",
+});

@@ -50,7 +50,20 @@ export function ScheduleReleaseDialog({
   onConfirm: (isoDate: string) => void;
   isLoading?: boolean;
 }) {
-  const now = useMemo(() => new Date(), []);
+  // Refreshed each time `open` flips to true, rather than once at mount —
+  // the parent keeps this component mounted for the page's whole lifetime,
+  // so `open` (fully controlled by the parent) is the only reliable signal
+  // that a new scheduling attempt has started. Adjusted during render
+  // (not an effect) per React's "adjusting state when a prop changes"
+  // pattern, since Radix's onOpenChange only fires on user-driven close
+  // gestures (Escape/overlay), never when a controlled `open` prop flips
+  // to true from outside.
+  const [now, setNow] = useState(() => new Date());
+  const [prevOpen, setPrevOpen] = useState(open);
+  if (open !== prevOpen) {
+    setPrevOpen(open);
+    if (open) setNow(new Date());
+  }
   const today = useMemo(() => startOfDay(now), [now]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [time, setTime] = useState("");

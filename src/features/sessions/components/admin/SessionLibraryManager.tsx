@@ -165,6 +165,29 @@ function clean(form: CreateSessionRequest, tags: string[]): CreateSessionRequest
   };
 }
 
+// Detects a true no-op save (payload identical to the session being edited)
+// so we neither call the update mutation nor show the "active use" prompt
+// for a form that was opened and re-saved without changing anything.
+function hasChanges(session: LibrarySession, payload: CreateSessionRequest): boolean {
+  const normalize = (value: string | number | null | undefined) => value ?? null;
+  const fields: Exclude<keyof CreateSessionRequest, "tags" | "status">[] = [
+    "title",
+    "description",
+    "recordingUrl",
+    "materialUrl",
+    "quizUrl",
+    "feedbackUrl",
+    "durationMinutes",
+  ];
+  if (fields.some((field) => normalize(payload[field]) !== normalize(session[field]))) return true;
+  if ((payload.status ?? session.status) !== session.status) return true;
+  const nextTags = payload.tags ?? [];
+  const prevTags = session.tags ?? [];
+  return (
+    nextTags.length !== prevTags.length || nextTags.some((tag, index) => tag !== prevTags[index])
+  );
+}
+
 function formatUpdatedAt(iso: string) {
   const days = Math.floor((Date.now() - new Date(iso).getTime()) / 86_400_000);
   if (days <= 0) return "Today";
@@ -239,7 +262,7 @@ export default function SessionLibraryManager() {
   const [deleteSession, deleteState] = useDeleteSessionMutation();
   const [duplicateSession] = useDuplicateSessionMutation();
   const [bulkArchiveSessions, bulkArchiveState] = useBulkArchiveSessionsMutation();
-  const [attachCourseSession, attachState] = useAttachCourseSessionMutation();
+  const [attachCourseSession] = useAttachCourseSessionMutation();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(() => new Set());
   const [detailSession, setDetailSession] = useState<LibrarySession | null>(null);
@@ -248,8 +271,9 @@ export default function SessionLibraryManager() {
   const [deleteConfirmation, setDeleteConfirmation] = useState("");
   const [bulkArchiveConfirmOpen, setBulkArchiveConfirmOpen] = useState(false);
   const [attachTarget, setAttachTarget] = useState<LibrarySession | null>(null);
-  const [attachCourseId, setAttachCourseId] = useState("");
+  const [attachCourseIds, setAttachCourseIds] = useState<Set<string>>(new Set());
   const [attachCourseSearch, setAttachCourseSearch] = useState("");
+  const [attaching, setAttaching] = useState(false);
   const [pendingSave, setPendingSave] = useState<CreateSessionRequest | null>(null);
   const [wizardStep, setWizardStep] = useState<1 | 2 | 3>(1);
 
@@ -330,6 +354,11 @@ export default function SessionLibraryManager() {
       .map((tag) => tag.trim())
       .filter(Boolean);
     const payload = clean(form, tags);
+
+    if (editing && !hasChanges(editing, payload)) {
+      reset();
+      return;
+    }
 
     if (isEditingUsed) {
       setPendingSave(payload);
@@ -450,19 +479,59 @@ export default function SessionLibraryManager() {
     );
   }, [attachTarget, intakesData, attachCourseSearch]);
 
+  const toggleAttachCourseSelect = (intakeId: string) => {
+    setAttachCourseIds((current) => {
+      const next = new Set(current);
+      if (next.has(intakeId)) next.delete(intakeId);
+      else next.add(intakeId);
+      return next;
+    });
+  };
+
+  const allEligibleAttachIntakesSelected =
+    eligibleAttachIntakes.length > 0 &&
+    eligibleAttachIntakes.every((intake) => attachCourseIds.has(intake.id));
+  const toggleAttachCourseSelectAll = () => {
+    setAttachCourseIds((current) => {
+      if (allEligibleAttachIntakesSelected) {
+        const next = new Set(current);
+        for (const intake of eligibleAttachIntakes) next.delete(intake.id);
+        return next;
+      }
+      return new Set([...current, ...eligibleAttachIntakes.map((intake) => intake.id)]);
+    });
+  };
+
   const confirmAttach = async () => {
-    if (!attachTarget || !attachCourseId) return;
-    try {
-      await attachCourseSession({
-        intakeId: attachCourseId,
-        sessionId: attachTarget.id,
-      }).unwrap();
-      toast.success("Session attached to the intake curriculum");
+    if (!attachTarget || attachCourseIds.size === 0) return;
+    setAttaching(true);
+    // Attached one at a time (not Promise.all) so a failure on one intake
+    // doesn't affect the rest — only the ones that actually succeeded are
+    // cleared from the selection below.
+    const succeededIds = new Set<string>();
+    let failure: unknown = null;
+    for (const intakeId of attachCourseIds) {
+      try {
+        await attachCourseSession({ intakeId, sessionId: attachTarget.id }).unwrap();
+        succeededIds.add(intakeId);
+      } catch (error) {
+        failure = error;
+      }
+    }
+    setAttaching(false);
+    setAttachCourseIds((current) => new Set([...current].filter((id) => !succeededIds.has(id))));
+    if (succeededIds.size > 0) {
+      toast.success(
+        succeededIds.size === 1
+          ? "Session attached to the intake curriculum"
+          : `Session attached to ${succeededIds.size} intake curricula`,
+      );
+    }
+    if (failure) {
+      toast.error(getApiErrorMessage(failure, "Could not attach to one of the selected intakes"));
+    } else {
       setAttachTarget(null);
-      setAttachCourseId("");
       setAttachCourseSearch("");
-    } catch (error) {
-      toast.error(getApiErrorMessage(error, "Could not attach session"));
     }
   };
 
@@ -1226,7 +1295,7 @@ export default function SessionLibraryManager() {
         onOpenChange={(open) => {
           if (!open) {
             setAttachTarget(null);
-            setAttachCourseId("");
+            setAttachCourseIds(new Set());
             setAttachCourseSearch("");
           }
         }}
@@ -1235,8 +1304,8 @@ export default function SessionLibraryManager() {
           <DialogHeader>
             <DialogTitle>Attach to intake</DialogTitle>
             <DialogDescription>
-              Attach &quot;{attachTarget?.title}&quot; to an intake that hasn&apos;t used it yet. To restore a
-              retired attachment instead, use that intake&apos;s curriculum page.
+              Attach &quot;{attachTarget?.title}&quot; to one or more intakes that haven&apos;t used it yet. To
+              restore a retired attachment instead, use that intake&apos;s curriculum page.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
@@ -1246,6 +1315,16 @@ export default function SessionLibraryManager() {
               value={attachCourseSearch}
               onChange={(event) => setAttachCourseSearch(event.target.value)}
             />
+            {eligibleAttachIntakes.length > 0 ? (
+              <label className="flex cursor-pointer items-center gap-2 text-xs font-medium text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={allEligibleAttachIntakesSelected}
+                  onChange={toggleAttachCourseSelectAll}
+                />
+                Select all{attachCourseSearch ? " matching" : ""} ({eligibleAttachIntakes.length})
+              </label>
+            ) : null}
             <div className="max-h-64 space-y-1 overflow-y-auto rounded-md border p-2">
               {isIntakesFetching ? (
                 <p className="flex items-center gap-2 p-3 text-sm text-muted-foreground">
@@ -1262,10 +1341,9 @@ export default function SessionLibraryManager() {
                     className="flex cursor-pointer items-center gap-3 rounded-lg p-2 hover:bg-muted/60"
                   >
                     <input
-                      type="radio"
-                      name="attach-course"
-                      checked={attachCourseId === intake.id}
-                      onChange={() => setAttachCourseId(intake.id)}
+                      type="checkbox"
+                      checked={attachCourseIds.has(intake.id)}
+                      onChange={() => toggleAttachCourseSelect(intake.id)}
                     />
                     <span>
                       <span className="block text-sm font-semibold">{intake.course.title}</span>
@@ -1277,9 +1355,9 @@ export default function SessionLibraryManager() {
                 ))
               )}
             </div>
-            <Button disabled={!attachCourseId || attachState.isLoading} onClick={confirmAttach}>
-              {attachState.isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
-              Attach session
+            <Button disabled={attachCourseIds.size === 0 || attaching} onClick={confirmAttach}>
+              {attaching ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Link2 className="mr-2 h-4 w-4" />}
+              {attachCourseIds.size > 1 ? `Attach to ${attachCourseIds.size} intakes` : "Attach session"}
             </Button>
           </div>
         </DialogContent>

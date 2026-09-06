@@ -70,6 +70,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: "Sessions", id },
         { type: "Sessions", id: "LIBRARY" },
+        "Curriculum",
       ],
     }),
     unarchiveSession: builder.mutation<LibrarySession, string>({
@@ -77,6 +78,7 @@ export const sessionsApi = baseApi.injectEndpoints({
       invalidatesTags: (_result, _error, id) => [
         { type: "Sessions", id },
         { type: "Sessions", id: "LIBRARY" },
+        "Curriculum",
       ],
     }),
     deleteSession: builder.mutation<{ id: string }, string>({
@@ -89,7 +91,14 @@ export const sessionsApi = baseApi.injectEndpoints({
     }),
     bulkArchiveSessions: builder.mutation<BulkArchiveSessionsResult, string[]>({
       query: (ids) => ({ url: "/sessions/bulk-archive", method: "POST", body: { ids } }),
-      invalidatesTags: [{ type: "Sessions", id: "LIBRARY" }],
+      invalidatesTags: (result, _error, ids) => [
+        { type: "Sessions", id: "LIBRARY" },
+        "Curriculum",
+        ...(result?.results ?? ids.map((id) => ({ id }))).map(({ id }) => ({
+          type: "Sessions" as const,
+          id,
+        })),
+      ],
     }),
     getCourseCurriculum: builder.query<CurriculumResponse, { intakeId: string; includeRetired?: boolean }>({
       query: ({ intakeId, includeRetired }) => ({
@@ -113,7 +122,6 @@ export const sessionsApi = baseApi.injectEndpoints({
         { type: "Curriculum", id: intakeId },
         { type: "Sessions", id: "LIBRARY" },
         "Intakes",
-        "Services",
       ],
     }),
     reorderCourseCurriculum: builder.mutation<
@@ -146,7 +154,6 @@ export const sessionsApi = baseApi.injectEndpoints({
         { type: "Curriculum", id: intakeId },
         { type: "Sessions", id: "LIBRARY" },
         "Intakes",
-        "Services",
       ],
     }),
     updateCourseSessionDelivery: builder.mutation<

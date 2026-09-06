@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { LogOut, ChevronsUpDown } from "lucide-react";
+import { LogOut, ChevronsUpDown, UserCircle } from "lucide-react";
 import { useAppSelector } from "@/store/hooks";
 import { selectAuthUser, selectAuthRole } from "@/features/auth/authSelectors";
 import { useLogoutMutation } from "@/features/auth/authApi";
@@ -30,9 +31,9 @@ function getInitials(firstName?: string, lastName?: string) {
 /**
  * DashboardNavUser
  *
- * Real account data + a working Sign Out action — replaces stock nav-user's
- * fake user object and Upgrade/Account/Billing/Notifications items (none of
- * which have corresponding pages in this app).
+ * Real account data, a "My Account" link, and a working Sign Out action —
+ * replaces stock nav-user's fake user object and Upgrade/Billing/
+ * Notifications items (none of which have corresponding pages in this app).
  */
 export function DashboardNavUser() {
   const router = useRouter();
@@ -97,6 +98,13 @@ export function DashboardNavUser() {
                 </div>
               </div>
             </DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link href="/account">
+                <UserCircle />
+                My Account
+              </Link>
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} variant="destructive">
               <LogOut />
