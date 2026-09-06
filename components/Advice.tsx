@@ -1,7 +1,5 @@
-import React from "react";
-import { advice } from "@/lib/utils";
-import { motion } from "framer-motion";
-import { FaAnglesUp } from "react-icons/fa6";
+import { ChevronsUp } from "lucide-react";
+
 const Advice = () => {
   return (
     <section className="relative flex flex-col w-screen items-center justify-center gap-8 mt-10 max-lg:overflow-hidden ">
@@ -21,7 +19,7 @@ const Advice = () => {
           </h2>
 
           <p className="text-sm text-center leading-relaxed opacity-90">
-            No prior knowledge nor experience needed — we start from zero. We'll
+            No prior knowledge nor experience needed — we start from zero. We&apos;ll
             lay the foundation for you.
           </p>
         </div>
@@ -63,7 +61,7 @@ const Advice = () => {
         </div>
       </div>
       <div className="-mt-10 gap-2 flex flex-col items-center justify-center">
-        <FaAnglesUp />
+        <ChevronsUp aria-hidden="true" size={16} />
         <p className="">How To Success</p>
       </div>
     </section>

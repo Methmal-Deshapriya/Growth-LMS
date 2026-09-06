@@ -25,4 +25,17 @@ export const bootcamps = [
       statusColor: "bg-yellow-200 text-yellow-800",
     },
   },
+  {
+    id: 3,
+    slug: "pretech-engineering",
+    imageURL: "/assets/pretech/card.webp",
+    title: "PreTech/Engineering Foundation Program",
+    description:
+      "Build the mathematics, physics, statistics, and C programming foundation needed to begin university studies or a future career in technology and engineering with confidence.",
+    status: "● Enroll now",
+    cta: "Enroll Now →",
+    theme: {
+      statusColor: "bg-cyan-200 text-cyan-900",
+    },
+  },
 ];

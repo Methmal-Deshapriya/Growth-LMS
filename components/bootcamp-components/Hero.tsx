@@ -1,6 +1,5 @@
-import { IoIosTimer } from "react-icons/io";
+import { Clock3, Video } from "lucide-react";
 import Image from "next/image";
-import { IoVideocamOutline } from "react-icons/io5";
 import ApplyButton from "../ApplyButton";
 import { cn } from "@/lib/utils";
 type theme = {
@@ -12,6 +11,7 @@ type theme = {
 };
 type Props = {
   hero_title: string;
+  hero_subtitle?: string;
   hero_ImageURL: string;
   hero_duration: string;
   hero_learningHours: string;
@@ -19,6 +19,7 @@ type Props = {
 };
 const Hero = ({
   hero_title,
+  hero_subtitle,
   hero_ImageURL,
   hero_duration,
   hero_learningHours,
@@ -59,23 +60,23 @@ const Hero = ({
           </div>
 
           {/* RIGHT CONTENT */}
-          <div className="flex flex-col z-10">
+          <div className="flex min-w-0 flex-col z-10">
             {/* TAGS */}
             <div className="flex flex-wrap max-lg:justify-center gap-3 mb-6">
               <span className="px-4 py-2 text-sm font-medium bg-white border rounded-full shadow-sm flex items-center gap-2">
-                <IoIosTimer />
+                <Clock3 aria-hidden="true" size={16} />
                 {hero_duration}
               </span>
 
               <span className="px-4 py-2 text-sm font-medium bg-white border rounded-full shadow-sm flex items-center gap-2">
-                <IoVideocamOutline />
+                <Video aria-hidden="true" size={16} />
                 {hero_learningHours}
               </span>
             </div>
             <div className="flex flex-col ">
               <h1
                 className={cn(
-                  "text-[38px] sm:text-[50px] md:text-[60px] lg:text-[70px] max-lg:text-center font-extrabold leading-[1.1] bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-blue-600",
+                  "text-[38px] sm:text-[50px] md:text-[56px] lg:text-[48px] xl:text-[58px] 2xl:text-[64px] max-lg:text-center font-extrabold leading-[1.1] break-words [overflow-wrap:anywhere] bg-clip-text text-transparent bg-linear-to-r from-blue-500 to-blue-600",
                   theme?.titileGradient,
                 )}
               >
@@ -83,7 +84,7 @@ const Hero = ({
               </h1>
 
               <p className="mt-5 text-xl text-gray-700 max-lg:text-center">
-                Certification Program
+                {hero_subtitle ?? "Certification Program"}
               </p>
             </div>
 

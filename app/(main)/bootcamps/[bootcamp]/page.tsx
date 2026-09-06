@@ -22,10 +22,14 @@ const CoursePage = async ({
     <div className="md:w-[80vw] lg:w-[70vw] flex flex-col items-center">
       <Hero {...course.hero_data} />
       <CourseDescription {...course.courseDescription_data} />
-      <IntroVideo {...course.introVideo_data} />
+      {"introVideo_data" in course && (
+        <IntroVideo {...course.introVideo_data} />
+      )}
       <Curriculum {...course.curriculum_data} />
       <ForWho {...course.forWho_data} />
-      <Certificate {...course.certificate_data} />
+      {"certificate_data" in course && (
+        <Certificate {...course.certificate_data} />
+      )}
       <PriceDetails {...course.priceDetails_data} />
     </div>
   );

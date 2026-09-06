@@ -6,6 +6,7 @@ type theme = {
 };
 type TimelineItem = {
   week: string;
+  subject?: string;
   headline: string;
   content: string;
   theme?: theme;
@@ -24,6 +25,7 @@ const Curriculum = ({
 }: Props) => {
   const data = curriculum_data.map((item, index) => ({
     title: item.week,
+    subject: item.subject,
     content: (
       <div key={index}>
         <p className="mb-8 text-xl sm:text-3xl font-normal md:font-semibold  text-neutral-800  dark:text-neutral-200">
