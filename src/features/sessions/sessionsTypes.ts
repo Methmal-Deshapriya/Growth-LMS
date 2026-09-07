@@ -112,10 +112,25 @@ export interface ClassroomResponse {
     status: string;
     source: "ADMIN" | "SELF";
     deliveryMode: "PAID" | "FREE";
+    enrolledAt: string;
+    paymentStatus: "NOT_REQUIRED" | "PARTIAL" | "COMPLETED";
+    paymentCompletedAt: string | null;
+    certificate: { id: string; certificateCode: string; status: "ISSUED" | "REVOKED"; issuedDate: string } | null;
     course: PublicCourseCard & {
+      description: string;
+      highlights: string[];
+      skills: string[];
+      prerequisites: string[];
+      thumbnailUrl: string | null;
+      categoryTitle: string;
+      categoryVisualKey: string;
+      serviceTitle: string;
       intakeKey: string;
       code: string;
       instanceKind: "SEASONAL" | "EVERGREEN";
+      startDate: string | null;
+      expectedEndDate: string | null;
+      timezone: string;
     };
   };
   sessions: ClassroomSession[];

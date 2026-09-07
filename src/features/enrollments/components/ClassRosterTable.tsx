@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { Award, Check, Loader2, Mail, Pencil, User, Wallet, X } from "lucide-react";
+import {
+  Award,
+  Ban,
+  CheckCircle2,
+  Loader2,
+  Mail,
+  MoreHorizontal,
+  RotateCcw,
+  User,
+  Wallet,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -15,6 +25,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { FilterPills, type FilterPillOption } from "@/components/ui/filter-pills";
 import { Input } from "@/components/ui/input";
 import { OffsetPagination } from "@/components/ui/offset-pagination";
@@ -61,9 +78,9 @@ const STATUS_PILLS: { key: EnrollmentStatus | ""; label: string; countKey: keyof
 ];
 const PILL_ACTIVE_CLASS: Record<EnrollmentStatus | "", string> = {
   "": "border-primary bg-primary/10 text-primary",
-  ACTIVE: statusStyles.ACTIVE,
-  COMPLETED: statusStyles.COMPLETED,
-  CANCELLED: statusStyles.CANCELLED,
+  ACTIVE: "border-sky-500/20 bg-sky-500/10 text-sky-700",
+  COMPLETED: "border-emerald-500/20 bg-emerald-500/10 text-emerald-700",
+  CANCELLED: "border-destructive/20 bg-destructive/10 text-destructive",
 };
 
 const DEFAULT_PAGE_SIZE = 20;
@@ -71,14 +88,43 @@ const FILTER_DEBOUNCE_MS = 300;
 const MIN_FILTER_LENGTH = 3;
 const INTERACTIVE_SELECTOR = "input,button,a,[role=menuitem],[data-no-row-navigation]";
 
-const selectClassName =
-  "h-9 rounded-md border border-input bg-background px-2 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50";
-
 const enrollmentStatusOptions: Record<EnrollmentStatus, EnrollmentStatus[]> = {
   ACTIVE: ["ACTIVE", "COMPLETED", "CANCELLED"],
   COMPLETED: ["COMPLETED"],
   CANCELLED: ["CANCELLED", "ACTIVE"],
 };
+
+const STATUS_ACTION_LABEL: Record<EnrollmentStatus, string> = {
+  COMPLETED: "Mark completed",
+  CANCELLED: "Cancel enrollment",
+  ACTIVE: "Reactivate enrollment",
+};
+const STATUS_ACTION_ICON: Record<EnrollmentStatus, typeof CheckCircle2> = {
+  COMPLETED: CheckCircle2,
+  CANCELLED: Ban,
+  ACTIVE: RotateCcw,
+};
+
+// Certificates only ever apply to a COMPLETED, cert-enabled enrollment — the
+// other two states cover why one hasn't been issued: not eligible yet
+// (wrong status), or the course doesn't offer one at all.
+const CERTIFICATE_CELL_STYLES = {
+  NOT_OFFERED: "border-border bg-muted text-muted-foreground",
+  NOT_QUALIFIED: "border-border bg-muted text-muted-foreground",
+  NOT_ISSUED: "border-amber-500/20 bg-amber-500/10 text-amber-700",
+} as const;
+
+function certificateCellState(entry: ClassRosterEntry, certificateEnabled: boolean) {
+  if (!certificateEnabled) return { label: "Not offered", className: CERTIFICATE_CELL_STYLES.NOT_OFFERED };
+  if (entry.status !== "COMPLETED") return { label: "Not qualified", className: CERTIFICATE_CELL_STYLES.NOT_QUALIFIED };
+  if (entry.certificate?.status === "ISSUED") return { label: "Issued", className: certificateStyles.ISSUED };
+  if (entry.certificate?.status === "REVOKED") return { label: "Revoked", className: certificateStyles.REVOKED };
+  return { label: "Not issued", className: CERTIFICATE_CELL_STYLES.NOT_ISSUED };
+}
+
+function label(value: string) {
+  return value.charAt(0) + value.slice(1).toLowerCase().replace("_", " ");
+}
 
 export default function ClassRosterTable({
   intakeId,
@@ -110,47 +156,42 @@ export default function ClassRosterTable({
   const [issueCertificate, { isLoading: isIssuing }] = useIssueCertificateMutation();
   const [completePayment, { isLoading: isCompletingPayment }] = useCompletePaymentMutation();
 
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [editForm, setEditForm] = useState<{
-    status: EnrollmentStatus;
-    externalPaymentReference: string;
-    paymentNote: string;
-  }>({
-    status: "ACTIVE",
-    externalPaymentReference: "",
-    paymentNote: "",
-  });
   const [certificateTarget, setCertificateTarget] = useState<ClassRosterEntry | null>(null);
   const [completePaymentTarget, setCompletePaymentTarget] = useState<ClassRosterEntry | null>(null);
   const [detailEntry, setDetailEntry] = useState<ClassRosterEntry | null>(null);
+  const [evidenceDraft, setEvidenceDraft] = useState({ reference: "", note: "" });
 
-  const handleEdit = (entry: ClassRosterEntry) => {
-    setEditingId(entry.id);
-    setEditForm({
-      status: entry.status,
-      externalPaymentReference: entry.externalPaymentReference ?? "",
-      paymentNote: entry.paymentNote ?? "",
-    });
+  // Keep the sheet showing live data (status/payment can change from the row
+  // dropdown while it's open) rather than the stale snapshot it was opened with.
+  const liveDetailEntry = detailEntry ? (entries.find((e) => e.id === detailEntry.id) ?? detailEntry) : null;
+
+  const openDetail = (entry: ClassRosterEntry) => {
+    setDetailEntry(entry);
+    setEvidenceDraft({ reference: entry.externalPaymentReference ?? "", note: entry.paymentNote ?? "" });
   };
 
-  const handleSave = async (id: string) => {
+  const changeStatus = async (entry: ClassRosterEntry, status: EnrollmentStatus) => {
     try {
-      const data =
-        deliveryMode === "FREE"
-          ? { status: editForm.status }
-          : {
-              ...editForm,
-              externalPaymentReference: editForm.externalPaymentReference.trim() || null,
-              paymentNote: editForm.paymentNote.trim() || null,
-            };
-      await updateEnrollment({
-        id,
-        data,
-      }).unwrap();
-      toast.success("Enrollment updated successfully");
-      setEditingId(null);
+      await updateEnrollment({ id: entry.id, data: { status } }).unwrap();
+      toast.success(`Enrollment ${label(status).toLowerCase()}`);
     } catch (error: unknown) {
-      toast.error(getApiErrorMessage(error, "Failed to update enrollment"));
+      toast.error(getApiErrorMessage(error, "Failed to update enrollment status"));
+    }
+  };
+
+  const saveEvidence = async () => {
+    if (!detailEntry) return;
+    try {
+      await updateEnrollment({
+        id: detailEntry.id,
+        data: {
+          externalPaymentReference: evidenceDraft.reference.trim() || null,
+          paymentNote: evidenceDraft.note.trim() || null,
+        },
+      }).unwrap();
+      toast.success("Payment evidence updated");
+    } catch (error: unknown) {
+      toast.error(getApiErrorMessage(error, "Failed to update payment evidence"));
     }
   };
 
@@ -179,9 +220,9 @@ export default function ClassRosterTable({
     }
   };
 
-  const pillOptions: FilterPillOption<EnrollmentStatus | "">[] = STATUS_PILLS.map(({ key, label, countKey }) => ({
+  const pillOptions: FilterPillOption<EnrollmentStatus | "">[] = STATUS_PILLS.map(({ key, label: pillLabel, countKey }) => ({
     key,
-    label,
+    label: pillLabel,
     count: data?.summary?.[countKey] ?? 0,
     activeClassName: PILL_ACTIVE_CLASS[key],
   }));
@@ -222,7 +263,6 @@ export default function ClassRosterTable({
               <TableHead className="px-4">Student</TableHead>
               <TableHead>Enrollment status</TableHead>
               <TableHead>Payment</TableHead>
-              <TableHead>Evidence</TableHead>
               <TableHead>Certificate</TableHead>
               <TableHead className="pr-4 text-right">Actions</TableHead>
             </TableRow>
@@ -230,7 +270,7 @@ export default function ClassRosterTable({
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
                   <span role="status" aria-live="polite">
                     Loading roster…
                   </span>
@@ -239,7 +279,7 @@ export default function ClassRosterTable({
             ) : entries.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={6}
+                  colSpan={5}
                   className="h-24 whitespace-normal text-center text-muted-foreground"
                 >
                   {q || statusFilter ? "No enrollments match your filters." : "No learners enrolled in this course yet."}
@@ -247,33 +287,37 @@ export default function ClassRosterTable({
               </TableRow>
             ) : (
               entries.map((entry) => {
-                const isEditing = editingId === entry.id;
+                const nextStatuses = (
+                  deliveryMode === "FREE" && entry.status === "CANCELLED"
+                    ? []
+                    : enrollmentStatusOptions[entry.status]
+                ).filter((status) => status !== entry.status);
+                const canRecordPayment = deliveryMode === "PAID" && entry.paymentStatus === "PARTIAL";
+                const canIssueCertificate =
+                  entry.status === "COMPLETED" &&
+                  certificateEnabled &&
+                  (entry.paymentStatus === "COMPLETED" || entry.paymentStatus === "NOT_REQUIRED") &&
+                  entry.certificate?.status !== "ISSUED";
+                const certificateCell = certificateCellState(entry, certificateEnabled);
+                const hasActions = nextStatuses.length > 0 || canRecordPayment || canIssueCertificate;
 
                 return (
                   <TableRow
                     key={entry.id}
-                    tabIndex={isEditing ? undefined : 0}
-                    aria-label={isEditing ? undefined : `View details for ${entry.user?.firstName} ${entry.user?.lastName}`}
-                    className={isEditing ? undefined : "cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"}
-                    onClick={
-                      isEditing
-                        ? undefined
-                        : (event) => {
-                            if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
-                            setDetailEntry(entry);
-                          }
-                    }
-                    onKeyDown={
-                      isEditing
-                        ? undefined
-                        : (event) => {
-                            if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
-                            if (event.key === "Enter" || event.key === " ") {
-                              event.preventDefault();
-                              setDetailEntry(entry);
-                            }
-                          }
-                    }
+                    tabIndex={0}
+                    aria-label={`View details for ${entry.user?.firstName} ${entry.user?.lastName}`}
+                    className="cursor-pointer focus-visible:bg-muted/50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-ring"
+                    onClick={(event) => {
+                      if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
+                      openDetail(entry);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.target instanceof Element && event.target.closest(INTERACTIVE_SELECTOR)) return;
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        openDetail(entry);
+                      }
+                    }}
                   >
                     <TableCell className="max-w-xs whitespace-normal px-4 py-4">
                       <div className="flex items-center gap-3">
@@ -292,171 +336,72 @@ export default function ClassRosterTable({
                       </div>
                     </TableCell>
 
-                    <TableCell data-no-row-navigation={isEditing ? true : undefined}>
-                      {isEditing ? (
-                        <select
-                          className={selectClassName}
-                          aria-label={`Enrollment status for ${entry.user?.firstName} ${entry.user?.lastName}`}
-                          value={editForm.status}
-                          disabled={entry.status === "COMPLETED"}
-                          onChange={(event) =>
-                            setEditForm({
-                              ...editForm,
-                              status: event.target.value as EnrollmentStatus,
-                            })
-                          }
-                        >
-                          {(deliveryMode === "FREE" && entry.status === "CANCELLED"
-                            ? ["CANCELLED" as EnrollmentStatus]
-                            : enrollmentStatusOptions[entry.status]
-                          ).map((status) => (
-                            <option key={status} value={status}>
-                              {status.charAt(0) + status.slice(1).toLowerCase()}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <Badge variant="outline" className={statusStyles[entry.status]}>
-                          {entry.status.charAt(0) + entry.status.slice(1).toLowerCase()}
-                        </Badge>
-                      )}
+                    <TableCell>
+                      <Badge variant="outline" className={statusStyles[entry.status]}>
+                        {label(entry.status)}
+                      </Badge>
                     </TableCell>
 
                     <TableCell>
-                      {deliveryMode === "FREE" ? (
-                        <Badge variant="outline" className={paymentStyles.NOT_REQUIRED}>
-                          Not applicable
-                        </Badge>
-                      ) : (
-                        // Payment status is never directly editable here — it only
-                        // changes via the ledger-aware "record remaining payment"
-                        // action below, so every change stays backed by a Payment row.
-                        <Badge variant="outline" className={paymentStyles[entry.paymentStatus]}>
-                          {entry.paymentStatus.charAt(0) +
-                            entry.paymentStatus.slice(1).toLowerCase().replace("_", " ")}
-                        </Badge>
-                      )}
-                    </TableCell>
-
-                    <TableCell data-no-row-navigation={isEditing ? true : undefined}>
-                      {deliveryMode === "FREE" ? (
-                        <span className="text-xs text-muted-foreground">Not applicable</span>
-                      ) : isEditing ? (
-                        <div className="min-w-52 space-y-2">
-                          <Input
-                            aria-label="External payment reference"
-                            value={editForm.externalPaymentReference}
-                            disabled={entry.status === "COMPLETED"}
-                            onChange={(event) =>
-                              setEditForm({
-                                ...editForm,
-                                externalPaymentReference: event.target.value,
-                              })
-                            }
-                            placeholder="Reference"
-                          />
-                          <Input
-                            aria-label="Internal payment note"
-                            value={editForm.paymentNote}
-                            disabled={entry.status === "COMPLETED"}
-                            onChange={(event) =>
-                              setEditForm({ ...editForm, paymentNote: event.target.value })
-                            }
-                            placeholder="Internal note"
-                          />
-                        </div>
-                      ) : (
-                        <div className="max-w-52 text-xs">
-                          <p className="font-medium text-foreground">
-                            {entry.externalPaymentReference || "No reference"}
-                          </p>
-                          <p
-                            className="mt-0.5 truncate text-muted-foreground"
-                            title={entry.paymentNote ?? undefined}
-                          >
-                            {entry.paymentNote || "No note"}
-                          </p>
-                        </div>
-                      )}
+                      <Badge
+                        variant="outline"
+                        className={deliveryMode === "FREE" ? paymentStyles.NOT_REQUIRED : paymentStyles[entry.paymentStatus]}
+                      >
+                        {deliveryMode === "FREE" ? "Not applicable" : label(entry.paymentStatus)}
+                      </Badge>
                     </TableCell>
 
                     <TableCell>
-                      {entry.certificate ? (
-                        <Badge
-                          variant="outline"
-                          className={certificateStyles[entry.certificate.status]}
-                        >
-                          {entry.certificate.certificateCode}
-                        </Badge>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Not issued</span>
-                      )}
+                      <Badge variant="outline" className={certificateCell.className}>
+                        {certificateCell.label}
+                      </Badge>
                     </TableCell>
 
                     <TableCell className="pr-4 text-right" data-no-row-navigation>
-                      <div className="flex items-center justify-end gap-2">
-                        {isEditing ? (
-                          <>
-                            <Button
-                              aria-label="Save enrollment changes"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleSave(entry.id)}
-                              disabled={isUpdating}
-                            >
-                              {isUpdating ? (
-                                <Loader2 className="size-4 animate-spin" aria-hidden="true" />
-                              ) : (
-                                <Check className="size-4 text-emerald-600" aria-hidden="true" />
-                              )}
-                            </Button>
-                            <Button
-                              aria-label="Cancel enrollment changes"
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => setEditingId(null)}
-                              disabled={isUpdating}
-                            >
-                              <X className="size-4 text-destructive" aria-hidden="true" />
-                            </Button>
-                          </>
-                        ) : (
-                          <>
-                            {deliveryMode === "PAID" && entry.paymentStatus === "PARTIAL" ? (
-                              <Button
-                                aria-label={`Record remaining payment for ${entry.user?.firstName} ${entry.user?.lastName}`}
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setCompletePaymentTarget(entry)}
-                              >
-                                <Wallet className="size-4 text-sky-600" aria-hidden="true" />
-                              </Button>
-                            ) : null}
-                            {entry.status === "COMPLETED" &&
-                            certificateEnabled &&
-                            entry.paymentStatus === "COMPLETED" &&
-                            !entry.certificate ? (
-                              <Button
-                                aria-label={`Issue certificate for ${entry.user?.firstName} ${entry.user?.lastName}`}
-                                variant="ghost"
-                                size="icon"
-                                onClick={() => setCertificateTarget(entry)}
-                                disabled={isIssuing}
-                              >
-                                <Award className="size-4 text-violet-600" aria-hidden="true" />
-                              </Button>
-                            ) : null}
-                            <Button
-                              aria-label={`Edit enrollment for ${entry.user?.firstName} ${entry.user?.lastName}`}
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleEdit(entry)}
-                            >
-                              <Pencil className="size-4" aria-hidden="true" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            aria-label={`Actions for ${entry.user?.firstName} ${entry.user?.lastName}`}
+                          >
+                            <MoreHorizontal className="size-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          {hasActions ? (
+                            <>
+                              {nextStatuses.map((status) => {
+                                const Icon = STATUS_ACTION_ICON[status];
+                                return (
+                                  <DropdownMenuItem
+                                    key={status}
+                                    variant={status === "CANCELLED" ? "destructive" : "default"}
+                                    onSelect={() => changeStatus(entry, status)}
+                                  >
+                                    <Icon /> {STATUS_ACTION_LABEL[status]}
+                                  </DropdownMenuItem>
+                                );
+                              })}
+                              {nextStatuses.length > 0 && (canRecordPayment || canIssueCertificate) ? (
+                                <DropdownMenuSeparator />
+                              ) : null}
+                              {canRecordPayment ? (
+                                <DropdownMenuItem onSelect={() => setCompletePaymentTarget(entry)}>
+                                  <Wallet /> Record remaining payment
+                                </DropdownMenuItem>
+                              ) : null}
+                              {canIssueCertificate ? (
+                                <DropdownMenuItem onSelect={() => setCertificateTarget(entry)} disabled={isIssuing}>
+                                  <Award /> Issue certificate
+                                </DropdownMenuItem>
+                              ) : null}
+                            </>
+                          ) : (
+                            <DropdownMenuItem disabled>No actions available</DropdownMenuItem>
+                          )}
+                        </DropdownMenuContent>
+                      </DropdownMenu>
                     </TableCell>
                   </TableRow>
                 );
@@ -520,59 +465,89 @@ export default function ClassRosterTable({
 
       <Sheet open={Boolean(detailEntry)} onOpenChange={(open) => !open && setDetailEntry(null)}>
         <SheetContent className="flex flex-col sm:max-w-lg">
-          {detailEntry ? (
+          {liveDetailEntry ? (
             <>
               <SheetHeader>
                 <SheetTitle>
-                  {detailEntry.user?.firstName} {detailEntry.user?.lastName}
+                  {liveDetailEntry.user?.firstName} {liveDetailEntry.user?.lastName}
                 </SheetTitle>
-                <SheetDescription>{detailEntry.user?.email}</SheetDescription>
+                <SheetDescription>{liveDetailEntry.user?.email}</SheetDescription>
               </SheetHeader>
               <div className="flex-1 space-y-5 overflow-y-auto px-4">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline" className={statusStyles[detailEntry.status]}>
-                    {detailEntry.status.charAt(0) + detailEntry.status.slice(1).toLowerCase()}
-                  </Badge>
-                  <Badge
-                    variant="outline"
-                    className={deliveryMode === "FREE" ? paymentStyles.NOT_REQUIRED : paymentStyles[detailEntry.paymentStatus]}
-                  >
-                    {deliveryMode === "FREE"
-                      ? "Not applicable"
-                      : detailEntry.paymentStatus.charAt(0) + detailEntry.paymentStatus.slice(1).toLowerCase().replace("_", " ")}
-                  </Badge>
-                  {detailEntry.certificate ? (
-                    <Badge variant="outline" className={certificateStyles[detailEntry.certificate.status]}>
-                      {detailEntry.certificate.certificateCode}
+                <div className="space-y-1.5 text-sm">
+                  <p className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground">Enrollment status</span>
+                    <Badge variant="outline" className={statusStyles[liveDetailEntry.status]}>
+                      {label(liveDetailEntry.status)}
                     </Badge>
-                  ) : null}
+                  </p>
+                  <p className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground">Payment</span>
+                    <Badge
+                      variant="outline"
+                      className={deliveryMode === "FREE" ? paymentStyles.NOT_REQUIRED : paymentStyles[liveDetailEntry.paymentStatus]}
+                    >
+                      {deliveryMode === "FREE" ? "Not applicable" : label(liveDetailEntry.paymentStatus)}
+                    </Badge>
+                  </p>
+                  <p className="flex items-center justify-between gap-4">
+                    <span className="text-muted-foreground">Certificate</span>
+                    {liveDetailEntry.certificate?.status === "ISSUED" || liveDetailEntry.certificate?.status === "REVOKED" ? (
+                      <Badge variant="outline" className={certificateStyles[liveDetailEntry.certificate.status]}>
+                        {liveDetailEntry.certificate.certificateCode}
+                      </Badge>
+                    ) : (
+                      <Badge
+                        variant="outline"
+                        className={certificateCellState(liveDetailEntry, certificateEnabled).className}
+                      >
+                        {certificateCellState(liveDetailEntry, certificateEnabled).label}
+                      </Badge>
+                    )}
+                  </p>
                 </div>
 
                 {deliveryMode === "PAID" ? (
-                  <div className="space-y-1.5">
+                  <div className="space-y-2">
                     <p className="text-sm font-semibold">Payment evidence</p>
-                    <p className="text-sm text-foreground">
-                      {detailEntry.externalPaymentReference || "No external reference on file."}
-                    </p>
-                    {detailEntry.paymentNote ? (
-                      <p className="text-sm text-muted-foreground">{detailEntry.paymentNote}</p>
-                    ) : null}
+                    <Input
+                      aria-label="External payment reference"
+                      value={evidenceDraft.reference}
+                      disabled={liveDetailEntry.status === "COMPLETED"}
+                      onChange={(event) => setEvidenceDraft({ ...evidenceDraft, reference: event.target.value })}
+                      placeholder="External reference"
+                    />
+                    <Input
+                      aria-label="Internal payment note"
+                      value={evidenceDraft.note}
+                      disabled={liveDetailEntry.status === "COMPLETED"}
+                      onChange={(event) => setEvidenceDraft({ ...evidenceDraft, note: event.target.value })}
+                      placeholder="Internal note"
+                    />
+                    {liveDetailEntry.status === "COMPLETED" ? (
+                      <p className="text-xs text-muted-foreground">Locked once the enrollment is completed.</p>
+                    ) : (
+                      <Button size="sm" onClick={saveEvidence} disabled={isUpdating}>
+                        {isUpdating ? <Loader2 className="mr-2 size-4 animate-spin" aria-hidden="true" /> : null}
+                        Save evidence
+                      </Button>
+                    )}
                   </div>
                 ) : null}
 
                 <div className="space-y-1.5 text-sm">
                   <p className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Source</span>
-                    <span className="font-medium">{detailEntry.source === "ADMIN" ? "Enrolled by admin" : "Self-enrolled"}</span>
+                    <span className="font-medium">{liveDetailEntry.source === "ADMIN" ? "Enrolled by admin" : "Self-enrolled"}</span>
                   </p>
                   <p className="flex justify-between gap-4">
                     <span className="text-muted-foreground">Enrolled</span>
-                    <span className="font-medium">{new Date(detailEntry.enrolledAt).toLocaleDateString()}</span>
+                    <span className="font-medium">{new Date(liveDetailEntry.enrolledAt).toLocaleDateString()}</span>
                   </p>
-                  {detailEntry.completedAt ? (
+                  {liveDetailEntry.completedAt ? (
                     <p className="flex justify-between gap-4">
                       <span className="text-muted-foreground">Completed</span>
-                      <span className="font-medium">{new Date(detailEntry.completedAt).toLocaleDateString()}</span>
+                      <span className="font-medium">{new Date(liveDetailEntry.completedAt).toLocaleDateString()}</span>
                     </p>
                   ) : null}
                 </div>

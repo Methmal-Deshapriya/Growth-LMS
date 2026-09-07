@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useGetMyEnrollmentsQuery } from "@/features/enrollments/enrollmentsApi";
 import { useSubmitProjectMutation } from "@/features/projects/projectsApi";
 import { Loader2, ArrowLeft, Send, Image as ImageIcon, Github, Globe, Info } from "lucide-react";
@@ -18,13 +18,17 @@ import { toast } from "sonner";
  */
 export default function NewProjectPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { data: enrollmentPage, isLoading: isEnrollmentsLoading } =
     useGetMyEnrollmentsQuery({ limit: 50 });
   const enrollments = enrollmentPage?.enrollments;
   const [submitProject, { isLoading: isSubmitting }] = useSubmitProjectMutation();
 
   const [formData, setFormData] = useState({
-    enrollmentId: "",
+    // Pre-filled when a classroom page links here with ?enrollmentId= — falls
+    // back to blank ("choose a course") if the enrollment doesn't turn out
+    // to be a valid option once the list loads.
+    enrollmentId: searchParams.get("enrollmentId") ?? "",
     title: "",
     description: "",
     thumbnailUrl: "",

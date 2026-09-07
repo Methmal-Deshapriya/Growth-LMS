@@ -27,8 +27,8 @@ export default function MyCoursesPage() {
       <div className="space-y-8 pb-20">
       {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-foreground">My Courses</h1>
-          <p className="text-muted-foreground mt-1">
+          <h1 className="text-lg font-semibold text-foreground">My Courses</h1>
+          <p className="text-sm text-muted-foreground">
             Access all your enrolled courses and learning materials.
           </p>
         </div>
@@ -94,7 +94,7 @@ export default function MyCoursesPage() {
               asChild
               className="h-12 rounded-xl bg-primary px-8 text-lg text-white hover:bg-primary/90"
             >
-              <Link href="/bootcamps">Browse Bootcamps</Link>
+              <Link href="/explore">Explore courses</Link>
             </Button>
           </div>
         )}

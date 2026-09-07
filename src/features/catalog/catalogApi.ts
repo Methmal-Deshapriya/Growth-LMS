@@ -4,6 +4,9 @@ import type {
   LearningServiceSlug,
   CourseLevel,
   CourseEnrollmentStatus,
+  PublicCategory,
+  PublicExploreFilters,
+  PublicExploreResponse,
   PublicLearningService,
 } from "./catalogTypes";
 import type { MyEnrollment } from "@/features/enrollments/enrollmentsTypes";
@@ -286,6 +289,17 @@ export const catalogApi = baseApi.injectEndpoints({
       query: () => "/catalog/services",
       providesTags: ["Services"],
     }),
+    getPublicCategoriesForService: builder.query<
+      { categories: PublicCategory[] },
+      string
+    >({
+      query: (serviceSlug) => `/catalog/${serviceSlug}/categories`,
+      providesTags: ["Categories"],
+    }),
+    getPublicExplore: builder.query<PublicExploreResponse, PublicExploreFilters>({
+      query: (filters) => ({ url: "/catalog/explore", params: filters }),
+      providesTags: ["Courses"],
+    }),
     getAdminLearningServiceSummaries: builder.query<
       {
         services: AdminLearningServiceSummary[];
@@ -562,6 +576,8 @@ export const catalogApi = baseApi.injectEndpoints({
 
 export const {
   useGetPublicLearningServicesQuery,
+  useGetPublicCategoriesForServiceQuery,
+  useGetPublicExploreQuery,
   useGetAdminLearningServiceSummariesQuery,
   useGetLearningServiceQuery,
   useCreateLearningServiceMutation,

@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Award,
   BookOpen,
+  Compass,
   FileText,
   FolderCode,
   LayoutDashboard,
@@ -19,6 +20,7 @@ import {
  */
 export const Icons = {
   dashboard: LayoutDashboard,
+  explore: Compass,
   myCourses: BookOpen,
   certificates: Award,
   myProjects: FolderCode,

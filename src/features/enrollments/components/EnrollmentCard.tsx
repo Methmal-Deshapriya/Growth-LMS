@@ -1,10 +1,11 @@
 "use client";
 
+import type { ElementType } from "react";
 import Link from "next/link";
-import { format } from "date-fns";
-import { ArrowRight, BookOpen, Calendar, LockKeyhole, Users } from "lucide-react";
+import { ChevronRight, LockKeyhole } from "lucide-react";
 import type { MyEnrollment } from "../enrollmentsTypes";
-import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { CatalogIcon } from "@/components/marketing/catalog/visuals";
 
 interface EnrollmentCardProps {
   enrollment: MyEnrollment;
@@ -31,75 +32,82 @@ function getAccessMessage(enrollment: MyEnrollment) {
 }
 
 export default function EnrollmentCard({ enrollment }: EnrollmentCardProps) {
-  const { course } = enrollment;
+  const { course, progress } = enrollment;
   const accessMessage = getAccessMessage(enrollment);
   const isAccessible = accessMessage === null;
+  const hasSessions = (progress?.availableSessionCount ?? 0) > 0;
+
+  const Wrapper: ElementType = isAccessible ? Link : "div";
+  const wrapperProps = isAccessible ? { href: `/my-courses/${enrollment.id}` } : {};
 
   return (
-    <article className="group overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all duration-300 hover:shadow-md">
-      <div className="flex flex-col md:flex-row">
-        <div className="flex items-center justify-center bg-linear-to-br from-indigo-500 to-blue-600 p-6 text-white transition-colors group-hover:from-indigo-600 group-hover:to-blue-700 md:w-48">
-          <BookOpen className="h-12 w-12 opacity-30" />
+    <Wrapper
+      {...wrapperProps}
+      className={`group block overflow-hidden rounded-lg border border-border bg-card shadow-sm transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-lg ${isAccessible ? "cursor-pointer" : ""}`}
+    >
+      <div className="flex md:h-28">
+        <div className="relative hidden shrink-0 items-center justify-center overflow-hidden bg-linear-to-br from-primary/15 via-primary/5 to-transparent md:flex md:w-28">
+          {course.thumbnailUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- external, arbitrary admin-supplied URLs; next/image's domain allowlist would need constant upkeep
+            <img src={course.thumbnailUrl} alt="" className="h-full w-full object-cover" />
+          ) : (
+            <CatalogIcon visualKey={course.categoryVisualKey} className="h-8 w-8 text-primary/70" />
+          )}
         </div>
 
-        <div className="flex flex-1 flex-col justify-between p-6">
-          <div>
-            <div className="mb-2 flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-widest text-primary">
-              <span className="flex items-center gap-2">
-                <Calendar className="h-3.5 w-3.5" />
-                Enrolled {format(new Date(enrollment.enrolledAt), "MMMM dd, yyyy")}
-              </span>
-              <span className="rounded-full bg-primary/10 px-2 py-1">
-                {course.instanceKind === "SEASONAL" ? "Seasonal intake" : "Evergreen learning"}
-              </span>
-            </div>
-
-            <h3 className="mb-2 text-xl font-bold text-foreground transition-colors group-hover:text-primary">
+        <div className="flex min-w-0 flex-1 flex-col justify-center gap-1.5 px-4 py-3">
+          <div className="min-w-0">
+            <h3 className="truncate text-base font-bold text-foreground transition-colors group-hover:text-primary">
               {course.title}
             </h3>
-            <p className="mb-4 line-clamp-2 text-sm text-foreground">
-              {course.summary}
+            <p className="line-clamp-1 text-sm text-muted-foreground">{course.summary}</p>
+          </div>
+
+          {isAccessible ? (
+            <div className="flex items-center gap-2 lg:hidden">
+              <Progress value={hasSessions ? progress!.progressPercent : 0} className="h-1.5 w-full max-w-xs" />
+              <span className="text-xs text-muted-foreground">
+                {hasSessions
+                  ? `${progress!.completedCount}/${progress!.availableSessionCount} · ${progress!.progressPercent}%`
+                  : "No sessions yet"}
+              </span>
+            </div>
+          ) : (
+            <p className="flex items-start gap-2 rounded-lg bg-amber-50 px-3 py-2 text-sm text-amber-800">
+              <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
+              {accessMessage}
             </p>
+          )}
+        </div>
 
-            {course.instanceKind === "SEASONAL" ? (
-              <div className="mb-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-2 font-medium text-foreground">
-                  <Users className="h-4 w-4" />
-                  {course.intakeKey} ({course.code})
-                </span>
-                {course.startDate && course.expectedEndDate ? (
-                  <span>
-                    {format(new Date(course.startDate), "MMM d, yyyy")} - {format(new Date(course.expectedEndDate), "MMM d, yyyy")}
-                  </span>
-                ) : null}
-              </div>
-            ) : null}
-
-            {accessMessage ? (
-              <p className="flex items-start gap-2 rounded-lg bg-amber-50 p-3 text-sm text-amber-800">
-                <LockKeyhole className="mt-0.5 h-4 w-4 shrink-0" />
-                {accessMessage}
-              </p>
-            ) : null}
+        {isAccessible ? (
+          <div className="hidden flex-1 items-center justify-center px-4 lg:flex">
+            <div className="flex w-full max-w-xs items-center gap-2">
+              <Progress value={hasSessions ? progress!.progressPercent : 0} className="h-1.5 flex-1" />
+              <span className="whitespace-nowrap text-xs text-muted-foreground">
+                {hasSessions
+                  ? `${progress!.completedCount}/${progress!.availableSessionCount} · ${progress!.progressPercent}%`
+                  : "No sessions yet"}
+              </span>
+            </div>
           </div>
+        ) : null}
 
-          <div className="flex items-center justify-end pt-4">
-            {isAccessible ? (
-              <Button asChild className="rounded-xl bg-gray-900 px-6 text-white hover:bg-black">
-                <Link href={`/my-courses/${enrollment.id}`}>
-                  Open Classroom
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-              </Button>
-            ) : (
-              <Button disabled className="rounded-xl px-6">
-                Classroom Locked
-                <LockKeyhole className="ml-2 h-4 w-4" />
-              </Button>
-            )}
-          </div>
+        <div className="flex shrink-0 items-center justify-center pr-4">
+          {isAccessible ? (
+            <span
+              aria-hidden="true"
+              className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors group-hover:bg-muted group-hover:text-foreground"
+            >
+              <ChevronRight className="h-5 w-5" />
+            </span>
+          ) : (
+            <span className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground">
+              <LockKeyhole className="h-4 w-4" />
+            </span>
+          )}
         </div>
       </div>
-    </article>
+    </Wrapper>
   );
 }

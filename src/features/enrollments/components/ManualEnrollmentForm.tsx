@@ -44,10 +44,7 @@ export default function ManualEnrollmentForm({
   const fullAmount = coursePrice - discountAmount;
   const halfAmount = coursePrice / 2;
   const paymentOptionLabels: Record<PaidStatus, string> = {
-    COMPLETED:
-      discountAmount > 0
-        ? `Full payment — ${formatLKR(fullAmount)} (${formatLKR(discountAmount)} discount applied)`
-        : `Full payment — ${formatLKR(fullAmount)}`,
+    COMPLETED: `Full payment — ${formatLKR(fullAmount)}`,
     PARTIAL: `Partial — ${formatLKR(halfAmount)} now, ${formatLKR(halfAmount)} later`,
   };
   const paymentOptions = Object.values(paymentOptionLabels);
@@ -174,6 +171,11 @@ export default function ManualEnrollmentForm({
             value={paymentOptionLabels[paymentStatus]}
             onChange={(label) => setPaymentStatus(labelToStatus(label))}
           />
+          {paymentStatus === "COMPLETED" && discountAmount > 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Includes a {formatLKR(discountAmount)} discount for paying in full.
+            </p>
+          ) : null}
         </div>
         <div className="space-y-2"><Label htmlFor="enrollment-payment-reference">External payment reference</Label><Input id="enrollment-payment-reference" value={reference} onChange={(event) => setReference(event.target.value)} placeholder="Receipt or transfer reference" /></div>
       </div>

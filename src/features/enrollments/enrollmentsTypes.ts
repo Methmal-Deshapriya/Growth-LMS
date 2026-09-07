@@ -13,6 +13,14 @@ export interface EnrollmentCertificateSummary {
   issuedDate: string;
 }
 
+/** Sessions completed vs. currently visible in the classroom — see
+ * classroom.service.js's progressFromRows on the server, which this mirrors. */
+export interface EnrollmentProgressSummary {
+  completedCount: number;
+  availableSessionCount: number;
+  progressPercent: number;
+}
+
 export interface MyEnrollment {
   enrolledAt: string;
   id: string;
@@ -30,6 +38,8 @@ export interface MyEnrollment {
   // own facts (intake key, code, dates, timezone, lifecycle status) come
   // from Intake — see the rename plan §6.
   course: PublicCourseCard & {
+    thumbnailUrl: string | null;
+    categoryVisualKey: string;
     intakeId: string;
     intakeKey: string;
     code: string;
@@ -40,6 +50,7 @@ export interface MyEnrollment {
     intakeStatus: string;
   };
   certificate: EnrollmentCertificateSummary | null;
+  progress: EnrollmentProgressSummary | null;
 }
 
 export type SelfHistoryParams = { limit?: number; cursor?: string };

@@ -85,3 +85,39 @@ export interface PublicServiceCatalog {
   categoryCount: number;
   categories: PublicCategory[];
 }
+
+/** A course card on the cross-service Explore page — carries its own
+ * service/category slugs since (unlike a single-category page) the page
+ * doesn't already know which one a given card belongs to. */
+export interface PublicExploreCourseCard extends PublicCourseCard {
+  thumbnailUrl: string | null;
+  categorySlug: string;
+  categoryTitle: string;
+  categoryVisualKey: string;
+  serviceSlug: LearningServiceSlug;
+  serviceTitle: string;
+}
+
+export interface PublicExplorePagination {
+  total: number;
+  limit: number;
+  offset: number;
+  hasMore: boolean;
+}
+
+export interface PublicExploreResponse {
+  courses: PublicExploreCourseCard[];
+  pagination: PublicExplorePagination;
+}
+
+export interface PublicExploreFilters {
+  service?: string;
+  category?: string;
+  level?: CourseLevel;
+  accessType?: "FREE" | "PAID";
+  minPrice?: number;
+  maxPrice?: number;
+  q?: string;
+  limit?: number;
+  offset?: number;
+}

@@ -43,6 +43,7 @@ export function DashboardNavMain() {
     { label: "Dashboard", href: "/dashboard", icon: Icons.dashboard },
     ...(isStudent(role)
       ? [
+          { label: "Explore", href: "/explore", icon: Icons.explore },
           { label: "My Courses", href: "/my-courses", icon: Icons.myCourses },
           { label: "Certificates", href: "/certificates", icon: Icons.certificates },
           { label: "My Projects", href: "/projects", icon: Icons.myProjects },
